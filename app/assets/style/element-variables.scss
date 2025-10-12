@@ -1,0 +1,142 @@
+// $--colors: (
+//     "primary": (
+//         "base": #ff5000,
+//     ),
+//     "success": (
+//         "base": #21ba45,
+//     ),
+//     "warning": (
+//         "base": #f2711c,
+//     ),
+//     "danger": (
+//         "base": #db2828,
+//     ),
+//     "error": (
+//         "base": #db2828,
+//     ),
+//     "info": (
+//         "base": #42b8dd,
+//     ),
+// );
+// :root {
+//     --el-border-color: #ff5000;
+//     --el-color-primary: #ff5000;
+//     /* 可选：同步修改 hover 状态的边框色 */
+//     --el-border-color-hover: #ff9000;
+//     --el-border-color-focus: #ff5000;
+//     --el-color-primary-light-3: #ff8040;
+//     --el-color-primary-light-5: #ffd6b3;
+//     --el-color-primary-light-9: #fff2e6;
+//     --el-color-primary-dark-2: #cc4000;
+//     --el-color-primary-dark-3: #993300;
+//     --el-color-primary-dark-4: #662600;
+//     --el-color-primary-dark-5: #331a00;
+//     --el-color-primary-dark-6: #261400;
+//     --el-color-primary-dark-7: #1a0d00;
+//     --el-color-primary-dark-8: #0d0700;
+//     --el-color-primary-dark-9: #000000;
+//     --el-color-primary-dark-10: #000000;
+// }
+// // 你应该在scss中使用这些变量，因为我们通过sass计算它们
+// // 注释下面的行以使用默认颜色
+// // @forward "element-plus/theme-chalk/src/common/var.scss" with (
+// //     // 不要使用相同的名称，否则会覆盖
+// //     $colors: $--colors
+// // );
+
+// // 如果你想导入所有样式
+// // @use "element-plus/theme-chalk/src/index.scss" as *;
+// // 你可以注释掉它来隐藏调试信息
+// // @debug $--colors;
+
+// // 导入暗色主题
+// // @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
+// 引入Element Plus基础变量
+// 无需引入Element Plus的内部文件，避免路径错误
+
+// 1. 定义基础颜色
+// $primary: #ff5000;
+// $success: #21ba45;
+// $warning: #f2711c;
+// $danger: #db2828;
+
+// // 2. 直接生成Element Plus需要的CSS变量（最直接的覆盖方式）
+// :root {
+//     // 主色调
+//     --el-color-primary: #{$primary};
+//     --el-color-primary-light-3: #ff8040;
+//     --el-color-primary-dark-2: #cc4000;
+
+//     // 其他颜色
+//     --el-color-success: #{$success};
+//     --el-color-warning: #{$warning};
+//     --el-color-danger: #{$danger};
+//     --el-color-error: #{$danger}; // error和danger保持一致
+
+//     // 边框色
+//     --el-border-color: #{$primary};
+//     --el-border-color-hover: #ff9000;
+// }
+// 1. 定义基础颜色
+$primary: #ff5000;
+$success: #21ba45;
+$warning: #f2711c;
+$danger: #db2828;
+
+// 中性色（文本/背景通用）
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-tertiary: #999999;
+$bg-primary: #ffffff;
+$bg-secondary: #f5f5f5;
+$bg-tertiary: #e8e8e8;
+
+// 自动生成变体（lighten=加亮度，darken=减亮度）
+$primary-light-3: lighten($primary, 10%);
+$primary-dark-2: darken($primary, 10%);
+$border-light: lighten($primary, 30%); // 更浅的边框色
+
+// 2. 生成CSS变量（按功能分组）
+:root {
+    // 主色调体系
+    --el-color-primary: #{$primary};
+    --el-color-primary-light-3: #{$primary-light-3};
+    --el-color-primary-dark-2: #{$primary-dark-2};
+    --el-color-success: #{$success};
+    --el-color-warning: #{$warning};
+    --el-color-danger: #{$danger};
+    --el-color-error: #{$danger};
+
+    // 边框体系
+    --el-border-color: #{$primary};
+    --el-border-color-light: #{$border-light};
+    --el-border-color-hover: lighten($primary, 5%);
+    --el-border-width: 1px; // 统一边框宽度
+
+    // 圆角体系（控制所有组件圆角）
+    --el-border-radius-base: 12px; // 基础圆角（按钮、输入框等）
+    --el-border-radius-small: 10px; // 小圆角（标签等）
+    --el-border-radius-large: 16px; // 大圆角（卡片、弹窗等）
+
+    // 文本体系
+    --el-text-color-primary: #{$text-primary}; // 主要文本
+    --el-text-color-secondary: #{$text-secondary}; // 次要文本
+    --el-text-color-tertiary: #{$text-tertiary}; // 辅助文本
+    --el-text-color-placeholder: #{$text-tertiary}; // 输入框提示文字
+    --el-font-size-base: 14px; // 基础字体大小
+
+    // 背景体系
+    --el-bg-color: #{$bg-secondary}; // 页面背景
+    --el-bg-color-secondary: #{$bg-primary}; // 组件背景（卡片、面板等）
+    --el-bg-color-tertiary: #{$bg-tertiary}; // 次要背景（分割区域等）
+
+    // 阴影体系（控制组件阴影深度）
+    --el-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); // 基础阴影（卡片等）
+    --el-shadow-large: 0 4px 16px rgba(0, 0, 0, 0.12); // 大阴影（弹窗等）
+
+    // 按钮相关（高频使用）
+    --el-button-mini-height: 24px; // 超小按钮高度
+    --el-button-small-height: 32px; // 小按钮高度
+    --el-button-medium-height: 36px; // 中按钮高度
+    --el-button-large-height: 44px; // 大按钮高度
+}

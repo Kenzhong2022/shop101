@@ -1,0 +1,76 @@
+$--colors: (
+    "primary": (
+        "base": #ff5000,
+    ),
+    "success": (
+        "base": #21ba45,
+    ),
+    "warning": (
+        "base": #f2711c,
+    ),
+    "danger": (
+        "base": #db2828,
+    ),
+    "error": (
+        "base": #db2828,
+    ),
+    "info": (
+        "base": #42b8dd,
+    ),
+);
+:root {
+    --el-border-color: #ff5000;
+    --el-color-primary: #ff5000;
+    /* 可选：同步修改 hover 状态的边框色 */
+    --el-border-color-hover: #ff9000;
+    --el-border-color-focus: #ff5000;
+    --el-color-primary-light-3: #ff8040;
+    --el-color-primary-light-5: #ffd6b3;
+    --el-color-primary-light-9: #fff2e6;
+    --el-color-primary-dark-2: #cc4000;
+    --el-color-primary-dark-3: #993300;
+    --el-color-primary-dark-4: #662600;
+    --el-color-primary-dark-5: #331a00;
+    --el-color-primary-dark-6: #261400;
+    --el-color-primary-dark-7: #1a0d00;
+    --el-color-primary-dark-8: #0d0700;
+    --el-color-primary-dark-9: #000000;
+    --el-color-primary-dark-10: #000000;
+}
+// 你应该在scss中使用这些变量，因为我们通过sass计算它们
+// 注释下面的行以使用默认颜色
+// @forward "element-plus/theme-chalk/src/common/var.scss" with (
+//     // 不要使用相同的名称，否则会覆盖
+//     $colors: $--colors
+// );
+
+// 如果你想导入所有样式
+// @use "element-plus/theme-chalk/src/index.scss" as *;
+// 你可以注释掉它来隐藏调试信息
+// @debug $--colors;
+
+// 导入暗色主题
+// @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
+
+// ==================== 组件样式覆盖 ====================
+// 在这里添加 Element Plus 组件的样式覆盖
+// 包括圆角、边距、字体等细节调整
+
+/* 输入框圆角统一设置 */
+.el-input__wrapper {
+    border-radius: 8px !important;
+}
+
+/* 不同尺寸输入框的圆角 */
+.el-input--large .el-input__wrapper {
+    border-radius: 10px !important;
+}
+
+.el-input--small .el-input__wrapper {
+    border-radius: 6px !important;
+}
+
+/* 禁用状态保持一致 */
+.el-input.is-disabled .el-input__wrapper {
+    border-radius: 8px !important;
+}

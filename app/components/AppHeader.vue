@@ -1,0 +1,77 @@
+<template>
+  <!-- 头部 -->
+  <header class="bg-#ffff w-[1600px] mx-auto h-35px flex-row">
+    <!-- 导航栏容器 -->
+    <nav class="flex gap-8 justify-end flex-items-center flex-row">
+      <!-- 导航链接 -->
+      <NuxtLink
+        v-for="item in navList"
+        :key="item.name"
+        :to="item.path"
+        @click="handleNavClick(item)"
+        class="no-underline"
+      >
+        <span
+          class="text-[#333] transition-colors duration-300 flex items-center gap-2px"
+        >
+          <!-- 根据导航项名称使用对应的阿里图标 -->
+          <i
+            :class="['iconfont', item.icon, 'text-20px', 'color-main']"
+            :style="{
+              color: item.icon === 'icon-cart-empty' ? '#ff5018' : '#333',
+            }"
+          ></i>
+          <span class="hover:text-[#ff5018]">{{ item.name }}</span>
+          <el-dropdown>
+            <span class="el-dropdown-link"> </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>Action 1</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </span>
+      </NuxtLink>
+    </nav>
+  </header>
+  <!-- 搜索框 -->
+</template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+// 传递字符串给父组件
+const emit = defineEmits(["sendRoute"]);
+const sendRoute = (msg) => {
+  emit("sendRoute", msg);
+};
+
+// 默认导航配置
+const navList = [
+  { name: "首页", path: "/", icon: "icon-home" },
+  { name: "用户中心", path: "/user/myUser", icon: "icon-yonghu" },
+  { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
+  { name: "分类", path: "/category", icon: "icon-category" },
+  { name: "帮助中心", path: "/category", icon: "icon-remind-fill" },
+];
+
+// 导航点击处理
+const handleNavClick = (navItem) => {
+  // console.log("导航项点击:", navItem);
+  // 发送路由信息给父组件
+  sendRoute(navItem);
+};
+
+// 路由实例
+const router = useRouter();
+
+// 组件挂载时初始化
+onMounted(() => {
+  // 监听路由变化
+  router.afterEach((to) => {
+    console.log("AppHeader:当前路由:", to.path);
+  });
+});
+</script>
+
+<style scoped></style>

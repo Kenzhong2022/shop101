@@ -1,0 +1,20 @@
+/* 书写全局的css 原子化样式，每个样式只做一个任务，只改变一件事情和名字对应 */
+.text-center {
+    text-align: center;
+}
+
+.text-green {
+    color: green;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.bgc-primary {
+    background-color: #ff5000;
+}
+
+.color-primary {
+    color: #ff5000;
+}

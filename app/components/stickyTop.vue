@@ -1,11 +1,12 @@
 <template>
   <div
-    class="sticky-top-container h-72px pt-16px pb-8px flex justify-center"
+    class="sticky-top-container h-72px py-16px flex justify-around items-center"
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-    <img class="w-100px h-100px object-cover" src="/public/KKShopLogo.png" />
+    <img class="w-100px h-100px" src="/KKShopLogo.svg" />
     <kk-search></kk-search>
+    <img class="w-100px h-100px" src="/KKShopLogo.svg" />
   </div>
 </template>
 
@@ -21,7 +22,7 @@ const offsetTop = ref(0);
 const handleScroll = () => {
   if (containerRef.value) {
     const scrollPosition = window.scrollY;
-    isSticky.value = scrollPosition >= offsetTop.value;
+    isSticky.value = scrollPosition >= offsetTop.value; // 当滚动位置超过或等于偏移量时吸顶
   }
 };
 
@@ -65,7 +66,7 @@ onUnmounted(() => {
 
 @keyframes slideDown {
   from {
-    transform: translateY(-100%);
+    transform: translateY(-100%); // 从顶部above隐藏
   }
   to {
     transform: translateY(0);

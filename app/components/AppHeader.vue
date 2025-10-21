@@ -21,7 +21,7 @@
               color: item.icon === 'icon-cart-empty' ? '#ff5018' : '#333',
             }"
           ></i>
-          <span class="hover:text-[#ff5018]">{{ item.name }}</span>
+          <span class="hover:text-primary">{{ item.name }}</span>
           <el-dropdown>
             <span class="el-dropdown-link"> </span>
             <template #dropdown>
@@ -53,6 +53,7 @@ const navList = [
   { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
   { name: "分类", path: "/category", icon: "icon-category" },
   { name: "帮助中心", path: "/category", icon: "icon-remind-fill" },
+  { name: "登录/注册", path: "/login/myLogin", icon: "" },
 ];
 
 // 导航点击处理

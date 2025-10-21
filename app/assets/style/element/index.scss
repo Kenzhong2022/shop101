@@ -1,41 +1,50 @@
 $--colors: (
-    "primary": (
-        "base": #ff5000,
-    ),
-    "success": (
-        "base": #21ba45,
-    ),
-    "warning": (
-        "base": #f2711c,
-    ),
-    "danger": (
-        "base": #db2828,
-    ),
-    "error": (
-        "base": #db2828,
-    ),
-    "info": (
-        "base": #42b8dd,
-    ),
+  "primary": (
+    "base": #ff5000,
+  ),
+  "success": (
+    "base": #21ba45,
+  ),
+  "warning": (
+    "base": #f2711c,
+  ),
+  "danger": (
+    "base": #db2828,
+  ),
+  "error": (
+    "base": #db2828,
+  ),
+  "info": (
+    "base": #42b8dd,
+  ),
 );
 :root {
-    --el-border-color: #ff5000;
-    --el-color-primary: #ff5000;
-    /* 可选：同步修改 hover 状态的边框色 */
-    --el-border-color-hover: #ff9000;
-    --el-border-color-focus: #ff5000;
-    --el-color-primary-light-3: #ff8040;
-    --el-color-primary-light-5: #ffd6b3;
-    --el-color-primary-light-9: #fff2e6;
-    --el-color-primary-dark-2: #cc4000;
-    --el-color-primary-dark-3: #993300;
-    --el-color-primary-dark-4: #662600;
-    --el-color-primary-dark-5: #331a00;
-    --el-color-primary-dark-6: #261400;
-    --el-color-primary-dark-7: #1a0d00;
-    --el-color-primary-dark-8: #0d0700;
-    --el-color-primary-dark-9: #000000;
-    --el-color-primary-dark-10: #000000;
+  // 主色调 - 使用#ff5000作为主题色
+  --el-color-primary: #ff5000;
+  --el-border-color: #ff5000;
+  
+  // 主题色相关变体
+  --el-color-primary-light-3: #ff8040;
+  --el-color-primary-light-5: #ffd6b3;
+  --el-color-primary-light-9: #fff2e6;
+  --el-color-primary-dark-2: #cc4000;
+  --el-color-primary-dark-3: #993300;
+  --el-color-primary-dark-4: #662600;
+  --el-color-primary-dark-5: #331a00;
+  --el-color-primary-dark-6: #261400;
+  --el-color-primary-dark-7: #1a0d00;
+  --el-color-primary-dark-8: #0d0700;
+  --el-color-primary-dark-9: #000000;
+  --el-color-primary-dark-10: #000000;
+  
+  // 边框色相关
+  --el-border-color-hover: #ff9000;
+  --el-border-color-focus: #ff5000;
+  
+  // 按钮禁用状态（使用主题色的浅色版本）
+  --el-button-disabled-bg-color: #ffe6d6;  // 禁用背景色 - 很浅的橙色
+  --el-button-disabled-border-color: #ffc299;  // 禁用边框色 - 浅橙色
+  --el-button-disabled-text-color: #ffaa80;  // 禁用文字颜色 - 中等浅橙色
 }
 // 你应该在scss中使用这些变量，因为我们通过sass计算它们
 // 注释下面的行以使用默认颜色
@@ -58,19 +67,19 @@ $--colors: (
 
 /* 输入框圆角统一设置 */
 .el-input__wrapper {
-    border-radius: 8px !important;
+  border-radius: 8px !important;
 }
 
 /* 不同尺寸输入框的圆角 */
 .el-input--large .el-input__wrapper {
-    border-radius: 10px !important;
+  border-radius: 10px !important;
 }
 
 .el-input--small .el-input__wrapper {
-    border-radius: 6px !important;
+  border-radius: 6px !important;
 }
 
 /* 禁用状态保持一致 */
 .el-input.is-disabled .el-input__wrapper {
-    border-radius: 8px !important;
+  border-radius: 8px !important;
 }

@@ -51,4 +51,5 @@ export default defineNuxtConfig({
     dirs: ["~/components"], // 对应 app/components
     global: true,
   },
+  composables: ["~/composables/tools"],
 });

@@ -154,6 +154,7 @@ definePageMeta({
 });
 
 import { useUser } from "~/composables/useUser";
+import formatTime from "~/composables/tools";
 
 const expTime = ref(0);
 
@@ -172,6 +173,15 @@ onActivated(() => {
   expTime.value = useUser.value.expireTime;
   console.log("token:", useUser.value.token);
   console.log("过期时间:", useUser.value.expireTime);
+  let t = new Date().getTime();
+  console.log(
+    "格式化时间:",
+    formatTime(t, {
+      format: "dateTime",
+      dateSeparator: "-",
+      timeSeparator: ":",
+    })
+  );
 });
 
 // 处理token过期
@@ -179,7 +189,7 @@ function handleTokenExpire() {
   console.log("token已过期");
   // 清除过期的token
   // localStorage.removeItem("token");
-  // 跳转到登录页
+  // 跳转到登录页面
   navigateTo("/login/myLogin");
 }
 </script>

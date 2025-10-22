@@ -1,85 +1,15 @@
-$--colors: (
-  "primary": (
-    "base": #ff5000,
-  ),
-  "success": (
-    "base": #21ba45,
-  ),
-  "warning": (
-    "base": #f2711c,
-  ),
-  "danger": (
-    "base": #db2828,
-  ),
-  "error": (
-    "base": #db2828,
-  ),
-  "info": (
-    "base": #42b8dd,
-  ),
-);
-:root {
-  // 主色调 - 使用#ff5000作为主题色
-  --el-color-primary: #ff5000;
-  --el-border-color: #ff5000;
-  
-  // 主题色相关变体
-  --el-color-primary-light-3: #ff8040;
-  --el-color-primary-light-5: #ffd6b3;
-  --el-color-primary-light-9: #fff2e6;
-  --el-color-primary-dark-2: #cc4000;
-  --el-color-primary-dark-3: #993300;
-  --el-color-primary-dark-4: #662600;
-  --el-color-primary-dark-5: #331a00;
-  --el-color-primary-dark-6: #261400;
-  --el-color-primary-dark-7: #1a0d00;
-  --el-color-primary-dark-8: #0d0700;
-  --el-color-primary-dark-9: #000000;
-  --el-color-primary-dark-10: #000000;
-  
-  // 边框色相关
-  --el-border-color-hover: #ff9000;
-  --el-border-color-focus: #ff5000;
-  
-  // 按钮禁用状态（使用主题色的浅色版本）
-  --el-button-disabled-bg-color: #ffe6d6;  // 禁用背景色 - 很浅的橙色
-  --el-button-disabled-border-color: #ffc299;  // 禁用边框色 - 浅橙色
-  --el-button-disabled-text-color: #ffaa80;  // 禁用文字颜色 - 中等浅橙色
-}
-// 你应该在scss中使用这些变量，因为我们通过sass计算它们
-// 注释下面的行以使用默认颜色
-// @forward "element-plus/theme-chalk/src/common/var.scss" with (
-//     // 不要使用相同的名称，否则会覆盖
-//     $colors: $--colors
-// );
-
-// 如果你想导入所有样式
-// @use "element-plus/theme-chalk/src/index.scss" as *;
-// 你可以注释掉它来隐藏调试信息
-// @debug $--colors;
-
-// 导入暗色主题
-// @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
-
-// ==================== 组件样式覆盖 ====================
-// 在这里添加 Element Plus 组件的样式覆盖
-// 包括圆角、边距、字体等细节调整
-
-/* 输入框圆角统一设置 */
-.el-input__wrapper {
-  border-radius: 8px !important;
+// 重写组件核心样式，关联到 CSS 变量
+.el-button--primary {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 }
 
-/* 不同尺寸输入框的圆角 */
-.el-input--large .el-input__wrapper {
-  border-radius: 10px !important;
+.el-button--primary:hover {
+  // 这里可以用 CSS 变量 + 计算（如果需要动态衍生色）
+  background-color: color-mix(in srgb, var(--el-color-primary), white 10%);
 }
 
-.el-input--small .el-input__wrapper {
-  border-radius: 6px !important;
-}
-
-/* 禁用状态保持一致 */
-.el-input.is-disabled .el-input__wrapper {
-  border-radius: 8px !important;
+// 其他组件（输入框、复选框等）类似，按需覆盖核心颜色样式
+.el-input__wrapper.is-focus {
+  border-color: var(--el-color-primary);
 }

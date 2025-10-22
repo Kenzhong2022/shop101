@@ -1,99 +1,28 @@
-// $--colors: (
-//     "primary": (
-//         "base": #ff5000,
-//     ),
-//     "success": (
-//         "base": #21ba45,
-//     ),
-//     "warning": (
-//         "base": #f2711c,
-//     ),
-//     "danger": (
-//         "base": #db2828,
-//     ),
-//     "error": (
-//         "base": #db2828,
-//     ),
-//     "info": (
-//         "base": #42b8dd,
-//     ),
-// );
-// :root {
-//     --el-border-color: #ff5000;
-//     --el-color-primary: #ff5000;
-//     /* 可选：同步修改 hover 状态的边框色 */
-//     --el-border-color-hover: #ff9000;
-//     --el-border-color-focus: #ff5000;
-//     --el-color-primary-light-3: #ff8040;
-//     --el-color-primary-light-5: #ffd6b3;
-//     --el-color-primary-light-9: #fff2e6;
-//     --el-color-primary-dark-2: #cc4000;
-//     --el-color-primary-dark-3: #993300;
-//     --el-color-primary-dark-4: #662600;
-//     --el-color-primary-dark-5: #331a00;
-//     --el-color-primary-dark-6: #261400;
-//     --el-color-primary-dark-7: #1a0d00;
-//     --el-color-primary-dark-8: #0d0700;
-//     --el-color-primary-dark-9: #000000;
-//     --el-color-primary-dark-10: #000000;
-// }
-// // 你应该在scss中使用这些变量，因为我们通过sass计算它们
-// // 注释下面的行以使用默认颜色
-// // @forward "element-plus/theme-chalk/src/common/var.scss" with (
-// //     // 不要使用相同的名称，否则会覆盖
-// //     $colors: $--colors
-// // );
-
-// // 如果你想导入所有样式
-// // @use "element-plus/theme-chalk/src/index.scss" as *;
-// // 你可以注释掉它来隐藏调试信息
-// // @debug $--colors;
-
-// // 导入暗色主题
-// // @use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
-// 引入Element Plus基础变量
-// 无需引入Element Plus的内部文件，避免路径错误
-
-// 1. 定义基础颜色
-// $primary: #ff5000;
-// $success: #21ba45;
-// $warning: #f2711c;
-// $danger: #db2828;
-
-// // 2. 直接生成Element Plus需要的CSS变量（最直接的覆盖方式）
-// :root {
-//     // 主色调
-//     --el-color-primary: #{$primary};
-//     --el-color-primary-light-3: #ff8040;
-//     --el-color-primary-dark-2: #cc4000;
-
-//     // 其他颜色
-//     --el-color-success: #{$success};
-//     --el-color-warning: #{$warning};
-//     --el-color-danger: #{$danger};
-//     --el-color-error: #{$danger}; // error和danger保持一致
-
-//     // 边框色
-//     --el-border-color: #{$primary};
-//     --el-border-color-hover: #ff9000;
-// }
+// 定义基础颜色（SCSS 编译时使用）
+$primary-base: #ff5000; // 默认主题色
+$success-base: #21ba45;
+$warning-base: #f2711c;
+$danger-base: #db2828;
+// 覆盖 Element Plus 主题变量（使用 SCSS 变量，确保编译通过）
 @forward "element-plus/theme-chalk/src/common/var.scss" with (
   $colors: (
-    "primary": (
-      "base": #ff5000,
-    ),
-    "success": (
-      "base": #21ba45,
-    ),
-    "warning": (
-      "base": #f2711c,
-    ),
-    "danger": (
-      "base": #db2828,
-    ),
+    // "primary": (
+    //   "base": $primary-base,
+    //   // 用 SCSS 变量，而非 var()
+    // ),
+    "success": ("base": $success-base),
+    "warning": ("base": $warning-base),
+    "danger": ("base": $danger-base),
   )
 );
 
+// 全局 CSS 变量（运行时可被 JS 修改）
+// :root {
+//   --el-color-primary: #{$primary-base}; // 用 SCSS 插值将 SCSS 变量转为 CSS 变量默认值
+//   --el-color-success: #{$success-base};
+//   --el-color-warning: #{$warning-base};
+//   --el-color-danger: #{$danger-base};
+// }
 // 2. 生成CSS变量（按功能分组）
 :root {
   // 边框体系
@@ -106,13 +35,4 @@
 
   // 文本体系
   --el-font-size-base: 14px; // 基础字体大小
-
-  // 背景体系
-  --el-bg-color: #f5f5f5; // 页面背景
-  --el-bg-color-secondary: #ffffff; // 组件背景（卡片、面板等）
-  --el-bg-color-tertiary: #e8e8e8; // 次要背景（分割区域等）
-
-  // 阴影体系（控制组件阴影深度）
-
-  // 按钮相关（高频使用）
 }

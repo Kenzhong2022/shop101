@@ -1,5 +1,6 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
+  <kk-color-picker @change="(val:string) => (color = val)" />
   <!-- 电梯 banner区域 -->
   <div class="flex flex-col gap-8" :style="{ flex: 1 }">
     <!-- 首屏内容 -->
@@ -34,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-
+const color = ref("");
 // 页面元数据
 definePageMeta({
   title: "首页",

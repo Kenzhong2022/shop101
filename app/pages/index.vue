@@ -1,6 +1,7 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
   <kk-color-picker @change="(val:string) => (color = val)" />
+  <kk-image src="https://i.ibb.co/MD9WVmqZ/1.jpg" />
   <!-- 电梯 banner区域 -->
   <div class="flex flex-col gap-8" :style="{ flex: 1 }">
     <!-- 首屏内容 -->

@@ -21,7 +21,7 @@
 
     <!-- 亮度滑杆 -->
     <div class="slider">
-      <label>亮度：</label>
+      <label>亮度：{{ lightness }}%</label>
       <input
         v-model.number="lightness"
         type="range"
@@ -31,6 +31,10 @@
         @input="onLightnessChange"
         @change="onLightnessChange"
         @wheel="onLightnessWheel"
+        @keydown.up.prevent="adjustLightness(1)"
+        @keydown.down.prevent="adjustLightness(-1)"
+        @keydown.left.prevent="adjustLightness(-1)"
+        @keydown.right.prevent="adjustLightness(1)"
       />
     </div>
 
@@ -133,13 +137,19 @@ export default {
     // 亮度滑杆值变化处理
     onLightnessChange() {
       this.updatePreview();
-      this.$emit('change', this.currentHsl);
+      this.$emit("change", this.currentHsl);
     },
     // 鼠标滚轮调整亮度
     onLightnessWheel(e) {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -1 : 1; // 向下滚减少，向上滚增加
       const newValue = Math.max(0, Math.min(100, this.lightness + delta * 5));
+      this.lightness = newValue;
+      this.onLightnessChange();
+    },
+    // 键盘调整亮度（支持方向键）
+    adjustLightness(delta) {
+      const newValue = Math.max(0, Math.min(100, this.lightness + delta * 1));
       this.lightness = newValue;
       this.onLightnessChange();
     },

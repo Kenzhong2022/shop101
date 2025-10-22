@@ -175,7 +175,7 @@ onMounted(() => {
 
 :deep(.el-image-viewer__mask) {
   background: linear-gradient(
-    90deg,
+    0deg,
     rgb(var(--mainColors-0)) 0%,
     rgb(var(--mainColors-1)) 50%,
     rgb(var(--mainColors-2)) 100%

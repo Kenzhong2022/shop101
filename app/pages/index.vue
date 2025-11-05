@@ -11,14 +11,17 @@
       :interval="150000"
       type="card"
       width="800px"
-      :style="{ border: '4px solid var(--el-color-primary)' }"
-      class="rd-20px"
+      :style="{
+        border: '4px solid var(--el-color-primary)',
+        aspectRatio: '7/2',
+      }"
+      class="rd-20px w-100%"
     >
       <el-carousel-item v-for="item in banners" :key="item.id">
         <img
           :src="item.image"
           :alt="item.title"
-          style="width: 100%; height: 100%; object-fit: cover"
+          style="width: 100%; height: 100%; object-fit: fit"
         />
       </el-carousel-item>
     </el-carousel>
@@ -154,6 +157,10 @@ function handleColorChange(newHsl: string) {
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
+}
+
+:deep(.el-carousel__container) {
+  height: 100% !important;
 }
 
 /* 轮播图图片样式和悬停动画 */

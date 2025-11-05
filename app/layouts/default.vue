@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full setBgc">
+  <div class="w-95% mx-auto overflow-hidden setBgc b-solid">
     <div
-      class="flex flex-col min-h-screen max-w-[1600px] mx-auto bg-#fff shadow-md relative"
+      class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
     >
       <!-- 页面跳转进度条组件 -->
 
@@ -9,20 +9,22 @@
       <!-- 传递信息给子组件 -->
       <AppHeader
         @sendRoute="handleChangeByRoute"
-        class="bg-white w-[1200px] mx-auto shadow-sm h-35px items-center flex-justify-end"
+        class="bg-white max-w-[1200px] mx-auto shadow-sm h-35px items-center flex-justify-end"
         :msg="msg"
       />
-      <!-- 吸顶 -->
-      <StickyTop />
+      <!-- 吸顶搜索 -->
+      <StickyTop class="w-100% max-w-[1600px]" />
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
-      <div class="flex p-10 gap-10 mx-auto w-[1200px]">
+      <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
+        <!-- 侧边栏：通过状态控制是否显示 -->
         <NuxtLayout
           v-if="showMenu"
           name="menu"
-          class="bg-red w-[200px] min-w-[200px]"
+          class="bg-red max-w-[200px] min-w-[200px]"
         ></NuxtLayout>
+
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 p-6 bg-white rounded-lg shadow-sm">
+        <div class="flex-1 p-6 bg-white rounded-lg shadow-sm w-100%">
           <NuxtPage
             :keepalive="{
               max: 10, // 最多缓存 10 个页面实例

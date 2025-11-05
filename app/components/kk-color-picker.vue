@@ -1,7 +1,8 @@
 <template>
   <!-- 颜色选择器组件 -->
   <div
-    class="flex flex-col items-start gap-24px p-24px border border-solid border-#fff rounded-8px w-360px bg-#fff fixed top-12px right-12px z-999 shadow-lg"
+    v-if="0"
+    class="flex flex-col items-start gap-24px p-24px border border-solid border-#fff rounded-8px max-w-360px bg-#fff fixed top-12px right-12px z-999 shadow-lg"
   >
     <!-- 只剩最大色环 -->
     <div

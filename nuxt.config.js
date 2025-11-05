@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     head: {
       script: [
         {
+          // 引入 ColorThief 库
           src: "https://cdn.jsdelivr.net/npm/colorthief@2.3.2/dist/color-thief.umd.js",
           defer: true, // 异步加载，不阻塞渲染
         },

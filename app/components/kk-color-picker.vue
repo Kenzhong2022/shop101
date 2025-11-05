@@ -1,47 +1,64 @@
 <template>
-  <div class="picker">
+  <!-- 颜色选择器组件 -->
+  <div
+    class="flex flex-col items-start gap-24px p-24px border border-solid border-#fff rounded-8px w-360px bg-#fff fixed top-12px right-12px z-999 shadow-lg"
+  >
     <!-- 只剩最大色环 -->
     <div
-      class="color-circle"
+      class="relative w-360px h-360px rounded-full cursor-crosshair overflow-hidden select-none"
       @click="onPick"
       @mousemove="onMove"
-      @mouseleave="showTip = false"
+      @mouseleave="onMouseLeave"
     >
+      <!-- 最大色环 -->
       <div class="ring" />
 
       <!-- 交互指针 -->
       <div
         v-if="showTip"
-        class="tip"
+        class="tip absolute w-24px h-24px"
         :style="{ left: tipX + 'px', top: tipY + 'px' }"
       >
-        <div class="tip-ring" :style="{ background: preview }" />
+        <div
+          class="tip-ring w-24px h-24px rounded-full"
+          :style="{ background: displayColor }"
+        />
+        <div>点击即可修改主题色</div>
       </div>
     </div>
 
-    <!-- 亮度滑杆 -->
-    <div class="slider">
-      <label>亮度：{{ lightness }}%</label>
-      <input
-        v-model.number="lightness"
-        type="range"
-        min="0"
-        max="100"
-        step="1"
+    <!-- 亮度滑杆 - Element Plus 滑块组件 -->
+    <div class="slider mt-16px w-360px flex items-center gap-8px">
+      <el-slider
+        v-model="lightness"
+        :min="0"
+        :max="90"
+        :step="1"
+        :show-tooltip="true"
+        :format-tooltip="(val) => `${val}%`"
         @input="onLightnessChange"
         @change="onLightnessChange"
-        @wheel="onLightnessWheel"
-        @keydown.up.prevent="adjustLightness(1)"
-        @keydown.down.prevent="adjustLightness(-1)"
-        @keydown.left.prevent="adjustLightness(-1)"
-        @keydown.right.prevent="adjustLightness(1)"
       />
     </div>
+    <div class="text-black">亮度：{{ lightness }}%</div>
 
-    <!-- 实时色值 -->
-    <div class="info">
-      <div class="swatch" :style="{ background: currentHsl }" />
-      <span>{{ currentHsl }}</span>
+    <!-- 当前主题色 -->
+    <div class="controls flex flex-row items-center gap-12px">
+      <div class="info flex items-center gap-8px">
+        <div
+          class="swatch w-50px h-50px rounded-4px border border-gray-300"
+          :style="{ background: displayColor }"
+          @click="selectCurrentColor"
+          title="点击选中当前颜色"
+        />
+        <span class="color-label text-#000">当前选中主题色</span>
+      </div>
+      <button
+        class="apply-btn px-12px py-6px text-white rounded-4px cursor-pointer text-14px hover:transform hover:translate-y--1px active:transform active:translate-y-0 hover:bg-#66b1ff"
+        @click="applyColor"
+      >
+        应用
+      </button>
     </div>
   </div>
 </template>
@@ -68,6 +85,11 @@ export default {
       showTip: false,
       // 当前颜色预览
       preview: "",
+      // 临时颜色（鼠标移动时预览）
+      tempHue: 0,
+      tempSaturation: 100,
+      // 是否正在预览临时颜色
+      isPreviewing: false,
     };
   },
   computed: {
@@ -75,17 +97,31 @@ export default {
     currentHsl() {
       return `hsl(${this.hue} ${this.saturation}% ${this.lightness}%)`;
     },
+    // 临时预览颜色字符串
+    tempHsl() {
+      return `hsl(${this.tempHue} ${this.tempSaturation}% ${this.lightness}%)`;
+    },
+    // 显示颜色（预览时使用临时颜色，否则使用当前颜色）
+    displayColor() {
+      return this.isPreviewing ? this.tempHsl : this.currentHsl;
+    },
   },
   methods: {
     // 点击色环选择颜色
     onPick(e) {
+      // 退出预览模式
+      this.isPreviewing = false;
+      // 更新实际颜色值
       this.updateColor(e);
-      this.$emit("change", this.currentHsl);
+      console.log("当前颜色:", this.currentHsl);
+      // 不再立即提交事件，等待用户点击应用按钮
     },
     // 鼠标移动更新指针
     onMove(e) {
       this.showTip = true;
       this.updateColor(e);
+      // 进入预览模式
+      this.isPreviewing = true;
     },
     // 根据鼠标位置计算颜色
     updateColor(e) {
@@ -111,17 +147,22 @@ export default {
       angle = (angle + 360) % 360;
       // 步骤2：将x轴0°调整为顶部0°（加90°）
       angle = (angle + 90) % 360;
-      console.log("angle:", angle);
+      console.log("当前角度:", angle);
 
       // 计算饱和度（距离内环越远饱和度越高）
       const normalizedDistance =
         (distance - this.innerR) / (this.radius - this.innerR);
       const saturation = Math.round(normalizedDistance * 100);
 
-      // 更新颜色值
-      this.hue = Math.round(angle);
-      // 确保饱和度在0-100%范围内
-      this.saturation = Math.max(0, Math.min(100, saturation));
+      // 如果是预览模式，更新临时颜色值
+      if (this.isPreviewing) {
+        this.tempHue = Math.round(angle);
+        this.tempSaturation = Math.max(0, Math.min(100, saturation));
+      } else {
+        // 否则更新实际颜色值
+        this.hue = Math.round(angle);
+        this.saturation = Math.max(0, Math.min(100, saturation));
+      }
 
       // 更新指针位置
       this.tipX = e.clientX - rect.left;
@@ -132,26 +173,33 @@ export default {
     },
     // 更新预览颜色
     updatePreview() {
-      this.preview = this.currentHsl;
+      this.preview = this.isPreviewing ? this.tempHsl : this.currentHsl;
+    },
+    // 鼠标离开色环
+    onMouseLeave() {
+      this.showTip = false;
+      // 退出预览模式，回到实际颜色
+      this.isPreviewing = false;
     },
     // 亮度滑杆值变化处理
     onLightnessChange() {
       this.updatePreview();
+      // 亮度变化时不再立即提交事件，等待用户点击应用按钮
+    },
+    // 应用当前颜色
+    applyColor() {
       this.$emit("change", this.currentHsl);
-    },
-    // 鼠标滚轮调整亮度
-    onLightnessWheel(e) {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -1 : 1; // 向下滚减少，向上滚增加
-      const newValue = Math.max(0, Math.min(100, this.lightness + delta * 5));
-      this.lightness = newValue;
-      this.onLightnessChange();
-    },
-    // 键盘调整亮度（支持方向键）
-    adjustLightness(delta) {
-      const newValue = Math.max(0, Math.min(100, this.lightness + delta * 1));
-      this.lightness = newValue;
-      this.onLightnessChange();
+      console.log("应用颜色:", this.currentHsl);
+      // 添加应用成功的视觉反馈
+      const btn = this.$el.querySelector(".apply-btn");
+      if (btn) {
+        btn.style.background = "#67c23a";
+        btn.textContent = "已应用";
+        setTimeout(() => {
+          btn.style.background = "#409eff";
+          btn.textContent = "应用";
+        }, 1000);
+      }
     },
   },
 };
@@ -168,19 +216,9 @@ export default {
 
 /* 色环容器 */
 .color-circle {
-  /* 相对定位，作为子元素的定位参考 */
-  position: relative;
-  /* 容器尺寸：360x360像素，匹配色环大小 */
-  width: 360px;
-  height: 360px;
-  /* 圆形边框，确保容器本身是圆形 */
-  border-radius: 50%;
-  /* 鼠标样式：十字光标，表示可点击选择 */
-  cursor: crosshair;
-  /* 隐藏超出容器范围的内容，确保遮罩效果正确 */
-  overflow: hidden;
-  /* 禁用文本选择，避免拖拽时选中文字 */
-  user-select: none;
+  /* 色环特有的遮罩效果 */
+  mask: radial-gradient(circle at center, transparent 90px, black 91px);
+  -webkit-mask: radial-gradient(circle at center, transparent 90px, black 91px);
 }
 
 /* 唯一色环 */
@@ -211,11 +249,6 @@ export default {
 
 /* 交互指针容器 */
 .tip {
-  /* 绝对定位，跟随鼠标移动 */
-  position: absolute;
-  /* 指针尺寸：24x24像素 */
-  width: 24px;
-  height: 24px;
   /* 确保指针在最上层显示 */
   z-index: 100;
   /* 禁用鼠标事件，避免干扰色环点击 */
@@ -225,11 +258,6 @@ export default {
 }
 /* 指针圆环 */
 .tip-ring {
-  /* 圆环尺寸：24x24像素 */
-  width: 24px;
-  height: 24px;
-  /* 圆形外观 */
-  border-radius: 50%;
   /* 白色外边框：3px宽度 */
   border: 3px solid #fff;
   /* 黑色外发光和内发光：增强可视性 */
@@ -240,37 +268,55 @@ export default {
 
 /* 亮度滑杆容器 */
 .slider {
-  /* 顶部间距：12像素 */
+  /* Element Plus滑块需要的特定样式 */
   margin-top: 12px;
-  /* 弹性布局：水平排列 */
-  display: flex;
-  /* 垂直居中对齐 */
-  align-items: center;
-  /* 子元素间距：8像素 */
-  gap: 8px;
-}
-.slider input {
-  /* 输入框占满剩余空间 */
-  flex: 1;
+  width: 200px;
 }
 
-/* 颜色信息显示区域 */
-.info {
-  /* 弹性布局：水平排列 */
-  display: flex;
-  /* 垂直居中对齐 */
-  align-items: center;
-  /* 子元素间距：8像素 */
-  gap: 8px;
+/* Element Plus 滑块自定义样式 */
+.slider :deep(.el-slider) {
+  /* 滑块占满剩余空间 */
+  flex: 1;
+  /* 自定义滑块颜色，与整体色调匹配 */
+  --el-slider-main-bg-color: #409eff;
+  --el-slider-runway-bg-color: #e4e7ed;
+  --el-slider-stop-bg-color: #fff;
+  --el-slider-disabled-color: #c0c4cc;
+  --el-slider-border-radius: 3px;
+  --el-slider-height: 6px;
+  --el-slider-button-size: 16px;
+  --el-slider-button-wrapper-size: 36px;
+  --el-slider-button-wrapper-offset: -15px;
+}
+
+/* 滑块标签样式 */
+.slider label {
+  /* 最小宽度，确保百分比显示完整 */
+  min-width: 60px;
+  /* 字体大小 */
+  font-size: 14px;
+  /* 字体颜色 */
+  color: #fff;
+  /* 字体粗细 */
+  font-weight: 500;
+}
+
+/* 亮度滑杆容器样式 */
+.slider {
+  /* Element Plus滑块需要的特定样式 */
+}
+/* 应用按钮 */
+.apply-btn {
+  /* 按钮需要的特定样式 */
+  background: #409eff;
+  border: none;
+  transition: background-color 0.3s ease;
 }
 /* 颜色预览方块 */
 .swatch {
-  /* 方块尺寸：32x32像素 */
-  width: 32px;
-  height: 32px;
-  /* 小圆角：4像素 */
-  border-radius: 4px;
   /* 深灰色边框：1像素 */
   border: 1px solid #444;
+  /* 背景颜色：当前选择的颜色 */
+  background-color: var(--theme-color);
 }
 </style>

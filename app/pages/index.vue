@@ -1,7 +1,9 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
-  <kk-color-picker @change="(val:string) => (color = val)" />
-  <kk-image src="https://imgtolinkx.com/i/nQHSBRUz" />
+  <kk-color-picker @change="handleColorChange" />
+  <kk-image :src="banner6" />
+  <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
+  <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->
   <div class="flex flex-col gap-8" :style="{ flex: 1 }">
     <!-- 首屏内容 -->
@@ -20,21 +22,15 @@
         />
       </el-carousel-item>
     </el-carousel>
-    <img
-      class="w-100px h-100px object-cover"
-      src="/assets/img/banners/banner1.png"
-      alt=""
-    />
-    <img
-      class="w-100px h-100px object-cover"
-      src="/assets/img/banners/banner2.png"
-      alt=""
-    />
+
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>
 
 <script setup lang="ts">
+// 引入全局 CSS 变量函数
+import { setThemeColor } from "@/plugins/global-css-vars.client";
+
 import { ref, onMounted } from "vue";
 const color = ref("");
 // 页面元数据
@@ -57,6 +53,9 @@ import banner1 from "@/assets/img/banners/banner1.png";
 import banner2 from "@/assets/img/banners/banner2.png";
 import banner3 from "@/assets/img/banners/banner3.png";
 import banner4 from "@/assets/img/banners/banner4.png";
+import banner5 from "@/assets/img/banners/写真杂志1.jpeg";
+import banner6 from "@/assets/img/banners/写真杂志2.jpeg";
+import { string } from "three/tsl";
 
 const banners: Banner[] = [
   {
@@ -80,6 +79,15 @@ const banners: Banner[] = [
     image: banner4,
   },
 ];
+
+// 处理颜色选择变化
+function handleColorChange(newHsl: string) {
+  color.value = newHsl;
+  console.log("即将转换主题色:", newHsl);
+  if (process.client) {
+    setThemeColor(newHsl);
+  }
+}
 </script>
 
 <style scoped>

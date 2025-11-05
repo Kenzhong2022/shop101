@@ -9,6 +9,17 @@ export default defineNuxtConfig({
   pages: true,
   srcDir: "app/", // 确保你的目录结构是 app/ 下包含 assets、components 等
 
+  app: {
+    head: {
+      script: [
+        {
+          src: "https://cdn.jsdelivr.net/npm/colorthief@2.3.2/dist/color-thief.umd.js",
+          defer: true, // 异步加载，不阻塞渲染
+        },
+      ],
+    },
+  },
+
   // 模块配置（核心：仅保留 @element-plus/nuxt 和 @unocss/nuxt）
   modules: ["@element-plus/nuxt", "@unocss/nuxt"],
 

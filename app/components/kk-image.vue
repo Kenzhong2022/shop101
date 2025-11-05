@@ -1,6 +1,7 @@
 <template>
   <div class="image-container">
     <el-image
+      :key="imageKey"
       :src="src || defaultSrc"
       :preview-src-list="[src || defaultSrc]"
       @load="onImageLoad"
@@ -71,7 +72,11 @@ const initColorThief = () => {
     document.head.appendChild(script);
   }
 };
-
+// if (process.client) {
+//   ["--mainColors-0", "--mainColors-1", "--mainColors-2"].forEach((k) =>
+//     document.documentElement.style.removeProperty(k)
+//   );
+// }
 // 提取图片主色
 const extractMainColors = async (imageSrc) => {
   if (!colorThief || !props.extractColors) return;
@@ -88,6 +93,22 @@ const extractMainColors = async (imageSrc) => {
         // 提取3种主色
         const palette = colorThief.getPalette(img, 3);
         mainColors.value = palette;
+        // 打印提取到的主色
+        console.log("提取到的主色:", palette);
+        // 对主色进行排序，按颜色亮度从高到低
+        // 目的：让用户最先看到最明亮的颜色，提升视觉体验
+        palette.sort((a, b) => {
+          // 计算颜色亮度（RGB平均值法）
+          // a.reduce((acc, val) => acc + val, 0) / 3：将RGB三个通道的值相加后除以3，得到平均亮度
+          // 值越大表示颜色越亮（白色为255，黑色为0）
+          const brightnessA = a.reduce((acc, val) => acc + val, 0) / 3;
+          const brightnessB = b.reduce((acc, val) => acc + val, 0) / 3;
+
+          // 按亮度降序排列（最亮的颜色排在前面）
+          // 返回正值表示b排在a前面，负值表示a排在b前面
+          return brightnessB - brightnessA;
+        });
+
         // 动态设置自定义属性，用于背景渐变
         document.documentElement.style.setProperty(
           "--mainColors-0",
@@ -153,8 +174,9 @@ watch(
     }
   }
 );
-
+const imageKey = ref(Date.now());
 onMounted(() => {
+  imageKey.value = Date.now();
   initColorThief();
   if (props.src) {
     extractMainColors(props.src);

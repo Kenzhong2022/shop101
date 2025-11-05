@@ -1,6 +1,8 @@
 <template>
-  <div class="w-full bg-#f5f5f5">
-    <div class="flex flex-col min-h-screen max-w-[1600px] mx-auto bg-#fff">
+  <div class="w-full setBgc">
+    <div
+      class="flex flex-col min-h-screen max-w-[1600px] mx-auto bg-#fff shadow-md relative"
+    >
       <!-- 页面跳转进度条组件 -->
 
       <!-- 这是头部通用组件 -->
@@ -31,7 +33,7 @@
       </div>
 
       <!-- 这是底部通用组件 -->
-      <AppFooter class="bg-red-200 py-4" />
+      <AppFooter />
     </div>
   </div>
 </template>

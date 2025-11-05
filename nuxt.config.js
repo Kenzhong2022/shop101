@@ -22,7 +22,11 @@ export default defineNuxtConfig({
   },
 
   // 模块配置（核心：仅保留 @element-plus/nuxt 和 @unocss/nuxt）
-  modules: ["@element-plus/nuxt", "@unocss/nuxt"],
+  modules: [
+    "@element-plus/nuxt",
+    "@unocss/nuxt",
+    "~/modules/imagemin.js", //引入压缩图片modules
+  ],
 
   // 样式文件（确保路径正确，基于 srcDir: "app/"）
   css: [

@@ -18,7 +18,7 @@
       class="rd-20px w-100%"
     >
       <el-carousel-item v-for="item in banners" :key="item.id">
-        <img
+        <el-image
           :src="item.image"
           :alt="item.title"
           style="width: 100%; height: 100%; object-fit: fit"
@@ -52,12 +52,12 @@ interface Banner {
 }
 
 // 直接导入图片，确保路径被正确处理
-import banner1 from "@/assets/img/banners/banner1.png";
-import banner2 from "@/assets/img/banners/banner2.png";
-import banner3 from "@/assets/img/banners/banner3.png";
-import banner4 from "@/assets/img/banners/banner4.png";
-import banner5 from "@/assets/img/banners/写真杂志1.jpeg";
-import banner6 from "@/assets/img/banners/写真杂志2.jpeg";
+const banner1 = "/img/banners/banner1.png";
+const banner2 = "/img/banners/banner2.png";
+const banner3 = "/img/banners/banner3.png";
+const banner4 = "/img/banners/banner4.png";
+const banner5 = "/img/banners/写真杂志1.jpeg";
+const banner6 = "/img/banners/写真杂志2.jpeg";
 import { string } from "three/tsl";
 
 const banners: Banner[] = [

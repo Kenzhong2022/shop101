@@ -78,7 +78,9 @@ export default defineNuxtConfig({
           optimizationLevel: 3, // 优化等级（1-3，3最优）
         },
 
-        include: /\.(png|jpe?g|svg)$/i,
+        // 关键：匹配 assets 或 public 目录下的指定格式图片
+        include: /(assets|public)\/.*\.(png|jpe?g|webp|avif|svg|gif)$/i,
+        exclude: /node_modules/, // 可保留排除规则，避免处理依赖包图片
         // 6. 日志配置（可选，调试用）
         verbose: true, // 构建时打印压缩日志（如压缩比例、文件路径）
       }),

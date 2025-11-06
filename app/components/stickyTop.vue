@@ -4,9 +4,17 @@
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-    <img src="/KKShopLogo.svg" style="width: 100px; height: 100px" />
+    <el-image
+      loading="lazy"
+      src="/KKShopLogo.svg"
+      style="width: 100px; height: 100px"
+    />
     <kk-search></kk-search>
-    <img src="/KKShopLogo.svg" style="width: 100px; height: 100px" />
+    <el-image
+      loading="lazy"
+      src="/KKShopLogo.svg"
+      style="width: 100px; height: 100px"
+    />
   </div>
 </template>
 

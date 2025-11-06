@@ -8,7 +8,7 @@
   <div class="flex flex-col gap-8" :style="{ flex: 1 }">
     <!-- 首屏内容 -->
     <el-carousel
-      :interval="150000"
+      :interval="1500"
       type="card"
       width="800px"
       :style="{
@@ -19,13 +19,13 @@
     >
       <el-carousel-item v-for="item in banners" :key="item.id">
         <el-image
+          loading="lazy"
           :src="item.image"
           :alt="item.title"
           style="width: 100%; height: 100%; object-fit: fit"
         />
       </el-carousel-item>
     </el-carousel>
-
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>

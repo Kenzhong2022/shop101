@@ -42,7 +42,7 @@ export default defineNuxtConfig({
   // 样式文件（确保路径正确，基于 srcDir: "app/"）
   css: [
     "@/assets/style/main.css", // 对应 app/assets/style/main.css
-    "@/public/fonts/iconfont/iconfont.css", // 对应 app/public/fonts/...
+    "./public/fonts/iconfont/iconfont.css", // 对应 app/public/fonts/...
     "@/assets/style/element/index.scss", // 自定义 Element 样式
   ],
 

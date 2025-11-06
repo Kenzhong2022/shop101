@@ -219,7 +219,7 @@ export default {
 .color-circle {
   /* 色环特有的遮罩效果 */
   mask: radial-gradient(circle at center, transparent 90px, black 91px);
-  -webkit-mask: radial-gradient(circle at center, transparent 90px, black 91px);
+  /* -webkit-mask: radial-gradient(circle at center, transparent 90px, black 91px); */
 }
 
 /* 唯一色环 */
@@ -245,7 +245,7 @@ export default {
   /* CSS遮罩：创建环形效果 - 内径90px透明，外径91px显示 */
   mask: radial-gradient(circle at center, transparent 90px, black 91px);
   /* WebKit浏览器前缀兼容 - 同上，确保Safari等浏览器兼容 */
-  -webkit-mask: radial-gradient(circle at center, transparent 90px, black 91px);
+  /* -webkit-mask: radial-gradient(circle at center, transparent 90px, black 91px); */
 }
 
 /* 交互指针容器 */

@@ -27,7 +27,7 @@ export default defineNuxtConfig({
   // 图片优化模块配置
   image: {
     // 基础配置，使用默认 provider
-    quality: 80,
+    quality: 2,
     format: ["webp"], // 优先使用 WebP 格式
     lazy: true,
     // 预加载配置
@@ -45,10 +45,42 @@ export default defineNuxtConfig({
   vite: {
     plugins: [
       (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
-        disable: process.env.NODE_ENV === "development" ? false : false, // 强制开发环境启用
-        png: { quality: 80 },
-        jpeg: { quality: 80 },
+        // 1. 启用/禁用开关（核心）
+        disable: process.env.NODE_ENV === "development" ? false : false,
+        // 开发环境：false=启用压缩（可预览），true=禁用（默认，提效）
+        // 生产环境：建议false=强制压缩（优化体积）
+
+        // 2. 各格式图片压缩规则（按需调整）
+        png: {
+          quality: 2, // 压缩质量（0-100，越高越清晰但体积大）
+          speed: 4, // 压缩速度（1-11，1最快质量差，11最慢质量好）
+        },
+        jpeg: {
+          quality: 2, // 压缩质量
+          progressive: true, // 渐进式加载（提升用户体验）
+        },
+        webp: {
+          quality: 2,
+          lossless: false, // false=有损压缩（体积更小），true=无损压缩（质量不变）
+        },
+        avif: {
+          quality: 2, // AVIF格式压缩效率更高，可适当降低质量
+          lossless: false,
+        },
+        svg: {
+          multipass: true, // 多次优化SVG，提升压缩比
+          plugins: [
+            { name: "removeViewBox", active: false }, // 保留viewBox（避免SVG变形）
+            { name: "removeEmptyAttrs", active: true }, // 移除空属性
+          ],
+        },
+        gif: {
+          optimizationLevel: 3, // 优化等级（1-3，3最优）
+        },
+
         include: /\.(png|jpe?g|svg)$/i,
+        // 6. 日志配置（可选，调试用）
+        verbose: true, // 构建时打印压缩日志（如压缩比例、文件路径）
       }),
     ],
     css: {

@@ -7,6 +7,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
   pages: true,
+
+  // 1. 核心：指定公共目录为 app 之下的 public（相对于项目根目录）
+  dir: {
+    public: "app/public", // 路径从 "public" 改为 "app/public"
+  },
   srcDir: "app/", // 确保你的目录结构是 app/ 下包含 assets、components 等
 
   app: {

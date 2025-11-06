@@ -19,7 +19,6 @@
     >
       <el-carousel-item v-for="item in banners" :key="item.id">
         <el-image
-          loading="lazy"
           :src="item.image"
           :alt="item.title"
           style="width: 100%; height: 100%; object-fit: fit"

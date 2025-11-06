@@ -23,14 +23,19 @@
   },
   "devDependencies": {
     "@element-plus/nuxt": "^1.1.4",
+    "@nuxt/image": "^2.0.0",
     "@unocss/nuxt": "^66.5.3",
     "element-plus": "^2.11.5",
+    "imagemin-pngquant": "^10.0.0",
     "sass": "^1.93.2",
     "sass-embedded": "^1.93.2",
+    "sharp": "^0.34.4",
+    "svgo": "^4.0.0",
     "uncss": "^0.17.3",
     "unplugin-auto-import": "^20.2.0",
     "unplugin-element-plus": "^0.10.0",
     "unplugin-vue-components": "^29.1.0",
+    "vite-plugin-image-optimizer": "^2.0.3",
     "vite-plugin-imagemin": "^0.6.1",
     "vue-tsc": "^3.1.1"
   }

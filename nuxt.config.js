@@ -22,11 +22,17 @@ export default defineNuxtConfig({
   },
 
   // 模块配置（核心：仅保留 @element-plus/nuxt 和 @unocss/nuxt）
-  modules: [
-    "@element-plus/nuxt",
-    "@unocss/nuxt",
-    "~/modules/imagemin.js", //引入压缩图片modules
-  ],
+  modules: ["@element-plus/nuxt", "@unocss/nuxt", "@nuxt/image"],
+
+  // 图片优化模块配置
+  image: {
+    // 基础配置，使用默认 provider
+    quality: 80,
+    format: ["webp"], // 优先使用 WebP 格式
+    lazy: true,
+    // 预加载配置
+    preload: true,
+  },
 
   // 样式文件（确保路径正确，基于 srcDir: "app/"）
   css: [
@@ -35,8 +41,16 @@ export default defineNuxtConfig({
     "@/assets/style/element/index.scss", // 自定义 Element 样式
   ],
 
-  // Vite 配置（移除重复的插件，只保留必要的预处理器配置）
+  // Vite 配置
   vite: {
+    plugins: [
+      (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
+        disable: process.env.NODE_ENV === "development" ? false : false, // 强制开发环境启用
+        png: { quality: 80 },
+        jpeg: { quality: 80 },
+        include: /\.(png|jpe?g|svg)$/i,
+      }),
+    ],
     css: {
       preprocessorOptions: {
         scss: {

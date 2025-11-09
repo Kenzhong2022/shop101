@@ -71,7 +71,7 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
     const redirectPath = to.fullPath;
     // 1.检查token是否存在
     if (!token) {
-      console.log("❌ 未登录，重定向到登录页");
+      console.log("token为空，重定向到登录页");
       return navigateTo("/login/myLogin");
     }
     //  2.检查token是否过期

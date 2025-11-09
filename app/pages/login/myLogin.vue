@@ -10,7 +10,7 @@
       <!-- 页面标题 -->
       <div class="text-center mb-8">
         <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-full mb-4"
+          class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4"
         >
           <el-icon class="text-2xl text-white"><User /></el-icon>
         </div>
@@ -337,6 +337,12 @@ const isFormValid = computed(() => {
 });
 
 // 提交处理
+/**
+ * @description 登录/注册提交处理
+ * @detail 登录模式下，验证邮箱和密码，成功后将token存储到cookie和localStorage，跳转到用户中心。
+ * 注册模式下，模拟注册流程，成功后通知用户登录。
+ * @returns {Promise<void>}
+ */
 const handleSubmit = async () => {
   // 表单验证
   if (!loginFormRef.value) return;
@@ -358,7 +364,7 @@ const handleSubmit = async () => {
         password: form.password,
         rememberMe: form.rememberMe,
       }).then((res) => {
-        console.log(res.data?.token);
+        console.log("登录成功后端返回token：", res.data?.token);
         // 登录成功，将 token 存储到 localStorage
         if (res.data?.token) {
           localStorage.setItem("token", res.data.token);
@@ -369,6 +375,8 @@ const handleSubmit = async () => {
         useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
         console.log("token:", useUser.value.token);
         console.log("过期时间:", useUser.value.expireTime);
+        //存入token到cookie
+        useCookie("auth-token").value = res.data?.token || "";
       });
 
       // 成功通知
@@ -378,8 +386,6 @@ const handleSubmit = async () => {
         type: "success",
         duration: 3000,
       });
-
-      console.log("🎉 登录成功！");
 
       // 登录成功，跳转到用户中心
       await navigateTo("/user/myUser");

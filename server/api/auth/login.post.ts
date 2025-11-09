@@ -67,44 +67,10 @@ interface NitroError {
 }
 
 // 导入crypto模块（使用ES模块语法）
-import crypto from "node:crypto";
+// crypto模块现在只在工具函数中使用，这里不再需要直接导入
 // 导入认证工具函数
-import { checkToken } from "../../utils/auth";
-/**
- * 生成HMAC签名
- * @param info 要签名的信息
- * @param key 签名密钥
- * @returns HMAC签名结果
- */
-function generateSignature(info: string, key: string): string {
-  return crypto.createHmac("sha256", key).update(info).digest("hex");
-}
-
-/**
- * 验证HMAC签名
- * @param info 原始信息
- * @param key 签名密钥
- * @param providedSignature 提供的签名
- * @returns 签名是否有效
- */
-function verifySignature(
-  info: string, // 信息
-  key: string, // 签名密钥
-  providedSignature: string // 提供的签名
-): boolean {
-  // 1. 生成预期签名
-  const expectedSignature = generateSignature(info, key);
-  // 使用crypto.timingSafeEqual防止时序攻击
-  const expectedBuffer = Buffer.from(expectedSignature, "hex"); // 预期签名转换为Buffer
-  const providedBuffer = Buffer.from(providedSignature, "hex"); // 提供的签名转换为Buffer
-
-  // 2. 对比签名是否相等
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(expectedBuffer, providedBuffer); // 对比签名是否相等
-}
+import { checkToken, generateSignature, verifySignature, generateLoginToken } from "../../utils/auth";
+// 签名相关函数已抽离到 ../../utils/auth 中
 
 /**
  * 处理登录请求的主函数
@@ -113,9 +79,10 @@ function verifySignature(
 export default defineEventHandler(async (event): Promise<LoginResponse> => {
   try {
     console.log("👉【服务器】 /api/auth/login 被访问了"); // 先确认进了文件
-
-    // =================================
-    // 演示签名生成和验证 【学习案例】
+    /**
+     * 演示签名生成和验证 【学习案例】
+     * 使用抽离到工具函数中的签名逻辑
+     */
     const demoStr = "hello";
     const demoKey = "123456";
     const generatedSig = generateSignature(demoStr, demoKey);
@@ -136,8 +103,11 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
     // 验证篡改原始信息是否能验证通过
     const isValidTamperedInfo = verifySignature("hello", demoKey, tamperedSig);
     console.log("❌【签名验证】篡改原始信息验证结果:", isValidTamperedInfo);
-    // =================================【案例结束】
 
+    // 获取配置的HMAC密钥（演示从配置中读取）
+    const configHmacKey = useRuntimeConfig().HMAC_SECRET_KEY;
+    console.log("🔑【配置密钥】从runtimeConfig获取的HMAC密钥:", configHmacKey);
+    // =================================【案例结束】
     // 第一步：获取前端传来的登录数据
     const body = await readBody<LoginRequest>(event);
     const { email, password } = body;
@@ -167,12 +137,13 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
     // 生成符合 checkToken 格式的 token: uid.exp.sig
     const uid = user.id.toString();
     const exp = (Date.now() + 10 * 1000).toString(); // 1分钟后过期【用于测试】
-    // 生成签名：uid.exp 用密钥 abc123 算法签名sha256 进行 HMAC-SHA256 计算
-    const sig = crypto
-      .createHmac("sha256", "abc123")
-      .update(`${uid}.${exp}`)
-      .digest("hex");
-    const token = `${uid}.${exp}.${sig}`;
+    const hmacSecretKey = useRuntimeConfig().HMAC_SECRET_KEY;
+    
+    // 使用工具函数生成登录令牌
+    const token = generateLoginToken(uid, exp, hmacSecretKey);
+
+    console.log("🔑【登录令牌】使用配置的HMAC密钥:", hmacSecretKey);
+    console.log("🔑【登录令牌】生成的令牌:", token);
 
     // 第五步：设置cookie（可选，用于自动登录）
     setCookie(event, "auth-token", token, {

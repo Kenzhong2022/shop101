@@ -4,12 +4,25 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- 倒计时组件:显示token的有效时间 -->
-    <el-countdown
-      :value="expTime"
-      format="HH:mm:ss"
-      :auto-start="true"
-      @finish="handleTokenExpire"
-    />
+    <h2>
+      还有
+      <el-countdown
+        :value="expTime"
+        format="HH:mm:ss"
+        :auto-start="true"
+        @finish="handleTokenExpire"
+      />
+      token就会过期
+    </h2>
+    <h2>
+      过期时间为：{{
+        formatTime(useUser.expireTime, {
+          format: "dateTime",
+          dateSeparator: "-",
+          timeSeparator: ":",
+        })
+      }}
+    </h2>
 
     <!-- 页面头部 -->
     <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white">
@@ -156,7 +169,7 @@ definePageMeta({
 import { useUser } from "~/composables/useUser";
 import formatTime from "~/composables/tools";
 
-const expTime = ref(0);
+const expTime = ref<number>(0);
 
 // 页面加载完成后的操作
 onMounted(() => {
@@ -168,15 +181,27 @@ onMounted(() => {
 
 onActivated(() => {
   console.log("页面激活时调用");
+  // 重新获取cookie中的token
+  useUser.value.token = useCookie("auth-token").value as string;
+  useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
+
   // 检查token是否过期
   // 使用composables中useUser的信息
   expTime.value = useUser.value.expireTime;
   console.log("token:", useUser.value.token);
-  console.log("过期时间:", useUser.value.expireTime);
+  console.log("过期时间:", typeof useUser.value.expireTime);
   let t = new Date().getTime();
   console.log(
-    "格式化时间:",
+    "当前时间:",
     formatTime(t, {
+      format: "dateTime",
+      dateSeparator: "-",
+      timeSeparator: ":",
+    })
+  );
+  console.log(
+    "过期时间格式化:",
+    formatTime(useUser.value.expireTime, {
       format: "dateTime",
       dateSeparator: "-",
       timeSeparator: ":",

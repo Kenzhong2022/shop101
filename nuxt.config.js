@@ -3,6 +3,17 @@ import { defineNuxtConfig } from "nuxt/config";
 // 无需手动导入 AutoImport、Components 和 ElementPlus 插件，@element-plus/nuxt 会自动处理
 
 export default defineNuxtConfig({
+  runtimeConfig: {
+    // 服务端可用的配置（前端不可访问，安全）
+    DB_HOST: process.env.DB_HOST,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_NAME,
+    DB_PORT: process.env.DB_PORT || 3306, // 端口默认3306
+    // HMAC签名密钥配置
+    HMAC_SECRET_KEY: process.env.HMAC_SECRET_KEY || "abc123", // 用于签名验证的密钥
+    public: {}, // 前端需访问的配置放这里（数据库配置无需）
+  },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   ssr: true,

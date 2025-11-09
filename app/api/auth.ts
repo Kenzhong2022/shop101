@@ -29,14 +29,14 @@ interface LoginResponse {
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   try {
-    const response = await $fetch<LoginResponse>('/api/auth/login', {
-      method: 'POST',
-      body: credentials
+    const response = await $fetch<LoginResponse>("/api/auth/login2", {
+      method: "POST",
+      body: credentials,
     });
-    
+
     return response;
   } catch (error) {
-    console.error('登录失败:', error);
+    console.error("登录失败:", error);
     throw error;
   }
 }
@@ -46,11 +46,11 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  */
 export async function logout(): Promise<void> {
   try {
-    await $fetch('/api/auth/logout', {
-      method: 'POST'
+    await $fetch("/api/auth/logout", {
+      method: "POST",
     });
   } catch (error) {
-    console.error('登出失败:', error);
+    console.error("登出失败:", error);
     throw error;
   }
 }

@@ -13,7 +13,7 @@
         :msg="msg"
       />
       <!-- 吸顶搜索 -->
-      <StickyTop class="w-100% max-w-[1600px]" />
+      <StickyTop class="w-100%" />
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
       <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
         <!-- 侧边栏：通过状态控制是否显示 -->

@@ -5,11 +5,15 @@
 }
 
 .el-button--primary:hover {
-  // 这里可以用 CSS 变量 + 计算（如果需要动态衍生色）
-  background-color: color-mix(in srgb, var(--el-color-primary), white 10%);
+  // 使用预定义的透明色变量
+  background-color: var(--el-color-primary-light-7) !important;
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--el-color-primary-light-7) inset !important;
 }
 
 // 其他组件（输入框、复选框等）类似，按需覆盖核心颜色样式
 .el-input__wrapper.is-focus {
-  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
 }

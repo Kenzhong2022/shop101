@@ -1,38 +1,45 @@
 <template>
   <!-- 头部 -->
-  <header class="bg-#ffff w-[1600px] mx-auto h-35px flex-row">
-    <!-- 导航栏容器 -->
-    <nav class="flex gap-8 justify-end flex-items-center flex-row">
-      <!-- 导航链接 -->
-      <NuxtLink
-        v-for="item in navList"
-        :key="item.name"
-        :to="item.path"
-        @click="handleNavClick(item)"
-        class="no-underline"
+  <header class="bg-#ffff w-[1600px] max-w-full mx-auto h-35px flex-row">
+    <el-scrollbar>
+      <!-- 导航栏容器 -->
+      <nav
+        class="scrollbar-flex-content flex gap-8 justify-end flex-items-center flex-row"
       >
-        <span
-          class="text-[#333] transition-colors duration-300 flex items-center gap-2px"
+        <!-- 导航链接 -->
+        <NuxtLink
+          v-for="item in navList"
+          :key="item.name"
+          :to="item.path"
+          @click="handleNavClick(item)"
+          class="no-underline flex-shrink-0"
         >
-          <!-- 根据导航项名称使用对应的阿里图标 -->
-          <i
-            :class="['iconfont', item.icon, 'text-20px', 'color-main']"
-            :style="{
-              color: item.icon === 'icon-cart-empty' ? '#ff5018' : '#333',
-            }"
-          ></i>
-          <span class="hover:text-primary">{{ item.name }}</span>
-          <el-dropdown>
-            <span class="el-dropdown-link"> </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>Action 1</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </span>
-      </NuxtLink>
-    </nav>
+          <span
+            class="text-[#333] transition-colors duration-300 flex items-center gap-2px"
+          >
+            <!-- 根据导航项名称使用对应的阿里图标 -->
+            <i
+              :class="['iconfont', item.icon, 'text-20px', 'color-main']"
+              :style="{
+                color:
+                  item.icon === 'icon-cart-empty'
+                    ? 'var(--el-color-primary)'
+                    : '#333',
+              }"
+            ></i>
+            <span class="hover:text-primary">{{ item.name }}</span>
+            <el-dropdown>
+              <span class="el-dropdown-link"> </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item>Action 1</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </span>
+        </NuxtLink>
+      </nav>
+    </el-scrollbar>
   </header>
   <!-- 搜索框 -->
 </template>
@@ -75,4 +82,9 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.scrollbar-flex-content {
+  display: flex;
+  width: fit-content;
+}
+</style>

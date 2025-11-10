@@ -5,16 +5,13 @@ import { defineNuxtConfig } from "nuxt/config";
 export default defineNuxtConfig({
   runtimeConfig: {
     // 服务端专属配置（仅服务端可访问，安全存储敏感信息）
-    serverRuntimeConfig: {
-      // 必须加这一层！
-      DB_HOST: process.env.DB_HOST,
-      DB_USER: process.env.DB_USER,
-      DB_PASSWORD: process.env.DB_PASSWORD,
-      DB_NAME: process.env.DB_NAME,
-      DB_PORT: process.env.DB_PORT || 3306,
-      NUXT_NEON_DATABASE_URL: process.env.NUXT_NEON_DATABASE_URL, // 这里才能被服务端读到
-      HMAC_SECRET_KEY: process.env.HMAC_SECRET_KEY || "abc123",
-    },
+    DB_HOST: process.env.DB_HOST,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_NAME,
+    DB_PORT: process.env.DB_PORT || 3306,
+    NUXT_NEON_DATABASE_URL: process.env.NUXT_NEON_DATABASE_URL, // 这里才能被服务端读到
+    HMAC_SECRET_KEY: process.env.HMAC_SECRET_KEY || "abc123",
     // 客户端可访问的配置（放这里会暴露给前端，数据库配置绝对不能放！）
     public: {
       // 比如前端需要的接口基础路径等，数据库相关一律不放这

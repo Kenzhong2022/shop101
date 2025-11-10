@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@neondatabase/serverless": "^1.0.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/three": "^0.180.0",
     "bcrypt": "^6.0.0",
     "cookie": "^1.0.2",
+    "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
     "nuxt": "^4.1.2",
     "three": "^0.180.0",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@element-plus/nuxt": "^1.1.4",
     "@nuxt/image": "^2.0.0",
+    "@types/bcrypt": "^6.0.0",
     "@unocss/nuxt": "^66.5.3",
     "element-plus": "^2.11.5",
     "imagemin-pngquant": "^10.0.0",

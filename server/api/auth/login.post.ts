@@ -41,23 +41,6 @@ interface LoginResponse {
   };
 }
 
-// 模拟用户数据库（实际项目中应该连接真实数据库）
-// 这里存放测试用的用户账号
-const mockUsers = [
-  {
-    id: 18802075384,
-    email: "test@example.com", // 测试账号
-    password: "123456", // 测试密码
-    username: "测试用户",
-  },
-  {
-    id: 2,
-    email: "admin@example.com", // 管理员账号
-    password: "admin123", // 管理员密码
-    username: "管理员",
-  },
-];
-
 // Nitro错误对象接口定义
 interface NitroError {
   statusCode: number;
@@ -69,7 +52,12 @@ interface NitroError {
 // 导入crypto模块（使用ES模块语法）
 // crypto模块现在只在工具函数中使用，这里不再需要直接导入
 // 导入认证工具函数
-import { checkToken, generateSignature, verifySignature, generateLoginToken } from "../../utils/auth";
+import {
+  checkToken,
+  generateSignature,
+  verifySignature,
+  generateLoginToken,
+} from "../../utils/auth";
 // 签名相关函数已抽离到 ../../utils/auth 中
 
 /**
@@ -138,7 +126,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
     const uid = user.id.toString();
     const exp = (Date.now() + 10 * 1000).toString(); // 1分钟后过期【用于测试】
     const hmacSecretKey = useRuntimeConfig().HMAC_SECRET_KEY;
-    
+
     // 使用工具函数生成登录令牌
     const token = generateLoginToken(uid, exp, hmacSecretKey);
 

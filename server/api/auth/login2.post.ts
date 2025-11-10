@@ -37,8 +37,12 @@ interface LoginResponse {
 import db from "../../utils/db";
 // 导入认证工具函数
 import { generateLoginToken, checkToken } from "../../utils/auth";
+
+// server/api/users.get.ts
+import { getNeon } from "../../utils/neon";
+
 // 导入密码加密函数
-import md5 from "js-md5";
+// import md5 from "js-md5";
 // 导入bcrypt密码加密库
 import bcrypt from "bcrypt";
 /**
@@ -119,10 +123,11 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
 
     try {
       // 执行SQL查询 - 查找匹配邮箱和密码的用户
-      const [rows] = await db.execute(
-        "SELECT id,password FROM user WHERE email = ? LIMIT 1",
-        [email]
-      );
+      // 1. Neon 查询：用模板字符串写法
+      const sql = getNeon();
+      const [rows] = await sql`
+        SELECT id,password FROM user WHERE email = ${email} LIMIT 1
+      `;
 
       console.log("📊【数据库】查询结果:", rows);
 
@@ -149,7 +154,6 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         console.log("🔑【HMAC密钥】:", hmacSecretKey);
         const token = generateLoginToken(String(user.id), exp, hmacSecretKey);
         console.log("🔐【生成Token】:", token);
-        
 
         // 返回成功响应
         return {

@@ -10,7 +10,6 @@
         <NuxtLink
           v-for="item in navList"
           :key="item.name"
-          :to="item.path"
           @click="handleNavClick(item)"
           class="no-underline flex-shrink-0"
         >
@@ -57,6 +56,12 @@ const sendRoute = (msg) => {
 const navList = [
   { name: "首页", path: "/", icon: "icon-home" },
   { name: "用户中心", path: "/user/myUser", icon: "icon-yonghu" },
+  {
+    name: "活动中心",
+    path: "https://gym-nuxt3.netlify.app/",
+    icon: "icon-activity",
+    isExternal: true,
+  }, // 外部链接标记
   { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
   { name: "分类", path: "/category", icon: "icon-category" },
   { name: "帮助中心", path: "/category", icon: "icon-remind-fill" },
@@ -66,8 +71,15 @@ const navList = [
 // 导航点击处理
 const handleNavClick = (navItem) => {
   // console.log("导航项点击:", navItem);
-  // 发送路由信息给父组件
-  sendRoute(navItem);
+  if (navItem.isExternal) {
+    // 外部链接：打开新页面
+    window.open(navItem.path, "_blank");
+  } else {
+    // 内部路由：用 Nuxt 路由跳转（原有逻辑）
+    router.push(navItem.path);
+    // 发送路由信息给父组件
+    sendRoute(navItem);
+  }
 };
 
 // 路由实例

@@ -29,9 +29,7 @@ export default defineConfig({
     presetIcons(),
     presetTypography(),
     presetWebFonts({
-      fonts: {
-        // ...
-      },
+      fonts: {},
     }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],

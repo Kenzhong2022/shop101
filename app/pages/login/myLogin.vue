@@ -187,7 +187,7 @@
 
       <!-- 测试提示 -->
       <div class="mt-6 text-center text-xs text-gray-500">
-        <p>测试账户: test@example.com / 123456</p>
+        <p>测试账户: user@shop101.com / 123456</p>
         <p class="mt-1">路由守卫已激活 - 查看控制台输出</p>
       </div>
 

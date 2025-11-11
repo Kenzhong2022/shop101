@@ -10,7 +10,7 @@
  * @returns {string|number|any} 格式化后的时间（格式错误返回defaultValue）
  */
 const formatTime = (time, options = {}) => {
-  console.log("格式化函数的参数:", time);
+  console.log("格式化时间函数的参数:", time);
   // 默认配置
   const {
     format = "dateTime",

@@ -40,9 +40,13 @@ import { generateLoginToken, checkToken } from "../../utils/auth";
 
 // server/api/users.get.ts
 import sql from "../../utils/neon";
+import { neon } from "@neondatabase/serverless";
+const { NUXT_NEON_DATABASE_URL } = useRuntimeConfig();
+const getNeon = () => neon(NUXT_NEON_DATABASE_URL);
+
 // 执行SQL查询 - 查找匹配邮箱和密码的用户
 // 1. Neon 查询：用模板字符串写法
-const mySql = sql;
+const mySql = getNeon();
 // 导入密码加密函数
 // import md5 from "js-md5";
 // 导入bcrypt密码加密库
@@ -122,14 +126,15 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
 
     try {
       const [rows] = await mySql`
-        SELECT * FROM user
+        SELECT id, email, username, password FROM "user" WHERE email = ${email} LIMIT 1
       `;
 
       console.log("📊【数据库】查询结果:", rows);
 
       // 检查是否找到用户
-      if (Array.isArray(rows) && rows.length > 0) {
-        const user = rows[0] as any;
+      if (typeof rows === "object") {
+        const user = rows as any;
+        console.log("🔍【数据库】查询密码:【数据库】", user.password);
         // 对比密码
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {

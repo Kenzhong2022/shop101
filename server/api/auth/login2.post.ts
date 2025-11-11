@@ -39,10 +39,10 @@ import db from "../../utils/db";
 import { generateLoginToken, checkToken } from "../../utils/auth";
 
 // server/api/users.get.ts
-import getNeon from "../../utils/neon";
+import sql from "../../utils/neon";
 // 执行SQL查询 - 查找匹配邮箱和密码的用户
 // 1. Neon 查询：用模板字符串写法
-const mySql = getNeon;
+const mySql = sql;
 // 导入密码加密函数
 // import md5 from "js-md5";
 // 导入bcrypt密码加密库

@@ -10,7 +10,7 @@ if (!NUXT_NEON_DATABASE_URL) {
 
 // 2. 导出“函数”而不是 pool，每次调用都返回一个 neon 客户端
 const getNeon = () => neon(NUXT_NEON_DATABASE_URL);
-export default getNeon();
+export default sql = neon(NUXT_NEON_DATABASE_URL);
 // 3. 启动时自测一次（仅服务端）
 (async () => {
   try {

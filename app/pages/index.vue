@@ -27,12 +27,17 @@
     </el-carousel>
 
     <!-- 广告 -->
-    <div
-      class="banner w-100% h-200px rounded-20px flex justify-center items-center"
-    >
-      <h1 class="text-50px reflect-container">
-        Wear Freedom ， shine your beauty
-      </h1>
+    <div class="relative w-100%" :style="{ aspectRatio: '18/2' }">
+      <div
+        class="absolute banner w-100% flex justify-center items-center"
+        :style="{
+          width: 'calc(100% + 100px)',
+          left: '-50px',
+          aspectRatio: '18/2',
+        }"
+      >
+        <div class="reflect-container">Wear Freedom ， shine your beauty</div>
+      </div>
     </div>
 
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
@@ -109,7 +114,6 @@ function handleColorChange(newHsl: string) {
   /* 确保伪元素不会超出容器 */
   overflow: visible;
   --c: var(--el-color-primary);
-  font-size: 60px;
   font-weight: 900;
   color: #fff; /* 主色 */
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25),

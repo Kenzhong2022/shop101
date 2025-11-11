@@ -39,8 +39,10 @@ import db from "../../utils/db";
 import { generateLoginToken, checkToken } from "../../utils/auth";
 
 // server/api/users.get.ts
-import { getNeon } from "../../utils/neon";
-
+import sql from "../../utils/neon";
+// 执行SQL查询 - 查找匹配邮箱和密码的用户
+// 1. Neon 查询：用模板字符串写法
+const mySql = sql;
 // 导入密码加密函数
 // import md5 from "js-md5";
 // 导入bcrypt密码加密库
@@ -71,9 +73,8 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         console.log("✅【Token验证】成功，用户ID:", uid);
 
         // 查询数据库获取用户信息
-        const [userRows] = await db.execute(
-          "SELECT id, email, username FROM user WHERE id = ? LIMIT 1",
-          [uid]
+        const [userRows] = await mySql(
+          `SELECT id, email, username FROM user WHERE id = ${uid} LIMIT 1`
         );
 
         if (Array.isArray(userRows) && userRows.length > 0) {
@@ -122,10 +123,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
     console.log("🔍【数据库】查询密码:【加密】", hashedPwd);
 
     try {
-      // 执行SQL查询 - 查找匹配邮箱和密码的用户
-      // 1. Neon 查询：用模板字符串写法
-      const sql = getNeon();
-      const [rows] = await sql`
+      const [rows] = await mySql`
         SELECT id,password FROM user WHERE email = ${email} LIMIT 1
       `;
 

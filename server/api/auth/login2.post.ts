@@ -39,10 +39,10 @@ import db from "../../utils/db";
 import { generateLoginToken, checkToken } from "../../utils/auth";
 
 // server/api/users.get.ts
-import sql from "../../utils/neon";
+import getNeon from "../../utils/neon";
 // 执行SQL查询 - 查找匹配邮箱和密码的用户
 // 1. Neon 查询：用模板字符串写法
-const mySql = sql;
+const mySql = getNeon;
 // 导入密码加密函数
 // import md5 from "js-md5";
 // 导入bcrypt密码加密库
@@ -73,10 +73,8 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         console.log("✅【Token验证】成功，用户ID:", uid);
 
         // 查询数据库获取用户信息
-        const [userRows] = await mySql(
-          `SELECT id, email, username FROM user WHERE id = ${uid} LIMIT 1`
-        );
-
+        const [userRows] =
+          await mySql`SELECT id, email, username FROM user WHERE id = ${uid} LIMIT 1`;
         if (Array.isArray(userRows) && userRows.length > 0) {
           const user = userRows[0] as any;
 
@@ -115,7 +113,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
     }
 
     // 第三步：查询数据库验证用户
-    console.log("🔍【数据库】查询用户:", email);
+    console.log("🔍【数据库】查询用户电邮:", email);
     console.log("🔍【数据库】查询密码:【未加密】", password);
     // bcrypt加密明文密码
     const saltRounds = 10;
@@ -124,7 +122,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
 
     try {
       const [rows] = await mySql`
-        SELECT id,password FROM user WHERE email = ${email} LIMIT 1
+        SELECT * FROM user
       `;
 
       console.log("📊【数据库】查询结果:", rows);

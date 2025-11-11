@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-bg">
     <kk-color-picker @change="handleColorChange" />
 
     <NuxtLayout>
@@ -25,3 +25,13 @@ function handleColorChange(newHsl: string) {
   }
 }
 </script>
+
+<style lang="scss">
+.app-bg {
+  background-color: color-mix(
+    in srgb-linear,
+    #fff 80%,
+    var(--el-color-primary, #fff)
+  );
+}
+</style>

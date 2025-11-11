@@ -39,10 +39,10 @@ import db from "../../utils/db";
 import { generateLoginToken, checkToken } from "../../utils/auth";
 
 // server/api/users.get.ts
-import sql from "../../utils/neon";
+import getNeon from "../../utils/neon";
 import { neon } from "@neondatabase/serverless";
 const { NUXT_NEON_DATABASE_URL } = useRuntimeConfig();
-const getNeon = () => neon(NUXT_NEON_DATABASE_URL);
+// const getNeon = () => neon(NUXT_NEON_DATABASE_URL);
 
 // 执行SQL查询 - 查找匹配邮箱和密码的用户
 // 1. Neon 查询：用模板字符串写法
@@ -94,7 +94,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
                 username: user.username,
               },
             },
-          };
+          } as LoginResponse;
         } else {
           console.log("❌【Token验证】用户不存在，ID:", uid);
         }
@@ -113,7 +113,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
           code: 400,
           message: "缺少必填参数",
         },
-      };
+      } as LoginResponse;
     }
 
     // 第三步：查询数据库验证用户
@@ -204,6 +204,6 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         code: 500,
         message: "服务器内部错误",
       },
-    };
+    } as LoginResponse;
   }
 });

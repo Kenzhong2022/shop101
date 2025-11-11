@@ -357,38 +357,45 @@ const handleSubmit = async () => {
   isLoading.value = true;
 
   try {
-    // 调用登录 API
+    // 调用登录 API 或注册 API
     if (isLoginMode.value) {
-      const response = await login({
+      await login({
         email: form.email,
         password: form.password,
         rememberMe: form.rememberMe,
-      }).then((res) => {
-        console.log("登录成功后端返回token：", res.data?.token);
-        // 登录成功，将 token 存储到 localStorage
-        if (res.data?.token) {
-          localStorage.setItem("token", res.data.token);
+      }).then(async (res) => {
+        // 登录失败处理
+        if (!res.success) {
+          console.log("登录失败后端返回:", res);
+          ElMessage.error(res.message || "登录失败");
+        } else {
+          // 登录成功处理
+          console.log("登录成功后端返回token：", res.data?.token);
+          // 登录成功，将 token 存储到 localStorage
+          if (res.data?.token) {
+            localStorage.setItem("token", res.data.token);
+          }
+
+          // 现在就可以读/写
+          useUser.value.token = res.data?.token || "";
+          useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
+          console.log("token:", useUser.value.token);
+          console.log("过期时间:", useUser.value.expireTime);
+          //存入token到cookie
+          useCookie("auth-token").value = res.data?.token || "";
+
+          // 成功通知
+          ElNotification({
+            title: "成功",
+            message: "登录成功！",
+            type: "success",
+            duration: 3000,
+          });
+
+          // 登录成功，跳转到用户中心
+          navigateTo("/user/myUser");
         }
-
-        // 现在就可以读/写
-        useUser.value.token = res.data?.token || "";
-        useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
-        console.log("token:", useUser.value.token);
-        console.log("过期时间:", useUser.value.expireTime);
-        //存入token到cookie
-        useCookie("auth-token").value = res.data?.token || "";
       });
-
-      // 成功通知
-      ElNotification({
-        title: "成功",
-        message: "登录成功！",
-        type: "success",
-        duration: 3000,
-      });
-
-      // 登录成功，跳转到用户中心
-      await navigateTo("/user/myUser");
     } else {
       // 注册模式 - 模拟注册流程
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -401,8 +408,9 @@ const handleSubmit = async () => {
       form.confirmPassword = "";
     }
   } catch (error: any) {
-    console.error("❌ 登录失败:", error);
-    ElMessage.error(error.data?.statusMessage || "登录失败，请重试");
+    // 登录/注册失败处理
+    console.error("❌ 登录/注册失败:", error);
+    ElMessage.error(error.data?.statusMessage || "登录/注册失败，请重试");
   } finally {
     isLoading.value = false;
   }

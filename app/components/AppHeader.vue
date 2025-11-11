@@ -1,7 +1,7 @@
 <template>
   <!-- 头部 -->
-  <header class="bg-#ffff w-[1600px] max-w-full mx-auto h-35px flex-row">
-    <el-scrollbar>
+  <header class="bg-#ffff w-[1600px] max-w-full mx-auto h-65px flex-row">
+    <el-scrollbar class="h-100%">
       <!-- 导航栏容器 -->
       <nav
         class="scrollbar-flex-content flex gap-8 justify-end flex-items-center flex-row"
@@ -14,11 +14,11 @@
           class="no-underline flex-shrink-0"
         >
           <span
-            class="text-[#333] transition-colors duration-300 flex items-center gap-2px"
+            class="text-[#333] transition-colors duration-300 flex items-center gap-2px text-[18px]"
           >
             <!-- 根据导航项名称使用对应的阿里图标 -->
             <i
-              :class="['iconfont', item.icon, 'text-20px', 'color-main']"
+              :class="['iconfont', item.icon, 'text-28px', 'color-main']"
               :style="{
                 color:
                   item.icon === 'icon-cart-empty'
@@ -26,7 +26,13 @@
                     : '#333',
               }"
             ></i>
-            <span class="hover:text-primary">{{ item.name }}</span>
+            <span
+              class="hover:text-primary"
+              :style="{
+                color: isActive(item) ? 'var(--el-color-primary)' : '#333',
+              }"
+              >{{ item.name }}
+            </span>
             <el-dropdown>
               <span class="el-dropdown-link"> </span>
               <template #dropdown>
@@ -51,7 +57,15 @@ const emit = defineEmits(["sendRoute"]);
 const sendRoute = (msg) => {
   emit("sendRoute", msg);
 };
-
+const isActive = (item) => {
+  const currentRoute = useRoute().path;
+  // 当前item.path 为 / 则需要和当前路由完全相等
+  if (item.path === "/") {
+    return currentRoute === item.path;
+  }
+  // 其他情况：检查当前路由是否包含导航项的路径
+  return currentRoute.includes(item.path);
+};
 // 默认导航配置
 const navList = [
   { name: "首页", path: "/", icon: "icon-home" },
@@ -64,7 +78,7 @@ const navList = [
   }, // 外部链接标记
   { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
   { name: "分类", path: "/category", icon: "icon-category" },
-  { name: "帮助中心", path: "/category", icon: "icon-remind-fill" },
+  { name: "帮助中心", path: "/help", icon: "icon-remind-fill" },
   { name: "登录/注册", path: "/login/myLogin", icon: "" },
 ];
 
@@ -94,9 +108,13 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.scrollbar-flex-content {
-  display: flex;
-  width: fit-content;
+<style scoped lang="scss">
+:deep(.el-scrollbar__view) {
+  height: 100% !important;
+  .scrollbar-flex-content {
+    display: flex;
+    width: fit-content;
+    height: 100%;
+  }
 }
 </style>

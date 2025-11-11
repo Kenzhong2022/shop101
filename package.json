@@ -32,7 +32,7 @@
     "@unocss/nuxt": "^66.5.3",
     "element-plus": "^2.11.5",
     "imagemin-pngquant": "^10.0.0",
-    "sass": "^1.93.2",
+    "sass": "^1.94.0",
     "sass-embedded": "^1.93.2",
     "sharp": "^0.34.4",
     "svgo": "^4.0.0",

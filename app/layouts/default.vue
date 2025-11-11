@@ -9,7 +9,7 @@
       <!-- 传递信息给子组件 -->
       <AppHeader
         @sendRoute="handleChangeByRoute"
-        class="bg-white max-w-[1200px] mx-auto shadow-sm h-35px items-center flex-justify-end"
+        class="bg-white max-w-[1200px] mx-auto shadow-sm h-65px items-center flex-justify-end"
         :msg="msg"
       />
       <!-- 吸顶搜索 -->
@@ -24,7 +24,7 @@
         ></NuxtLayout>
 
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 p-6 bg-white rounded-lg shadow-sm w-100%">
+        <div class="flex-1 p-50px bg-white rounded-lg shadow-sm w-100%">
           <NuxtPage
             :keepalive="{
               max: 10, // 最多缓存 10 个页面实例

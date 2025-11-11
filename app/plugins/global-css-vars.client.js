@@ -31,9 +31,9 @@ function setThemeColor(baseColor) {
 }
 
 // 调用示例：设置基础色为红色，自动生成浅色变体
-setThemeColor("#ff00ff");
+setThemeColor("#ff5500");
 export default defineNuxtPlugin(() => {
-  setThemeColor("#ff00ff");
+  setThemeColor("#ff5500");
 });
 
 // 导出函数，用于在其他地方调用

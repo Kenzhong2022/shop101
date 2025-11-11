@@ -5,8 +5,8 @@
   <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
   <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->
-  <div class="flex flex-col gap-8" :style="{ flex: 1 }">
-    <!-- 首屏内容 -->
+  <div class="flex flex-col gap-50px" :style="{ flex: 1 }">
+    <!-- 轮播图内容 -->
     <el-carousel
       :interval="1500"
       type="card"
@@ -25,6 +25,16 @@
         />
       </el-carousel-item>
     </el-carousel>
+
+    <!-- 广告 -->
+    <div
+      class="banner w-100% h-200px rounded-20px flex justify-center items-center"
+    >
+      <h1 class="text-50px reflect-container">
+        Wear Freedom ， shine your beauty
+      </h1>
+    </div>
+
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>
@@ -93,6 +103,45 @@ function handleColorChange(newHsl: string) {
 </script>
 
 <style scoped>
+/* 原元素容器 */
+.reflect-container {
+  position: relative;
+  /* 确保伪元素不会超出容器 */
+  overflow: visible;
+  --c: var(--el-color-primary);
+  font-size: 60px;
+  font-weight: 900;
+  color: #fff; /* 主色 */
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25),
+    /* 第 1 层 */ 2px 2px 0 rgba(0, 0, 0, 0.2), 3px 3px 0 rgba(0, 0, 0, 0.15),
+    4px 4px 0 rgba(0, 0, 0, 0.1), 5px 5px 8px rgba(0, 0, 0, 0.8); /* 最后一层加模糊[8px]，制造厚度 */
+}
+/* 倒影效果（通过伪元素模拟） */
+.reflect-container::after {
+  content: "Wear Freedom ， shine your beauty";
+  /* 复制原元素内容（如果是图片可直接用 background-image） */
+  position: absolute;
+  top: 100%; /* 与原元素底部对齐 */
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 垂直翻转实现“倒影” */
+  transform: scaleY(-1);
+  /* 渐变遮罩（上透明60%，下渐暗25%黑色） */
+  mask: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.25));
+  /* 如果原元素是图片，直接继承背景图 */
+  background: inherit;
+}
+
+.banner {
+  color: color-mix(in srgb-linear, #fff 90%, var(--el-color-primary, #fff));
+  background-color: color-mix(
+    in srgb-linear,
+    #000 50%,
+    var(--el-color-primary, #fff)
+  );
+}
+
 /* 原始样式 */
 .el-carousel__item h3 {
   color: #475669;

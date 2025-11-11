@@ -11,7 +11,7 @@ if (!NUXT_NEON_DATABASE_URL) {
 // 2. 导出 neon 客户端（保持原有的初始化逻辑）
 const getNeon = () => neon(NUXT_NEON_DATABASE_URL);
 const sql = getNeon();
-export default sql;
+export default getNeon;
 
 // 3. 启动时自测（仅验证连接 + 列出所有表，简化逻辑）
 (async () => {

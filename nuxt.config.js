@@ -19,8 +19,8 @@ export default defineNuxtConfig({
   },
   // 1. 关键 CSS 内联 + 其余样式异步
   experimental: {
-    inlineSSRStyles: true, // 首屏样式直接塞进 <style>
-    payloadExtraction: false, // 避免把样式再打一份 JSON
+    // inlineSSRStyles: true, // 首屏样式直接塞进 <style>
+    // payloadExtraction: false, // 避免把样式再打一份 JSON 到客户端
   },
 
   compatibilityDate: "2025-07-15",

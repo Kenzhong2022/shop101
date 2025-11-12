@@ -1,6 +1,6 @@
 import { defineNuxtConfig } from "nuxt/config";
 // 导入抽离的分包规则
-import { manualChunks } from "./config/chunk-rules";
+import manualChunks from "./config/chunk-rules";
 
 // 无需手动导入 AutoImport、Components 和 ElementPlus 插件，@element-plus/nuxt 会自动处理
 
@@ -92,15 +92,27 @@ export default defineNuxtConfig({
   // Vite 配置
   vite: {
     build: {
+      sourcemap: true, // 开启生产环境sourcemap（仅用于排查，修复后可关闭）
       rollupOptions: {
-        output: {
-          // 直接赋值导入的函数，无需重复写逻辑
-          manualChunks,
+        manualChunks(id) {
+          console.log(123, id);
+          if (
+            id.includes("node_modules") &&
+            (id.endsWith(".js") || id.endsWith(".ts"))
+          ) {
+            return "vendor";
+          }
         },
       },
     },
 
     plugins: [
+      (await import("rollup-plugin-visualizer")).default({
+        open: true,
+        filename: "stats.html",
+        gzipSize: true,
+        brotliSize: true,
+      }),
       (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
         // 1. 启用/禁用开关（核心）
         disable: process.env.NODE_ENV === "development" ? false : false,

@@ -1,4 +1,6 @@
 import { defineNuxtConfig } from "nuxt/config";
+// 导入抽离的分包规则
+import { manualChunks } from "./config/chunk-rules";
 
 // 无需手动导入 AutoImport、Components 和 ElementPlus 插件，@element-plus/nuxt 会自动处理
 
@@ -19,10 +21,31 @@ export default defineNuxtConfig({
   },
   // 1. 关键 CSS 内联 + 其余样式异步
   experimental: {
-    // inlineSSRStyles: true, // 首屏样式直接塞进 <style>
-    // payloadExtraction: false, // 避免把样式再打一份 JSON 到客户端
+    inlineSSRStyles: true, // 首屏样式直接塞进 <style>
+    payloadExtraction: false, // 避免把样式再打一份 JSON 到客户端
   },
-
+  nitro: {
+    routeRules: {
+      // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
+      "/_nuxt/**": {
+        headers: {
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      },
+      // ② 首页 HTML（路径 / ）
+      "/": {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+      // ③ 其它 HTML 页面（按需加）
+      "/product/**": {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+    },
+  },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   ssr: true,
@@ -36,21 +59,6 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      // link: [
-      //   {
-      //     rel: "preconnect",
-      //     href: "https://fonts.googleapis.com",
-      //   },
-      //   {
-      //     rel: "preconnect",
-      //     href: "https://fonts.gstatic.com",
-      //     crossorigin: "",
-      //   },
-      //   {
-      //     rel: "stylesheet",
-      //     href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap",
-      //   },
-      // ],
       script: [
         {
           // 引入 ColorThief 库
@@ -85,7 +93,10 @@ export default defineNuxtConfig({
   vite: {
     build: {
       rollupOptions: {
-        output: {},
+        output: {
+          // 直接赋值导入的函数，无需重复写逻辑
+          manualChunks,
+        },
       },
     },
 

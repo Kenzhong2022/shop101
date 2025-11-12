@@ -17,6 +17,12 @@ export default defineNuxtConfig({
       // 比如前端需要的接口基础路径等，数据库相关一律不放这
     },
   },
+  // 1. 关键 CSS 内联 + 其余样式异步
+  experimental: {
+    inlineSSRStyles: true, // 首屏样式直接塞进 <style>
+    payloadExtraction: false, // 避免把样式再打一份 JSON
+  },
+
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   ssr: true,
@@ -71,12 +77,43 @@ export default defineNuxtConfig({
   // 样式文件（确保路径正确，基于 srcDir: "app/"）
   css: [
     "@/assets/style/main.css", // 对应 app/assets/style/main.css
-    "./public/fonts/iconfont/iconfont.css", // 对应 app/public/fonts/...
-    "@/assets/style/element/index.scss", // 自定义 Element 样式
+    // "./public/fonts/iconfont/iconfont.css", // 对应 app/public/fonts/... 迁移到插件导入
+    // "@/assets/style/element/index.scss", // 自定义 Element 样式 迁移到插件导入
   ],
 
   // Vite 配置
   vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // 标准化路径分隔符
+            const normalizedId = id.replace(/\\/g, "/");
+
+            // 1) 第三方大库
+            if (normalizedId.includes("node_modules")) {
+              if (normalizedId.includes("@element-plus")) return "ui";
+              if (normalizedId.includes("lodash")) return "lodash";
+              if (normalizedId.includes("vue")) return "vue";
+              return "vendor";
+            }
+
+            // 2) 业务路由级
+            if (normalizedId.includes("/pages/index")) return "home";
+            if (normalizedId.includes("/pages/user")) return "user";
+            if (normalizedId.includes("/pages/admin")) return "admin";
+
+            // 3) 其余公共业务代码
+            if (normalizedId.includes("/composables")) return "shared";
+            if (normalizedId.includes("/utils")) return "shared";
+
+            // 4) 默认返回
+            return "index";
+          },
+        },
+      },
+    },
+
     plugins: [
       (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
         // 1. 启用/禁用开关（核心）
@@ -134,6 +171,8 @@ export default defineNuxtConfig({
   elementPlus: {
     importStyle: "scss", // 配合 scss 预处理器
     autoImport: true, // 自动导入组件和 API（模块已集成，无需手动配置）
+    // 关键：不要让它额外挂 link 标签
+    injectStyles: false, // 默认 true → 会外链
     icons: {
       autoImport: true, // 自动导入图标
     },

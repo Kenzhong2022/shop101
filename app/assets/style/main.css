@@ -1,3 +1,17 @@
+/* 重置 + 变量 + 通用布局 */
+html,
+body,
+#__nuxt {
+  margin: 0;
+  height: 100%;
+  font-family: Montserrat, sans-serif;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+/* 下面任何 .el-xxx 都别放这里 → 让 Element 按需加载 */
 .d-none {
   display: none;
 }

@@ -94,72 +94,74 @@ export default defineNuxtConfig({
     build: {
       sourcemap: true, // 开启生产环境sourcemap（仅用于排查，修复后可关闭）
       rollupOptions: {
-        manualChunks(id) {
-          console.log(123, id);
-          if (
-            id.includes("node_modules") &&
-            (id.endsWith(".js") || id.endsWith(".ts"))
-          ) {
-            return "vendor";
-          }
+        output: {
+          manualChunks(id) {
+            console.log(123, id);
+            if (
+              id.includes("node_modules") &&
+              (id.endsWith(".js") || id.endsWith(".ts"))
+            ) {
+              return "vendor";
+            }
+          },
         },
       },
-    },
 
-    plugins: [
-      (await import("rollup-plugin-visualizer")).default({
-        open: true,
-        filename: "stats.html",
-        gzipSize: true,
-        brotliSize: true,
-      }),
-      (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
-        // 1. 启用/禁用开关（核心）
-        disable: process.env.NODE_ENV === "development" ? false : false,
-        // 开发环境：false=启用压缩（可预览），true=禁用（默认，提效）
-        // 生产环境：建议false=强制压缩（优化体积）
+      plugins: [
+        (await import("rollup-plugin-visualizer")).default({
+          open: true,
+          filename: "stats.html",
+          gzipSize: true,
+          brotliSize: true,
+        }),
+        (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
+          // 1. 启用/禁用开关（核心）
+          disable: process.env.NODE_ENV === "development" ? false : false,
+          // 开发环境：false=启用压缩（可预览），true=禁用（默认，提效）
+          // 生产环境：建议false=强制压缩（优化体积）
 
-        // 2. 各格式图片压缩规则（按需调整）
-        png: {
-          quality: 2, // 压缩质量（0-100，越高越清晰但体积大）
-          speed: 4, // 压缩速度（1-11，1最快质量差，11最慢质量好）
-        },
-        jpeg: {
-          quality: 2, // 压缩质量
-          progressive: true, // 渐进式加载（提升用户体验）
-        },
-        webp: {
-          quality: 2,
-          lossless: false, // false=有损压缩（体积更小），true=无损压缩（质量不变）
-        },
-        avif: {
-          quality: 2, // AVIF格式压缩效率更高，可适当降低质量
-          lossless: false,
-        },
-        svg: {
-          multipass: true, // 多次优化SVG，提升压缩比
-          plugins: [
-            { name: "removeViewBox", active: false }, // 保留viewBox（避免SVG变形）
-            { name: "removeEmptyAttrs", active: true }, // 移除空属性
-          ],
-        },
-        gif: {
-          optimizationLevel: 3, // 优化等级（1-3，3最优）
-        },
+          // 2. 各格式图片压缩规则（按需调整）
+          png: {
+            quality: 2, // 压缩质量（0-100，越高越清晰但体积大）
+            speed: 4, // 压缩速度（1-11，1最快质量差，11最慢质量好）
+          },
+          jpeg: {
+            quality: 2, // 压缩质量
+            progressive: true, // 渐进式加载（提升用户体验）
+          },
+          webp: {
+            quality: 2,
+            lossless: false, // false=有损压缩（体积更小），true=无损压缩（质量不变）
+          },
+          avif: {
+            quality: 2, // AVIF格式压缩效率更高，可适当降低质量
+            lossless: false,
+          },
+          svg: {
+            multipass: true, // 多次优化SVG，提升压缩比
+            plugins: [
+              { name: "removeViewBox", active: false }, // 保留viewBox（避免SVG变形）
+              { name: "removeEmptyAttrs", active: true }, // 移除空属性
+            ],
+          },
+          gif: {
+            optimizationLevel: 3, // 优化等级（1-3，3最优）
+          },
 
-        // 关键修改：匹配项目内所有目录的目标格式图片（去掉 assets/public 目录限制）
-        include: /\.(png|jpe?g|webp|avif|svg|gif)$/i,
-        exclude: /node_modules/, // 可保留排除规则，避免处理依赖包图片
-        // 6. 日志配置（可选，调试用）
-        verbose: true, // 构建时打印压缩日志（如压缩比例、文件路径）
-      }),
-    ],
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: `
+          // 关键修改：匹配项目内所有目录的目标格式图片（去掉 assets/public 目录限制）
+          include: /\.(png|jpe?g|webp|avif|svg|gif)$/i,
+          exclude: /node_modules/, // 可保留排除规则，避免处理依赖包图片
+          // 6. 日志配置（可选，调试用）
+          verbose: true, // 构建时打印压缩日志（如压缩比例、文件路径）
+        }),
+      ],
+      css: {
+        preprocessorOptions: {
+          scss: {
+            additionalData: `
             @use "@/assets/style/element-variables.scss" as element;
           `, // 引入自定义变量（用于主题定制）
+          },
         },
       },
     },

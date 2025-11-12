@@ -90,25 +90,66 @@ export default defineNuxtConfig({
             // 标准化路径分隔符
             const normalizedId = id.replace(/\\/g, "/");
 
-            // 1) 第三方大库
+            // 1) 第三方库优化打包 - 基于项目实际依赖
             if (normalizedId.includes("node_modules")) {
-              if (normalizedId.includes("@element-plus")) return "ui";
+              // UI框架相关
+              if (normalizedId.includes("@element-plus") || normalizedId.includes("element-plus")) return "ui";
+              
+              // Vue生态
+              if (normalizedId.includes("vue") && !normalizedId.includes("@vueuse")) return "vue-core";
+              if (normalizedId.includes("vue-router")) return "vue-router";
+              if (normalizedId.includes("@vueuse")) return "vue-use";
+              
+              // 工具库
               if (normalizedId.includes("lodash")) return "lodash";
-              if (normalizedId.includes("vue")) return "vue";
+              
+              // 3D相关
+              if (normalizedId.includes("three")) return "three";
+              
+              // 网络请求
+              if (normalizedId.includes("axios") || normalizedId.includes("ofetch")) return "http";
+              
+              // 数据库相关
+              if (normalizedId.includes("@neondatabase") || normalizedId.includes("@netlify/neon")) return "db";
+              
+              // 认证相关
+              if (normalizedId.includes("jsonwebtoken") || normalizedId.includes("bcrypt") || normalizedId.includes("cookie")) return "auth";
+              
+              // 其他常用库
               return "vendor";
             }
 
-            // 2) 业务路由级
-            if (normalizedId.includes("/pages/index")) return "home";
-            if (normalizedId.includes("/pages/user")) return "user";
-            if (normalizedId.includes("/pages/admin")) return "admin";
+            // 2) 业务代码按功能模块分包
+            // 核心页面
+            if (normalizedId.includes("/pages/index")) return "page-home";
+            if (normalizedId.includes("/pages/user")) return "page-user";
+            if (normalizedId.includes("/pages/cart")) return "page-cart";
+            if (normalizedId.includes("/pages/login")) return "page-auth";
+            
+            // 商品相关页面
+            if (normalizedId.includes("/pages/category")) return "page-category";
+            if (normalizedId.includes("/pages/howToChooseStyle")) return "page-style-guide";
+            
+            // 帮助页面
+            if (normalizedId.includes("/pages/help")) return "page-help";
 
-            // 3) 其余公共业务代码
-            if (normalizedId.includes("/composables")) return "shared";
-            if (normalizedId.includes("/utils")) return "shared";
+            // 3) 组件和工具代码分包
+            // 全局组件
+            if (normalizedId.includes("/components/App")) return "comp-global";
+            if (normalizedId.includes("/components/kk-")) return "comp-kk";
+            
+            // 通用工具
+            if (normalizedId.includes("/composables")) return "shared-composables";
+            if (normalizedId.includes("/utils")) return "shared-utils";
+            
+            // 布局组件
+            if (normalizedId.includes("/layouts")) return "layouts";
+            
+            // 插件代码
+            if (normalizedId.includes("/plugins")) return "plugins";
 
-            // 4) 默认返回
-            return "index";
+            // 4) 默认返回 - 其他业务代码
+            return "business";
           },
         },
       },

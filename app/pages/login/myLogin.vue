@@ -4,9 +4,9 @@
 
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4"
+    class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-startstart justify-center p-4"
   >
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md flex flex-col gap-20px">
       <!-- 页面标题 -->
       <div class="text-center mb-8">
         <div

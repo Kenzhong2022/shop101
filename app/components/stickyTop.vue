@@ -4,9 +4,21 @@
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-    <img src="/KKShopLogo.svg" style="width: 100px; height: 100px" />
-    <kk-search></kk-search>
-    <img src="/KKShopLogo.svg" style="width: 100px; height: 100px" />
+    <!-- <img src="/KKShopLogo.svg" /> -->
+    <el-image
+      :lazy="true"
+      class=""
+      src="/KKShopLogo.svg"
+      style="height: 100%; aspect-ratio: 1 / 1"
+    />
+    <kk-search class="max-h-60%"></kk-search>
+    <!-- <img src="/KKShopLogo.svg" /> -->
+    <el-image
+      :lazy="true"
+      class=""
+      src="/KKShopLogo.svg"
+      style="height: 100%; aspect-ratio: 1 / 1"
+    />
   </div>
 </template>
 
@@ -52,7 +64,7 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     right: 0;
-    height: 44px;
+    height: 72px;
     background-color: white;
     padding: 8px 0;
     animation: slideDown 0.3s ease-in-out;

@@ -11,7 +11,7 @@
           v-for="item in navList"
           :key="item.name"
           @click="handleNavClick(item)"
-          class="no-underline flex-shrink-0"
+          class="no-underline flex-shrink-0 hover:cursor-pointer"
         >
           <span
             class="text-[#333] transition-colors duration-300 flex items-center gap-2px text-[18px]"
@@ -50,10 +50,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 // 传递字符串给父组件
 const emit = defineEmits(["sendRoute"]);
+
 const sendRoute = (msg) => {
   emit("sendRoute", msg);
 };
@@ -79,7 +78,7 @@ const navList = [
   { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
   { name: "分类", path: "/category", icon: "icon-category" },
   { name: "帮助中心", path: "/help", icon: "icon-remind-fill" },
-  { name: "登录/注册", path: "/login/myLogin", icon: "" },
+  { name: "登录/注册", path: "/login/myLogin", icon: "", showStickyTop: false },
 ];
 
 // 导航点击处理
@@ -89,10 +88,11 @@ const handleNavClick = (navItem) => {
     // 外部链接：打开新页面
     window.open(navItem.path, "_blank");
   } else {
-    // 内部路由：用 Nuxt 路由跳转（原有逻辑）
-    router.push(navItem.path);
+    console.log("导航项点击:", navItem);
     // 发送路由信息给父组件
     sendRoute(navItem);
+    // 内部路由：用 Nuxt 路由跳转（原有逻辑）
+    router.push(navItem.path);
   }
 };
 

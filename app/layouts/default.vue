@@ -13,7 +13,7 @@
         :msg="msg"
       />
       <!-- 吸顶搜索 -->
-      <StickyTop class="w-100%" />
+      <StickyTop class="w-100%" v-if="showStickyTop" />
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
       <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
         <!-- 侧边栏：通过状态控制是否显示 -->
@@ -41,15 +41,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRoute } from "vue-router";
+interface routeItem {
+  name: string;
+  path: string;
+  showStickyTop?: boolean;
+}
+
 const msg = "hello world";
 const showMenu = ref(false);
+const showStickyTop = ref(true);
 // 接收来自子组件的路由信息
-function handleChangeByRoute(route: { name: string; path: string }) {
+function handleChangeByRoute(route: routeItem) {
   console.log("顶部导航改变了：", route);
   // console.log("route.path", route.path, route.path == "/category");
   showMenu.value = route.path === "/category";
+  // 如果路由配置了 showStickyTop，使用它；否则默认 true
+  showStickyTop.value = route?.showStickyTop ?? true;
 }
 const route = useRoute();
 
@@ -69,9 +76,9 @@ const getFirstRouteLevel = (path: string): string => {
   return secondSlashIndex > 0 ? path.slice(0, secondSlashIndex) : path;
 };
 onMounted(() => {
-  console.log(route);
+  console.log("当前路由", route);
   showMenu.value = getFirstRouteLevel(route.path) === "/category";
-  console.log(route.path, showMenu.value);
+  console.log(route.path, showMenu.value, showStickyTop.value);
 });
 </script>
 

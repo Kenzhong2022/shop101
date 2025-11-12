@@ -1,6 +1,6 @@
 <template>
   <!-- 搜索组件 -->
-  <div class="search min-w-[300px] w-450px position-relative">
+  <div class="search min-w-[300px] position-relative">
     <el-input
       v-model="input"
       class="border-transparent w-full min-h-40px bg-#fff overflow-hidden"

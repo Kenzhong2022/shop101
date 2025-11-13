@@ -14,7 +14,13 @@ export default defineNuxtConfig({
     DB_PORT: process.env.DB_PORT || 3306,
     NUXT_NEON_DATABASE_URL: process.env.NUXT_NEON_DATABASE_URL, // 这里才能被服务端读到
     HMAC_SECRET_KEY: process.env.HMAC_SECRET_KEY || "abc123",
-    // 客户端可访问的配置（放这里会暴露给前端，数据库配置绝对不能放！）
+    // SMTP 邮件配置
+    smtpHost: process.env.SMTP_HOST,
+    smtpPort: process.env.SMTP_PORT,
+    smtpSecure: process.env.SMTP_SECURE,
+    smtpUser: process.env.SMTP_USER,
+    smtpPass: process.env.SMTP_PASS,
+    // 客户端可访问的配置（放这里会暴露给前端，数据库相关一律不放这）
     public: {
       // 比如前端需要的接口基础路径等，数据库相关一律不放这
     },

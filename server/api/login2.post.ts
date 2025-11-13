@@ -34,12 +34,12 @@ interface LoginResponse {
 }
 
 // 导入数据库连接池
-import db from "../../utils/db";
+import db from "../utils/db";
 // 导入认证工具函数
-import { generateLoginToken, checkToken } from "../../utils/auth";
+import { generateLoginToken, checkToken } from "../utils/auth";
 
 // server/api/users.get.ts
-import getNeon from "../../utils/neon";
+import getNeon from "../utils/neon";
 import { neon } from "@neondatabase/serverless";
 const { NUXT_NEON_DATABASE_URL } = useRuntimeConfig();
 // const getNeon = () => neon(NUXT_NEON_DATABASE_URL);

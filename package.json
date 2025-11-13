@@ -19,6 +19,8 @@
     "cookie": "^1.0.2",
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.6",
+    "nodemailer": "^7.0.10",
     "nuxt": "^4.1.2",
     "three": "^0.180.0",
     "tinycolor2": "^1.6.0",

@@ -49,7 +49,7 @@
               type="email"
               placeholder="请输入邮箱地址"
               :prefix-icon="Message"
-              size="large"
+              size="small"
             />
           </el-form-item>
 
@@ -60,7 +60,7 @@
               :type="showPassword ? 'text' : 'password'"
               placeholder="请输入密码"
               :prefix-icon="Lock"
-              size="large"
+              size="small"
             >
               <template #suffix>
                 <el-button
@@ -87,8 +87,30 @@
                 type="password"
                 placeholder="请再次输入密码"
                 :prefix-icon="Lock"
-                size="large"
+                size="small"
               />
+            </el-form-item>
+
+            <!-- 验证码 -->
+            <el-form-item label="验证码" prop="code">
+              <el-input
+                v-model="form.code"
+                type="text"
+                placeholder="请输入验证码"
+                :prefix-icon="Promotion"
+                size="small"
+              >
+                <template #suffix>
+                  <el-button
+                    link
+                    type="primary"
+                    @click="handleSendCode"
+                    class="p-0"
+                  >
+                    获取验证码
+                  </el-button>
+                </template>
+              </el-input>
             </el-form-item>
 
             <!-- 用户名 -->
@@ -98,7 +120,7 @@
                 type="text"
                 placeholder="请输入用户名"
                 :prefix-icon="User"
-                size="large"
+                size="small"
               />
             </el-form-item>
           </template>
@@ -121,7 +143,7 @@
               :loading="isLoading"
               :disabled="!isFormValid"
               @click="handleSubmit"
-              size="large"
+              size="small"
               class="w-full"
             >
               {{ isLoading ? "处理中..." : isLoginMode ? "登录" : "注册" }}
@@ -144,7 +166,7 @@
           <el-button
             @click="handleSocialLogin('wechat')"
             :icon="ChatDotRound"
-            size="large"
+            size="small"
             class="w-full"
           >
             微信登录
@@ -153,7 +175,7 @@
           <el-button
             @click="handleSocialLogin('qq')"
             :icon="Promotion"
-            size="large"
+            size="small"
             class="w-full"
           >
             QQ登录
@@ -237,8 +259,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
-import { login } from "~/api/auth";
+// 引入登录 注册 API
+import { login, register, sendCode } from "~/api/auth";
+
 import { type FormInstance, type FormRules } from "element-plus";
 import {
   User,
@@ -265,7 +288,7 @@ definePageMeta({
 const loginFormRef = ref<FormInstance>();
 
 // 响应式数据
-const isLoginMode = ref(true);
+const isLoginMode = ref<boolean>(true);
 const isLoading = ref(false);
 const showPassword = ref(false);
 const activeTab = ref<"login" | "register">("login");
@@ -287,6 +310,7 @@ const form = reactive({
   email: "",
   password: "",
   confirmPassword: "",
+  code: "",
   username: "",
   rememberMe: false,
 });
@@ -307,9 +331,11 @@ const formRules = computed<FormRules>(() => ({
         {
           validator: (rule, value, callback) => {
             if (value !== form.password) {
-              callback(new Error("两次输入的密码不一致"));
+              console.log("两次输入的密码不一致");
+              callback(new Error("两次输入的密码不一致")); // 验证失败
             } else {
-              callback();
+              console.log("两次输入的密码一致");
+              callback(); // 验证通过
             }
           },
           trigger: "blur",
@@ -355,7 +381,7 @@ const handleSubmit = async () => {
   }
 
   isLoading.value = true;
-
+  console.log("打印表单内容:", form);
   try {
     // 调用登录 API 或注册 API
     if (isLoginMode.value) {
@@ -397,15 +423,27 @@ const handleSubmit = async () => {
         }
       });
     } else {
-      // 注册模式 - 模拟注册流程
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      ElMessage.success("注册成功，请登录");
-      activeTab.value = "login";
-      isLoginMode.value = true;
-      // 清空注册字段
-      form.username = "";
-      form.confirmPassword = "";
+      // 注册模式
+      await register({
+        email: form.email,
+        code: form.code,
+        password: form.password,
+      }).then((res) => {
+        // 注册失败处理
+        if (!res.success) {
+          console.log("注册失败后端返回:", res);
+          ElMessage.error(res.message || "注册失败");
+        } else {
+          // 注册成功处理
+          console.log("注册成功后端返回:", res);
+          ElMessage.success("注册成功，请登录");
+          activeTab.value = "login";
+          isLoginMode.value = true;
+          // 清空注册字段
+          form.username = "";
+          form.confirmPassword = "";
+        }
+      });
     }
   } catch (error: any) {
     // 登录/注册失败处理
@@ -426,6 +464,34 @@ const handleSocialLogin = (provider: string) => {
 const handleForgotPassword = () => {
   ElMessage.info("密码重置功能开发中...");
   console.log("🔑 忘记密码被点击");
+};
+
+const handleSendCode = async () => {
+  // 表单验证
+  if (!loginFormRef.value) return;
+
+  try {
+    await loginFormRef.value.validateField("email");
+  } catch (error) {
+    ElMessage.error("请输入正确的邮箱格式");
+    return;
+  }
+
+  // 调用发送验证码 API
+  await sendCode(form.email).then((res) => {
+    // 发送验证码失败处理
+    if (!res.success) {
+      console.log("发送验证码失败后端返回:", res);
+      ElMessage.error(res.message || "发送验证码失败");
+    } else {
+      // 发送验证码成功处理
+      console.log("发送验证码成功后端返回:", res);
+      ElMessage.success("验证码发送成功");
+    }
+  });
+
+  ElMessage.success("验证码发送成功");
+  console.log("🔑 验证码发送被点击");
 };
 
 // 页面加载完成

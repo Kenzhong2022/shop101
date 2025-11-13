@@ -23,13 +23,70 @@ interface LoginResponse {
 }
 
 /**
+ * 注册相关 API 接口
+ * @
+ */
+interface RegisterRequest {
+  email: string;
+  code: string;
+  password: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * 注册接口
+ * @param params 注册参数（邮箱、验证码、密码）
+ * @returns 注册响应
+ */
+export async function register(
+  params: RegisterRequest
+): Promise<RegisterResponse> {
+  const { email, code, password } = params;
+  // 调用注册接口server/api/register.ts
+  return await $fetch<RegisterResponse>("/api/register", {
+    method: "POST",
+    body: {
+      email,
+      code,
+      password,
+    } as RegisterRequest,
+  });
+}
+
+interface SendCodeRequest {
+  email: string;
+}
+
+interface SendCodeResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * 获得验证码接口
+ * @param email 邮箱地址
+ * @returns 验证码响应
+ */
+export async function sendCode(email: string): Promise<SendCodeResponse> {
+  return await $fetch<SendCodeResponse>("/api/sendCode", {
+    method: "POST",
+    body: { email } as SendCodeRequest,
+  });
+}
+
+/**
  * 用户登录接口
  * @param credentials 登录凭证
  * @returns 登录响应
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   try {
-    const response = await $fetch<LoginResponse>("/api/auth/login2", {
+    // 调用登录接口server/api/login2.ts
+    const response = await $fetch<LoginResponse>("/api/login2", {
       method: "POST",
       body: credentials,
     });

@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     inlineSSRStyles: true, // 首屏样式直接塞进 <style>
     payloadExtraction: false, // 避免把样式再打一份 JSON 到客户端
   },
+  // 处理304
   nitro: {
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
@@ -96,13 +97,65 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
-            console.log(123, id);
-            if (
-              id.includes("node_modules") &&
-              (id.endsWith(".js") || id.endsWith(".ts"))
-            ) {
+            // 标准化路径（兼容 Windows/Mac）
+            const normalizedId = id.replace(/\\/g, "/");
+            
+            // 第三方库分包
+            if (normalizedId.includes("node_modules")) {
+              // Element Plus
+              if (normalizedId.includes("element-plus")) {
+                console.log(`[📦 vendor-ui] ${normalizedId}`);
+                return "vendor-ui";
+              }
+              
+              // Vue生态
+              if (normalizedId.includes("vue") || normalizedId.includes("@vue")) {
+                console.log(`[📦 vendor-vue] ${normalizedId}`);
+                return "vendor-vue";
+              }
+              
+              // 工具库
+              if (normalizedId.includes("lodash") || normalizedId.includes("axios") || normalizedId.includes("dayjs")) {
+                console.log(`[📦 vendor-utils] ${normalizedId}`);
+                return "vendor-utils";
+              }
+              
+              // 其他第三方库
+              console.log(`[📦 vendor] ${normalizedId}`);
               return "vendor";
             }
+            
+            // 业务页面分包
+            if (normalizedId.includes("/pages/")) {
+              const pageMatch = normalizedId.match(/\/pages\/([^\/]+)/);
+              if (pageMatch) {
+                const pageName = pageMatch[1];
+                console.log(`[📄 page-${pageName}] ${normalizedId}`);
+                return `page-${pageName}`;
+              }
+            }
+            
+            // 组件分包
+            if (normalizedId.includes("/components/")) {
+              console.log(`[🧩 components] ${normalizedId}`);
+              return "components";
+            }
+            
+            // 工具函数分包
+            if (normalizedId.includes("/composables/")) {
+              console.log(`[🔧 composables] ${normalizedId}`);
+              return "composables";
+            }
+            
+            // 工具类分包
+            if (normalizedId.includes("/utils/")) {
+              console.log(`[⚙️ utils] ${normalizedId}`);
+              return "utils";
+            }
+            
+            // 默认分包
+            console.log(`[📁 default] ${normalizedId}`);
+            return "index";
           },
         },
       },

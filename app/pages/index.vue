@@ -48,7 +48,7 @@
 // 引入全局 CSS 变量函数
 import { setThemeColor } from "@/plugins/global-css-vars.client";
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted } from "#imports";
 const color = ref("");
 // 页面元数据
 definePageMeta({

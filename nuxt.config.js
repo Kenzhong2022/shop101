@@ -96,31 +96,86 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
-            const n = id.replace(/\\/g, "/");
-
-            /* 1. 框架运行时 – 所有页面都要，但体积最小，先拿 */
-            if (n.includes("vue") || n.includes("@vue/runtime"))
-              return "vendor-vue";
-
-            /* 2. 首页相关：页面本身 + 仅首页用到的组件/库 */
-            if (
-              n.includes("/pages/index") || // 入口
-              n.includes("/components/AppHeader") || // 以下仅首页用
-              n.includes("/components/AppFooter") ||
-              n.includes("/components/kk-color-picker") ||
-              n.includes("/components/kk-image") ||
-              n.includes("/components/stickyTop") ||
-              (n.includes("element-plus") &&
-                (n.includes("/carousel") || n.includes("/scrollbar"))) ||
-              n.includes("@nuxt/image") ||
-              n.includes("three") ||
-              n.includes("colorthief")
-            ) {
-              return "chunk-home"; // 统一一个 home chunk，浏览器第一次就拉完
+            // 标准化路径（兼容 Windows/Mac）
+            const normalizedId = id.replace(/\\/g, "/");
+            
+            // ⚡ 核心依赖 - 必须一起加载，避免循环依赖
+            if (normalizedId.includes("vue") || 
+                normalizedId.includes("@vue") ||
+                normalizedId.includes("element-plus") ||
+                normalizedId.includes("@nuxt/image") ||
+                normalizedId.includes("tinycolor2")) {
+              console.log(`[⚡ vendor-core] ${normalizedId}`);
+              return "vendor-core";
+            }
+            
+            // 🏠 首页相关 - 合并为一个包
+            if (normalizedId.includes("/pages/index") ||
+                normalizedId.includes("/layouts/default") ||
+                normalizedId.includes("/components/kk-color-picker") || 
+                normalizedId.includes("/components/kk-image") ||
+                normalizedId.includes("/components/stickyTop") ||
+                normalizedId.includes("/components/AppHeader") ||
+                normalizedId.includes("/components/AppFooter")) {
+              console.log(`[🏠 home-bundle] ${normalizedId}`);
+              return "home-bundle";
+            }
+            
+            // 📦 第三方库 - 按类型分组
+            if (normalizedId.includes("node_modules")) {
+              // 工具库
+              if (normalizedId.includes("lodash") || 
+                  normalizedId.includes("dayjs") ||
+                  normalizedId.includes("moment") ||
+                  normalizedId.includes("axios")) {
+                console.log(`[📦 vendor-utils] ${normalizedId}`);
+                return "vendor-utils";
+              }
+              
+              // CSS相关
+              if (normalizedId.includes("sass") || 
+                  normalizedId.includes("less") ||
+                  normalizedId.includes("postcss")) {
+                console.log(`[📦 vendor-css] ${normalizedId}`);
+                return "vendor-css";
+              }
+              
+              // 其他第三方库
+              console.log(`[📦 vendor-others] ${normalizedId}`);
+              return "vendor-others";
             }
 
-            /* 3. 剩下的全部扔进 async，按需加载 */
-            return "async";
+            // 📄 页面分包 - 保持简单
+            if (normalizedId.includes("/pages/")) {
+              const pageMatch = normalizedId.match(/\/pages\/([^\/]+)/);
+              if (pageMatch) {
+                const pageName = pageMatch[1];
+                console.log(`[📄 page-${pageName}] ${normalizedId}`);
+                return `page-${pageName}`;
+              }
+            }
+
+            // 🧩 其他组件 - 保持简单
+            if (normalizedId.includes("/components/")) {
+              console.log(`[🧩 components] ${normalizedId}`);
+              return "components";
+            }
+
+            // 🔧 工具函数
+            if (normalizedId.includes("/composables/")) {
+              console.log(`[🔧 composables] ${normalizedId}`);
+              return "composables";
+            }
+
+            // ⚙️ 工具类
+            if (normalizedId.includes("/utils/")) {
+              console.log(`[⚙️ utils] ${normalizedId}`);
+              return "utils";
+            }
+
+            // 📁 默认
+            console.log(`[📁 default] ${normalizedId}`);
+            return "index";
           },
         },
       },

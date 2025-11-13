@@ -94,32 +94,7 @@ export default defineNuxtConfig({
   vite: {
     build: {
       rollupOptions: {
-        output: {
-          manualChunks(id) {
-            const n = id.replace(/\\/g, "/");
-
-            /* 0. 框架核心 —— 必须最先执行，不能拆散 */
-            if (/\b(vue|@vue)\b/.test(n)) return "vendor-vue";
-
-            /* 1. 其它 node_modules —— 保持单 chunk，避免循环 */
-            if (n.includes("node_modules")) {
-              if (n.includes("vue-router")) return "vendor-router";
-              if (n.includes("pinia") || n.includes("vuex"))
-                return "vendor-store";
-              if (n.includes("element-plus")) return "vendor-ui";
-              if (/lodash|dayjs/.test(n)) return "vendor-utils";
-              return "vendor-others";
-            }
-
-            /* 2. 业务代码：只按“入口”拆，其它全部合回 index
-     （避免 composable 被多个 page chunk 引用导致循环） */
-            const pageMatch = n.match(/\/pages\/([^/]+)/);
-            if (pageMatch) return `page-${pageMatch[1]}`;
-
-            /* 3. 共享模块先别拆，放 index；等稳定后再细化 */
-            return "index";
-          },
-        },
+        output: {},
       },
 
       plugins: [

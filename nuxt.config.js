@@ -98,38 +98,25 @@ export default defineNuxtConfig({
           manualChunks(id) {
             const n = id.replace(/\\/g, "/");
 
-            /* ---------------- 1. 第三方库 ---------------- */
+            /* 0. 框架核心 —— 必须最先执行，不能拆散 */
+            if (/\b(vue|@vue)\b/.test(n)) return "vendor-vue";
+
+            /* 1. 其它 node_modules —— 保持单 chunk，避免循环 */
             if (n.includes("node_modules")) {
-              // 大框架
-              if (n.includes("vue") || n.includes("@vue/")) return "vendor-vue";
-              // 路由/状态
               if (n.includes("vue-router")) return "vendor-router";
               if (n.includes("pinia") || n.includes("vuex"))
                 return "vendor-store";
-              // 工具集
-              if (/lodash|dayjs|moment/.test(n)) return "vendor-utils";
-              // UI 库
               if (n.includes("element-plus")) return "vendor-ui";
-              if (n.includes("@headlessui")) return "vendor-ui";
-              // 网络
-              if (n.includes("axios") || n.includes("ofetch"))
-                return "vendor-http";
-              // 其他三方一律统一
+              if (/lodash|dayjs/.test(n)) return "vendor-utils";
               return "vendor-others";
             }
 
-            /* ---------------- 2. 业务代码 ---------------- */
-            // 页面级入口（pages 或 views）
-            const pageMatch =
-              n.match(/\/pages\/([^/]+)/) || n.match(/\/views\/([^/]+)/);
+            /* 2. 业务代码：只按“入口”拆，其它全部合回 index
+     （避免 composable 被多个 page chunk 引用导致循环） */
+            const pageMatch = n.match(/\/pages\/([^/]+)/);
             if (pageMatch) return `page-${pageMatch[1]}`;
 
-            // 共享组件、组合式函数、工具
-            if (n.includes("/components/")) return "chunk-components";
-            if (n.includes("/composables/")) return "chunk-composables";
-            if (n.includes("/utils/")) return "chunk-utils";
-
-            // 兜底
+            /* 3. 共享模块先别拆，放 index；等稳定后再细化 */
             return "index";
           },
         },

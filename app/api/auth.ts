@@ -27,6 +27,7 @@ interface LoginResponse {
  * @
  */
 interface RegisterRequest {
+  username: string;
   email: string;
   code: string;
   password: string;
@@ -45,11 +46,12 @@ interface RegisterResponse {
 export async function register(
   params: RegisterRequest
 ): Promise<RegisterResponse> {
-  const { email, code, password } = params;
+  const { username, email, code, password } = params;
   // 调用注册接口server/api/register.ts
   return await $fetch<RegisterResponse>("/api/register", {
     method: "POST",
     body: {
+      username,
       email,
       code,
       password,

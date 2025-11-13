@@ -424,11 +424,7 @@ const handleSubmit = async () => {
       });
     } else {
       // 注册模式
-      await register({
-        email: form.email,
-        code: form.code,
-        password: form.password,
-      }).then((res) => {
+      await register({ ...form }).then((res) => {
         // 注册失败处理
         if (!res.success) {
           console.log("注册失败后端返回:", res);

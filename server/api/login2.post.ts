@@ -126,7 +126,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
 
     try {
       const [rows] = await mySql`
-        SELECT id, email, username, password FROM "user" WHERE email = ${email} LIMIT 1
+        SELECT id, email, username, password FROM "users" WHERE email = ${email} LIMIT 1
       `;
 
       console.log("📊【数据库】查询结果:", rows);

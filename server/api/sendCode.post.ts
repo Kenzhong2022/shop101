@@ -18,6 +18,13 @@ export default defineEventHandler(async (event) => {
   if (!email) throw createError({ statusCode: 400, statusMessage: "邮箱必填" });
   // 验证邮箱格式
   if (
+    /**
+     * 邮箱格式验证正则表达式
+     * 匹配规则：
+     * - 用户名部分：可以包含字母、数字、下划线、点号和短横线 [a-zA-Z0-9_.-]+
+     * - 域名部分：可以包含字母、数字和短横线 @[a-zA-Z0-9-]+
+     * - 顶级域名：必须是 2 到 6 个字母 必须有一个点号
+     */
     !/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(
       email
     )

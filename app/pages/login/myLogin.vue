@@ -4,26 +4,26 @@
 
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-startstart justify-center p-4"
+    class="min-h-screen flex-1 bg-gradient-to-br from-primary-50 to-primary-100 flex items-start justify-center"
   >
-    <div class="w-full max-w-md flex flex-col gap-20px">
+    <div class="w-full flex flex-col gap-20px">
       <!-- 页面标题 -->
       <div class="text-center mb-8">
         <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4"
+          class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full"
         >
           <el-icon class="text-2xl text-white"><User /></el-icon>
         </div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        <h1 class="text-3xl font-bold text-#333">
           {{ isLoginMode ? "欢迎回来" : "创建账户" }}
         </h1>
-        <p class="text-gray-600">
+        <p class="text-#333">
           {{ isLoginMode ? "请登录您的账户" : "注册新账户开始购物" }}
         </p>
       </div>
 
       <!-- 登录/注册表单 -->
-      <el-card class="shadow-lg">
+      <el-card class="shadow-lg mx-auto w-80% aspect-3/4">
         <!-- 模式切换标签 -->
         <el-tabs
           v-model="activeTab"
@@ -477,9 +477,14 @@ const handleSendCode = async () => {
   await sendCode(form.email).then((res) => {
     // 发送验证码失败处理
     if (!res.success) {
+      // 验证码发送失败处理
       console.log("发送验证码失败后端返回:", res);
       ElMessage.error(res.message || "发送验证码失败");
     } else {
+      //开发中直接显性显示后端返回的验证码
+      ElMessage.success(
+        `【开发中直接显示验证码】验证码发送成功，验证码为：${res.code}`
+      );
       // 发送验证码成功处理
       console.log("发送验证码成功后端返回:", res);
     }

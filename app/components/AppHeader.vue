@@ -1,11 +1,9 @@
 <template>
   <!-- 头部 -->
-  <header class="bg-#ffff w-[1600px] max-w-full mx-auto h-65px flex-row">
-    <el-scrollbar class="h-100%">
-      <!-- 导航栏容器 -->
-      <nav
-        class="scrollbar-flex-content flex gap-8 justify-end flex-items-center flex-row"
-      >
+  <header class="bg-#ffff max-w-full h-65px flex flex-row justify-center">
+    <!-- 导航栏容器 -->
+    <nav class="w-full flex flex-1">
+      <el-scrollbar class="h-100% flex-1 scrollbar-flex-content">
         <!-- 导航链接 -->
         <NuxtLink
           v-for="item in navList"
@@ -13,7 +11,7 @@
           @click="handleNavClick(item)"
           class="no-underline flex-shrink-0 hover:cursor-pointer"
         >
-          <span
+          <div
             class="text-[#333] transition-colors duration-300 flex items-center gap-2px text-[18px]"
           >
             <!-- 根据导航项名称使用对应的阿里图标 -->
@@ -26,6 +24,7 @@
                     : '#333',
               }"
             ></i>
+            <!-- 导航项名称 -->
             <span
               class="hover:text-primary"
               :style="{
@@ -33,6 +32,7 @@
               }"
               >{{ item.name }}
             </span>
+            <!-- 下拉菜单 -->
             <el-dropdown>
               <span class="el-dropdown-link"> </span>
               <template #dropdown>
@@ -41,10 +41,10 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-          </span>
+          </div>
         </NuxtLink>
-      </nav>
-    </el-scrollbar>
+      </el-scrollbar>
+    </nav>
   </header>
   <!-- 搜索框 -->
 </template>
@@ -110,9 +110,11 @@ onMounted(() => {
 
 <style scoped lang="scss">
 :deep(.el-scrollbar__view) {
+  display: flex;
+  flex: 1;
+  gap: 12px;
   height: 100% !important;
   .scrollbar-flex-content {
-    display: flex;
     width: fit-content;
     height: 100%;
   }

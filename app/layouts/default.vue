@@ -9,7 +9,7 @@
       <!-- 传递信息给子组件 -->
       <AppHeader
         @sendRoute="handleChangeByRoute"
-        class="bg-white max-w-[1200px] mx-auto shadow-sm h-65px items-center flex-justify-end"
+        class="bg-white max-w-[1200px] shadow-sm h-65px"
         :msg="msg"
       />
       <!-- 吸顶搜索 -->

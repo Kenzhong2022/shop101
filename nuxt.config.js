@@ -93,76 +93,34 @@ export default defineNuxtConfig({
   // Vite 配置
   vite: {
     build: {
-      sourcemap: true, // 开启生产环境sourcemap（仅用于排查，修复后可关闭）
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // 标准化路径（兼容 Windows/Mac）
-            const normalizedId = id.replace(/\\/g, "/");
-            
-            // 第三方库分包
-            if (normalizedId.includes("node_modules")) {
-              // Element Plus
-              if (normalizedId.includes("element-plus")) {
-                console.log(`[📦 vendor-ui] ${normalizedId}`);
-                return "vendor-ui";
-              }
-              
-              // Vue生态
-              if (normalizedId.includes("vue") || normalizedId.includes("@vue")) {
-                console.log(`[📦 vendor-vue] ${normalizedId}`);
-                return "vendor-vue";
-              }
-              
-              // 工具库
-              if (normalizedId.includes("lodash") || normalizedId.includes("axios") || normalizedId.includes("dayjs")) {
-                console.log(`[📦 vendor-utils] ${normalizedId}`);
-                return "vendor-utils";
-              }
-              
-              // 其他第三方库
-              console.log(`[📦 vendor] ${normalizedId}`);
-              return "vendor";
+            const n = id.replace(/\\/g, "/");
+
+            /* 1. 框架运行时 – 所有页面都要，但体积最小，先拿 */
+            if (n.includes("vue") || n.includes("@vue/runtime"))
+              return "vendor-vue";
+
+            /* 2. 首页相关：页面本身 + 仅首页用到的组件/库 */
+            if (
+              n.includes("/pages/index") || // 入口
+              n.includes("/components/AppHeader") || // 以下仅首页用
+              n.includes("/components/AppFooter") ||
+              n.includes("/components/kk-color-picker") ||
+              n.includes("/components/kk-image") ||
+              n.includes("/components/stickyTop") ||
+              (n.includes("element-plus") &&
+                (n.includes("/carousel") || n.includes("/scrollbar"))) ||
+              n.includes("@nuxt/image") ||
+              n.includes("three") ||
+              n.includes("colorthief")
+            ) {
+              return "chunk-home"; // 统一一个 home chunk，浏览器第一次就拉完
             }
-            
-            // 业务页面分包
-            if (normalizedId.includes("/pages/")) {
-              const pageMatch = normalizedId.match(/\/pages\/([^\/]+)/);
-              if (pageMatch) {
-                const pageName = pageMatch[1];
-                console.log(`[📄 page-${pageName}] ${normalizedId}`);
-                return `page-${pageName}`;
-              }
-            }
-            
-            // 组件分包（处理动态导入的情况）
-            if (normalizedId.includes("/components/")) {
-              // 提取组件名称
-              const componentMatch = normalizedId.match(/\/components\/([^\/\?]+)/);
-              if (componentMatch) {
-                const componentName = componentMatch[1].toLowerCase();
-                console.log(`[🧩 component-${componentName}] ${normalizedId}`);
-                return `component-${componentName}`;
-              }
-              console.log(`[🧩 components] ${normalizedId}`);
-              return "components";
-            }
-            
-            // 工具函数分包
-            if (normalizedId.includes("/composables/")) {
-              console.log(`[🔧 composables] ${normalizedId}`);
-              return "composables";
-            }
-            
-            // 工具类分包
-            if (normalizedId.includes("/utils/")) {
-              console.log(`[⚙️ utils] ${normalizedId}`);
-              return "utils";
-            }
-            
-            // 默认分包
-            console.log(`[📁 default] ${normalizedId}`);
-            return "index";
+
+            /* 3. 剩下的全部扔进 async，按需加载 */
+            return "async";
           },
         },
       },
@@ -245,7 +203,8 @@ export default defineNuxtConfig({
 
   // 组件自动导入（Nuxt 原生配置，无需与 unplugin 重复）
   components: {
-    dirs: [], // 禁用自动导入，使用手动导入
+    dirs: ["~/components"], // 对应 app/components
+    global: true,
   },
   composables: ["~/composables/tools"],
 });

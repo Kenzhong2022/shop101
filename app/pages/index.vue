@@ -66,13 +66,12 @@ interface Banner {
 }
 
 // 直接导入图片，确保路径被正确处理
-const banner1 = "/img/banners/banner1.png";
-const banner2 = "/img/banners/banner2.png";
-const banner3 = "/img/banners/banner3.png";
-const banner4 = "/img/banners/banner4.png";
-const banner5 = "/img/banners/写真杂志1.jpeg";
-const banner6 = "/img/banners/写真杂志2.jpeg";
-import { string } from "three/tsl";
+const banner1 = "/img/banners/banner1.webp";
+const banner2 = "/img/banners/banner2.webp";
+const banner3 = "/img/banners/banner3.webp";
+const banner4 = "/img/banners/banner4.webp";
+const banner5 = "/img/banners/写真杂志1.webp";
+const banner6 = "/img/banners/写真杂志2.webp";
 
 const banners: Banner[] = [
   {

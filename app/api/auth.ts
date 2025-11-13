@@ -66,6 +66,7 @@ interface SendCodeRequest {
 interface SendCodeResponse {
   success: boolean;
   message: string;
+  code: string;
 }
 
 /**

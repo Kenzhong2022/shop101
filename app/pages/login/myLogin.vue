@@ -209,7 +209,7 @@
 
       <!-- 测试提示 -->
       <div class="mt-6 text-center text-xs text-gray-500">
-        <p>测试账户: user@shop101.com / 123456</p>
+        <p>测试账户: user@shop101.com / Aa123456</p>
         <p class="mt-1">路由守卫已激活 - 查看控制台输出</p>
       </div>
 
@@ -307,8 +307,8 @@ const onTabChange = (name: string) => {
 
 // 表单数据
 const form = reactive({
-  email: "",
-  password: "",
+  email: "user@shop101.com",
+  password: "Aa123456",
   confirmPassword: "",
   code: "",
   username: "",
@@ -482,7 +482,6 @@ const handleSendCode = async () => {
     } else {
       // 发送验证码成功处理
       console.log("发送验证码成功后端返回:", res);
-      ElMessage.success("验证码发送成功");
     }
   });
 

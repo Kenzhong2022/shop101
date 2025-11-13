@@ -9,6 +9,7 @@ interface SendCodeBody {
 interface SendCodeResponse {
   success: boolean;
   message: string;
+  code: string;
 }
 
 export default defineEventHandler(async (event) => {
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
   const code = nanoid(6); // 6 位随机串
   // 存储验证码，有效期 5 分钟
   setCode(email, code, 5 * 60);
-
+  console.log("🔑 验证码发送被点击，邮箱:", email, "验证码:", code);
   // 发送验证码邮件 （生产环境请换成真实的注册链接）
   await sendQQMail(
     email,
@@ -51,6 +52,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     success: true,
+    code: code,
     message: "验证码已发送至 QQ 邮箱",
   } as SendCodeResponse;
 });

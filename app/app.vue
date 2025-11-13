@@ -9,8 +9,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-
 // 引入全局 CSS 变量函数
 import { setThemeColor } from "@/plugins/global-css-vars.client";
 

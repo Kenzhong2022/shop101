@@ -11,7 +11,7 @@
       src="/KKShopLogo.svg"
       style="height: 100%; aspect-ratio: 1 / 1"
     />
-    <kk-search class="max-h-60%"></kk-search>
+    <kk-search class="max-h-60%" />
     <!-- <img src="/KKShopLogo.svg" /> -->
     <el-image
       :lazy="true"

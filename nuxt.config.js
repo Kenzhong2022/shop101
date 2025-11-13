@@ -135,8 +135,15 @@ export default defineNuxtConfig({
               }
             }
             
-            // 组件分包
+            // 组件分包（处理动态导入的情况）
             if (normalizedId.includes("/components/")) {
+              // 提取组件名称
+              const componentMatch = normalizedId.match(/\/components\/([^\/\?]+)/);
+              if (componentMatch) {
+                const componentName = componentMatch[1].toLowerCase();
+                console.log(`[🧩 component-${componentName}] ${normalizedId}`);
+                return `component-${componentName}`;
+              }
               console.log(`[🧩 components] ${normalizedId}`);
               return "components";
             }
@@ -238,8 +245,7 @@ export default defineNuxtConfig({
 
   // 组件自动导入（Nuxt 原生配置，无需与 unplugin 重复）
   components: {
-    dirs: ["~/components"], // 对应 app/components
-    global: true,
+    dirs: [], // 禁用自动导入，使用手动导入
   },
   composables: ["~/composables/tools"],
 });

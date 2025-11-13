@@ -6,14 +6,14 @@
       <!-- 页面跳转进度条组件 -->
 
       <!-- 这是头部通用组件 -->
-      <!-- 传递信息给子组件 -->
-      <AppHeader
-        @sendRoute="handleChangeByRoute"
-        class="bg-white max-w-[1200px] mx-auto shadow-sm h-65px items-center flex-justify-end"
-        :msg="msg"
-      />
-      <!-- 吸顶搜索 -->
-      <StickyTop class="w-100%" v-if="showStickyTop" />
+        <!-- 传递信息给子组件 -->
+        <app-header
+          @sendRoute="handleChangeByRoute"
+          class="bg-white max-w-[1200px] mx-auto shadow-sm h-65px items-center flex-justify-end"
+          :msg="msg"
+        />
+        <!-- 吸顶搜索 -->
+        <sticky-top class="w-100%" v-if="showStickyTop" />
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
       <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
         <!-- 侧边栏：通过状态控制是否显示 -->
@@ -35,7 +35,7 @@
       </div>
 
       <!-- 这是底部通用组件 -->
-      <AppFooter />
+        <app-footer />
     </div>
   </div>
 </template>

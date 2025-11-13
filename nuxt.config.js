@@ -96,48 +96,40 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // 简单分包策略：只分第三方库和自己写的代码
-            const normalizedId = id.replace(/\\/g, "/");
-            
-            // 第三方库统一打包到 vendor
-            if (normalizedId.includes("node_modules")) {
-              console.log(`[📦 vendor] ${normalizedId}`);
-              return "vendor";
+            const n = id.replace(/\\/g, "/");
+
+            /* ---------------- 1. 第三方库 ---------------- */
+            if (n.includes("node_modules")) {
+              // 大框架
+              if (n.includes("vue") || n.includes("@vue/")) return "vendor-vue";
+              // 路由/状态
+              if (n.includes("vue-router")) return "vendor-router";
+              if (n.includes("pinia") || n.includes("vuex"))
+                return "vendor-store";
+              // 工具集
+              if (/lodash|dayjs|moment/.test(n)) return "vendor-utils";
+              // UI 库
+              if (n.includes("element-plus")) return "vendor-ui";
+              if (n.includes("@headlessui")) return "vendor-ui";
+              // 网络
+              if (n.includes("axios") || n.includes("ofetch"))
+                return "vendor-http";
+              // 其他三方一律统一
+              return "vendor-others";
             }
-            
-            // 自己写的代码按功能简单分包
-            if (normalizedId.includes("/pages/")) {
-              console.log(`[📄 pages] ${normalizedId}`);
-              return "pages";
-            }
-            
-            if (normalizedId.includes("/components/")) {
-              console.log(`[🧩 components] ${normalizedId}`);
-              return "components";
-            }
-            
-            if (normalizedId.includes("/layouts/")) {
-              console.log(`[🏗️ layouts] ${normalizedId}`);
-              return "layouts";
-            }
-            
-            if (normalizedId.includes("/composables/")) {
-              console.log(`[🔧 composables] ${normalizedId}`);
-              return "composables";
-            }
-            
-            if (normalizedId.includes("/utils/")) {
-              console.log(`[⚙️ utils] ${normalizedId}`);
-              return "utils";
-            }
-            
-            if (normalizedId.includes("/plugins/")) {
-              console.log(`[🔌 plugins] ${normalizedId}`);
-              return "plugins";
-            }
-            
-            // 默认
-            console.log(`[📁 other] ${normalizedId}`);
+
+            /* ---------------- 2. 业务代码 ---------------- */
+            // 页面级入口（pages 或 views）
+            const pageMatch =
+              n.match(/\/pages\/([^/]+)/) || n.match(/\/views\/([^/]+)/);
+            if (pageMatch) return `page-${pageMatch[1]}`;
+
+            // 共享组件、组合式函数、工具
+            if (n.includes("/components/")) return "chunk-components";
+            if (n.includes("/composables/")) return "chunk-composables";
+            if (n.includes("/utils/")) return "chunk-utils";
+
+            // 兜底
             return "index";
           },
         },

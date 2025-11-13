@@ -1,7 +1,7 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
-  <kk-color-picker @change="handleColorChange" />
-  <kk-image :src="banner6" />
+  <LazyKkColorPicker @change="handleColorChange" />
+  <LazyKkImage :src="banner6" />
   <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
   <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->

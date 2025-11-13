@@ -96,85 +96,48 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // 标准化路径（兼容 Windows/Mac）
+            // 简单分包策略：只分第三方库和自己写的代码
             const normalizedId = id.replace(/\\/g, "/");
             
-            // ⚡ 核心依赖 - 必须一起加载，避免循环依赖
-            if (normalizedId.includes("vue") || 
-                normalizedId.includes("@vue") ||
-                normalizedId.includes("element-plus") ||
-                normalizedId.includes("@nuxt/image") ||
-                normalizedId.includes("tinycolor2")) {
-              console.log(`[⚡ vendor-core] ${normalizedId}`);
-              return "vendor-core";
-            }
-            
-            // 🏠 首页相关 - 合并为一个包
-            if (normalizedId.includes("/pages/index") ||
-                normalizedId.includes("/layouts/default") ||
-                normalizedId.includes("/components/kk-color-picker") || 
-                normalizedId.includes("/components/kk-image") ||
-                normalizedId.includes("/components/stickyTop") ||
-                normalizedId.includes("/components/AppHeader") ||
-                normalizedId.includes("/components/AppFooter")) {
-              console.log(`[🏠 home-bundle] ${normalizedId}`);
-              return "home-bundle";
-            }
-            
-            // 📦 第三方库 - 按类型分组
+            // 第三方库统一打包到 vendor
             if (normalizedId.includes("node_modules")) {
-              // 工具库
-              if (normalizedId.includes("lodash") || 
-                  normalizedId.includes("dayjs") ||
-                  normalizedId.includes("moment") ||
-                  normalizedId.includes("axios")) {
-                console.log(`[📦 vendor-utils] ${normalizedId}`);
-                return "vendor-utils";
-              }
-              
-              // CSS相关
-              if (normalizedId.includes("sass") || 
-                  normalizedId.includes("less") ||
-                  normalizedId.includes("postcss")) {
-                console.log(`[📦 vendor-css] ${normalizedId}`);
-                return "vendor-css";
-              }
-              
-              // 其他第三方库
-              console.log(`[📦 vendor-others] ${normalizedId}`);
-              return "vendor-others";
+              console.log(`[📦 vendor] ${normalizedId}`);
+              return "vendor";
             }
-
-            // 📄 页面分包 - 保持简单
+            
+            // 自己写的代码按功能简单分包
             if (normalizedId.includes("/pages/")) {
-              const pageMatch = normalizedId.match(/\/pages\/([^\/]+)/);
-              if (pageMatch) {
-                const pageName = pageMatch[1];
-                console.log(`[📄 page-${pageName}] ${normalizedId}`);
-                return `page-${pageName}`;
-              }
+              console.log(`[📄 pages] ${normalizedId}`);
+              return "pages";
             }
-
-            // 🧩 其他组件 - 保持简单
+            
             if (normalizedId.includes("/components/")) {
               console.log(`[🧩 components] ${normalizedId}`);
               return "components";
             }
-
-            // 🔧 工具函数
+            
+            if (normalizedId.includes("/layouts/")) {
+              console.log(`[🏗️ layouts] ${normalizedId}`);
+              return "layouts";
+            }
+            
             if (normalizedId.includes("/composables/")) {
               console.log(`[🔧 composables] ${normalizedId}`);
               return "composables";
             }
-
-            // ⚙️ 工具类
+            
             if (normalizedId.includes("/utils/")) {
               console.log(`[⚙️ utils] ${normalizedId}`);
               return "utils";
             }
-
-            // 📁 默认
-            console.log(`[📁 default] ${normalizedId}`);
+            
+            if (normalizedId.includes("/plugins/")) {
+              console.log(`[🔌 plugins] ${normalizedId}`);
+              return "plugins";
+            }
+            
+            // 默认
+            console.log(`[📁 other] ${normalizedId}`);
             return "index";
           },
         },

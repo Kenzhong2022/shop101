@@ -45,9 +45,9 @@ export default defineEventHandler(async (event) => {
   console.log("🔑 验证码发送被点击，邮箱:", email, "验证码:", code);
   // 发送验证码邮件 （生产环境请换成真实的注册链接）
   await sendQQMail(
-    email,
-    "注册验证码",
-    `您的验证码是：<b style="color:#ff6600">${code}</b>，5 分钟内有效。`
+    email, // 收件人邮箱
+    "注册验证码给你发来了，牛不牛？快点注册！！！", // 邮件标题
+    `您的验证码是：<b style="color:#ff6600">${code}</b>，5 分钟内有效。` // 邮件内容
   );
 
   return {

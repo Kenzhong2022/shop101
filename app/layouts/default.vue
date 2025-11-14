@@ -24,7 +24,7 @@
         ></NuxtLayout>
 
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 p-50px bg-white rounded-lg shadow-sm w-100%">
+        <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
           <NuxtPage
             :keepalive="{
               max: 10, // 最多缓存 10 个页面实例

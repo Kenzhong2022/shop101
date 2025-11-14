@@ -39,23 +39,11 @@ export default defineNuxtConfig({
           "Cache-Control": "public, max-age=31536000, immutable",
         },
       },
-      // ② 首页 HTML（路径 / ）
-      "/": {
-        headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-        },
-      },
-      // ③ 其它 HTML 页面（按需加）
-      "/product/**": {
-        headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-        },
-      },
     },
   },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  ssr: true,
+  ssr: true, // 开启服务端渲染
   pages: true,
 
   // 1. 核心：指定公共目录为 app 之下的 public（相对于项目根目录）

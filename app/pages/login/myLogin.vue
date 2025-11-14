@@ -443,8 +443,6 @@ const handleSubmit = async () => {
     }
   } catch (error: any) {
     // 登录/注册失败处理
-    console.error("❌ 登录/注册失败:", error);
-    ElMessage.error(error.data?.statusMessage || "登录/注册失败，请重试");
   } finally {
     isLoading.value = false;
   }

@@ -1,3 +1,5 @@
+import request from "@/utils/request";
+
 /**
  * 认证相关 API 接口
  * 登录模块的 API 函数
@@ -48,15 +50,12 @@ export async function register(
 ): Promise<RegisterResponse> {
   const { username, email, code, password } = params;
   // 调用注册接口server/api/register.ts
-  return await $fetch<RegisterResponse>("/api/register", {
-    method: "POST",
-    body: {
-      username,
-      email,
-      code,
-      password,
-    } as RegisterRequest,
-  });
+  return await request.post<RegisterResponse>("/api/register", {
+    username,
+    email,
+    code,
+    password,
+  } as RegisterRequest);
 }
 
 interface SendCodeRequest {
@@ -75,10 +74,9 @@ interface SendCodeResponse {
  * @returns 验证码响应
  */
 export async function sendCode(email: string): Promise<SendCodeResponse> {
-  return await $fetch<SendCodeResponse>("/api/sendCode", {
-    method: "POST",
-    body: { email } as SendCodeRequest,
-  });
+  return await request.post<SendCodeResponse>("/api/sendCode", {
+    email,
+  } as SendCodeRequest);
 }
 
 /**
@@ -89,11 +87,10 @@ export async function sendCode(email: string): Promise<SendCodeResponse> {
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   try {
     // 调用登录接口server/api/login2.ts
-    const response = await $fetch<LoginResponse>("/api/login2", {
-      method: "POST",
-      body: credentials,
-    });
-
+    const response = await request.post<LoginResponse>(
+      "/api/login2",
+      credentials
+    );
     return response;
   } catch (error) {
     console.error("登录失败:", error);
@@ -106,9 +103,7 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  */
 export async function logout(): Promise<void> {
   try {
-    await $fetch("/api/auth/logout", {
-      method: "POST",
-    });
+    await request.post("/api/auth/logout");
   } catch (error) {
     console.error("登出失败:", error);
     throw error;

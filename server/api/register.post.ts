@@ -24,6 +24,20 @@ export default defineEventHandler(async (event) => {
   //连接数据库插入一条用户信息
   const mySql = getNeon();
   console.log("[Register] 数据库连接成功，准备注册用户:", username, email);
+
+  // 检查用户名是否已存在
+  const [userRows] =
+    await mySql`SELECT id FROM users WHERE username = ${username}`;
+  if (userRows.length > 0) {
+    throw createError({ statusCode: 400, statusMessage: "用户名已存在" });
+  }
+  // 检查邮箱是否已存在
+  const [emailRows] = await mySql`SELECT id FROM users WHERE email = ${email} `;
+  console.log("[Register] 检查邮箱是否已存在:", emailRows);
+  if (emailRows && emailRows.id) {
+    throw createError({ statusCode: 400, statusMessage: "邮箱已存在" });
+  }
+
   // 密码加密
   const hashedPassword = await bcrypt.hash(password, 10);
   console.log("[Register] 密码加密成功，加密后的密码:", hashedPassword);

@@ -110,9 +110,24 @@ onMounted(() => {
 
 <style scoped lang="scss">
 :deep(.el-scrollbar__view) {
+  padding: 0 20px;
   display: flex;
   flex: 1;
   gap: 12px;
+  align-items: center;
+
+  /* 基础间距（中等屏幕） */
+  gap: 20px;
+
+  /* 大屏（容器宽度>1200px）：间距放大 */
+  @media (min-width: 1200px) {
+    gap: 24px;
+  }
+
+  /* 小屏（容器宽度<768px）：间距缩小 */
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
   height: 100% !important;
   .scrollbar-flex-content {
     width: fit-content;

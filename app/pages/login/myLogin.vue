@@ -23,7 +23,7 @@
       </div>
 
       <!-- 登录/注册表单 -->
-      <el-card class="shadow-lg mx-auto w-80% aspect-3/4">
+      <el-card class="shadow-lg mx-auto w-80%">
         <!-- 模式切换标签 -->
         <el-tabs
           v-model="activeTab"

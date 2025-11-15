@@ -18,8 +18,12 @@ export default defineEventHandler(async (event) => {
   const { username, email, code, password } = await readBody<RegisterBody>(
     event
   );
-  if (getCode(email) !== code)
-    throw createError({ statusCode: 500, statusMessage: "验证码错误" });
+
+  // 验证验证码
+  if (getCode(email) !== code) {
+    console.log("[Register] 验证码错误，email:", email, "code:", code);
+    return { success: false, message: "验证码错误" } as RegisterResponse;
+  }
 
   //连接数据库插入一条用户信息
   const mySql = getNeon();
@@ -29,13 +33,16 @@ export default defineEventHandler(async (event) => {
   const [userRows] =
     await mySql`SELECT id FROM users WHERE username = ${username}`;
   if (userRows && userRows.username) {
-    throw createError({ statusCode: 500, statusMessage: "用户名已存在" });
+    console.log("[Register] 用户名已存在:", username);
+    return { success: false, message: "用户名已存在" } as RegisterResponse;
   }
+
   // 检查邮箱是否已存在
   const [emailRows] = await mySql`SELECT id FROM users WHERE email = ${email} `;
   console.log("[Register] 检查邮箱是否已存在:", emailRows);
   if (emailRows && emailRows.id) {
-    throw createError({ statusCode: 500, statusMessage: "邮箱已存在" });
+    console.log("[Register] 邮箱已存在:", email);
+    return { success: false, message: "邮箱已存在" } as RegisterResponse;
   }
 
   // 密码加密

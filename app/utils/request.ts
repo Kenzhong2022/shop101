@@ -133,7 +133,7 @@ async function request<T = any>(
 
     return response;
   } catch (error) {
-    // 统一的错误处理
+    // 只在控制台抛出错误，不显示弹窗提示
     if (error instanceof Error) {
       // 如果是我们抛出的业务错误，直接抛出（已经包含消息提示）
       if (
@@ -144,52 +144,16 @@ async function request<T = any>(
         throw error;
       }
 
-      // 网络请求错误
+      // 网络请求错误 - 只在控制台记录
       console.error(
         `[Request] 网络请求失败 - ${method} ${url}:`,
         error.message
       );
-      const networkErrorMsg = `网络请求失败: ${error.message}`;
-
-      // 弹出网络错误提示
-      try {
-        // 使用Element Plus的ElMessage
-        if (process.client) {
-          const { ElMessage } = await import("element-plus");
-          ElMessage.error(networkErrorMsg);
-        } else {
-          console.warn(
-            "[Request] 服务端环境无法显示ElMessage:",
-            networkErrorMsg
-          );
-        }
-      } catch (e) {
-        console.warn("[Request] 无法弹出ElMessage提示:", e);
-      }
-
-      throw new Error(networkErrorMsg);
+      throw new Error(`网络请求失败: ${error.message}`);
     } else {
-      // 未知错误
+      // 未知错误 - 只在控制台记录
       console.error(`[Request] 未知错误 - ${method} ${url}:`, error);
-      const unknownErrorMsg = "请求失败，请检查网络连接";
-
-      // 弹出未知错误提示
-      try {
-        // 使用Element Plus的ElMessage
-        if (process.client) {
-          const { ElMessage } = await import("element-plus");
-          ElMessage.error(unknownErrorMsg);
-        } else {
-          console.warn(
-            "[Request] 服务端环境无法显示ElMessage:",
-            unknownErrorMsg
-          );
-        }
-      } catch (e) {
-        console.warn("[Request] 无法弹出ElMessage提示:", e);
-      }
-
-      throw new Error(unknownErrorMsg);
+      throw new Error("请求失败，请检查网络连接");
     }
   }
 }

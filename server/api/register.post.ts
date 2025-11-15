@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   // 检查用户名是否已存在
   const [userRows] =
     await mySql`SELECT id FROM users WHERE username = ${username}`;
-  if (userRows.length > 0) {
+  if (userRows && userRows.username) {
     throw createError({ statusCode: 400, statusMessage: "用户名已存在" });
   }
   // 检查邮箱是否已存在

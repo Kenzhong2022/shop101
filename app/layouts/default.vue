@@ -1,11 +1,9 @@
 <template>
-  <div class="w-95% mx-auto overflow-hidden setBgc b-solid transform">
+  <div class="w-95% mx-auto overflow-hidden setBgc b-solid">
     <div
       class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
     >
-      <!-- 页面跳转进度条组件 -->
       <LazyKkColorPicker @change="handleColorChange" />
-
       <!-- 这是头部通用组件 -->
       <!-- 传递信息给子组件 -->
       <AppHeader
@@ -14,7 +12,20 @@
         :msg="msg"
       />
       <!-- 吸顶搜索 -->
-      <LazyStickyTop class="w-100%" v-if="showStickyTop" />
+      <LazyStickyTop class="w-100% max-w-1600px mx-auto" v-if="showStickyTop" />
+      <!-- 好友列表入口 -->
+      <div
+        class="friend-tab flex flex-col items-center"
+        @click="
+          () => {
+            isDrawerOpen = true;
+          }
+        "
+      >
+        <div>好友列表，添加好友，点击好友聊天</div>
+        <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
+      </div>
+
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
       <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
         <!-- 侧边栏：通过状态控制是否显示 -->
@@ -32,18 +43,6 @@
               exclude: [''], // 不排除任何页面（可添加页面路由名称来排除特定页面）
             }"
           ></NuxtPage>
-          <!-- 好友列表入口 -->
-          <div
-            class="friend-tab flex flex-col items-center"
-            @click="
-              () => {
-                isDrawerOpen = true;
-              }
-            "
-          >
-            <div>好友列表，添加好友，点击好友聊天</div>
-            <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
-          </div>
         </div>
       </div>
 
@@ -121,8 +120,8 @@ onMounted(() => {
 <style scoped>
 .friend-tab {
   position: fixed;
+  top: 200;
   right: 0;
-  top: 200px;
   writing-mode: vertical-rl; /* 文字从上到下 */
   white-space: nowrap; /* 不换行 */
   background: var(--el-color-primary);
@@ -130,6 +129,6 @@ onMounted(() => {
   padding: 12px;
   border-radius: 14px 0 0 14px;
   cursor: pointer;
-  z-index: 99;
+  z-index: 999;
 }
 </style>

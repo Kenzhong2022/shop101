@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sticky-top-container h-10% py-16px flex justify-around items-center"
+    class="sticky-top-container h-10vh py-16px flex justify-around items-center"
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
@@ -11,8 +11,7 @@
       src="/KKShopLogo.svg"
       style="height: 100%; aspect-ratio: 1 / 1"
     />
-    <kk-search class="max-h-60% flex-auto max-w-60% box-border px-4" />
-    <!-- <img src="/KKShopLogo.svg" /> -->
+    <kk-search />
   </div>
 </template>
 
@@ -52,22 +51,16 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   z-index: 100;
 
-  // 使用 JavaScript 控制的吸顶样式
   &.is-sticky {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 72px;
+    height: 10vh;
     background-color: white;
     padding: 8px 0;
     animation: slideDown 0.3s ease-in-out;
   }
-
-  // 备用方案：纯 CSS 吸顶实现（如果 JavaScript 实现有问题）
-  // position: sticky;
-  // top: 0;
-  // z-index: 100;
 }
 
 @keyframes slideDown {

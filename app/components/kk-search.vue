@@ -1,13 +1,15 @@
 <template>
   <!-- 搜索组件 -->
-  <div class="search min-w-[300px] position-relative">
+  <div
+    class="search min-w-[300px] position-relative max-h-60% flex-auto max-w-60% box-border px-4"
+  >
     <el-input
       v-model="input"
-      class="border-transparent w-full min-h-20px bg-#fff overflow-hidden"
+      class="border-transparent w-full bg-#fff overflow-hidden"
       placeholder="Please input"
     >
       <template #prefix>
-        <el-button type="primary" class="min-h-40px" @click="handleSearch">
+        <el-button type="primary" @click="handleSearch">
           <el-icon class="text-#fff">
             <Search />
           </el-icon>

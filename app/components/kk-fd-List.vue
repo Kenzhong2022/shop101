@@ -1,7 +1,7 @@
 /** * 好友列表：添加好友，点击好友聊天 */
 <template>
   <el-drawer
-    :modal="false"
+    :modal="true"
     :resizable="allowResize"
     :model-value="drawer"
     @update:model-value="handleDrawerUpdate"
@@ -39,7 +39,21 @@
             <LazyKkSearch @search="handleSearch"></LazyKkSearch>
           </div>
         </div>
-        <div class="flex-auto">显示结果部分</div>
+        <div class="flex-auto flex flex-col p-20px">
+          <div
+            v-for="fd in friendList"
+            :key="fd.id"
+            class="flex flex-row h-200px b-solid b-primary mb-10px p-20px box-border"
+          >
+            <el-image
+              :src="'/icon头像1.webp'"
+              class="h-100% rounded-full"
+            ></el-image>
+            <div class="flex flex-col justify-between">
+              <div class="text-lg font-bold">用户名: {{ fd.username }}</div>
+            </div>
+          </div>
+        </div>
         <div class="flex-1">底部</div>
       </div>
     </template>
@@ -113,8 +127,8 @@ const handleSearch = (val) => {
   };
   // 调用搜索好友接口
   searchFriends(params).then((res) => {
-    console.log("搜索好友结果", res);
-    friendList.value = res.data || [];
+    console.log("搜索好友结果", res.list);
+    friendList.value = res.list || [];
   });
 
   // 处理搜索结果

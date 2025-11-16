@@ -1,17 +1,17 @@
 <template>
   <div
-    class="sticky-top-container h-10vh py-16px flex justify-around items-center"
+    class="sticky-top-container max-h-100px h-10vh py-16px flex justify-around items-center"
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
     <!-- <img src="/KKShopLogo.svg" /> -->
     <el-image
       :lazy="true"
-      class=""
+      class="flex-3"
       src="/KKShopLogo.svg"
       style="height: 100%; aspect-ratio: 1 / 1"
     />
-    <kk-search />
+    <kk-search class="flex-1" />
   </div>
 </template>
 

@@ -34,10 +34,8 @@
     </template>
     <template #default>
       <div class="flex flex-col h-full">
-        <div class="flex flex-col">
-          <div class="p-10px">
-            <LazyKkSearch @search="handleSearch"></LazyKkSearch>
-          </div>
+        <div class="p-10px w-full flex justify-center">
+          <LazyKkSearch @search="handleSearch" class="flex-1"></LazyKkSearch>
         </div>
         <div class="flex-auto flex flex-col p-20px">
           <div

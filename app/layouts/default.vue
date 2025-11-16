@@ -1,5 +1,5 @@
 <template>
-  <div class="w-95% mx-auto overflow-hidden setBgc b-solid">
+  <div class="w-full overflow-hidden setBgc">
     <div
       class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
     >
@@ -36,7 +36,7 @@
         ></NuxtLayout>
 
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 bg-white rounded-lg shadow-sm w-100% transform">
+        <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
           <NuxtPage
             :keepalive="{
               max: 10, // 最多缓存 10 个页面实例
@@ -120,7 +120,7 @@ onMounted(() => {
 <style scoped>
 .friend-tab {
   position: fixed;
-  top: 200;
+  top: 33%;
   right: 0;
   writing-mode: vertical-rl; /* 文字从上到下 */
   white-space: nowrap; /* 不换行 */

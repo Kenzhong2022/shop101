@@ -32,12 +32,43 @@ async function request<T = any>(
   } = options;
 
   try {
+    // 从cookie中获取token
+    let token = "";
+    if (process.client) {
+      // 读取所有 Cookie（字符串格式："auth-token=xxx; other-cookie=yyy"）
+      const allCookies = document.cookie;
+
+      // 解析出 auth-token 的值
+      const getAuthToken = () => {
+        const cookieArr = allCookies.split("; ");
+        for (const cookie of cookieArr) {
+          const [name, value] = cookie.split("=");
+          if (name === "auth-token") {
+            return value;
+          }
+        }
+        return null; // 未找到时返回 null
+      };
+
+      const authToken = getAuthToken();
+      token = authToken || "";
+    }
+
+    // 控制台打印token信息（调试用）
+    if (token) {
+      console.log(`[Request] 从cookie获取token成功: ${token}`);
+    } else {
+      console.log("[Request] cookie中未找到token");
+    }
+
     // 构建完整的请求配置
     const requestConfig: any = {
       method,
       timeout,
       headers: {
         "Content-Type": "application/json",
+        // 如果cookie中有token，添加到请求头
+        Authorization: `Bearer ${token}`,
         ...headers,
       },
     };

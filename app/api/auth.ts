@@ -1,9 +1,15 @@
-import request from "@/utils/request";
-
 /**
  * 认证相关 API 接口
  * 登录模块的 API 函数
+ * 使用axios插件替代request工具
  */
+// 导入axios实例
+import { useNuxtApp } from "#app";
+// 获取axios实例的辅助函数
+const getAxios = () => {
+  const nuxtApp = useNuxtApp();
+  return nuxtApp.$axios;
+};
 
 interface LoginRequest {
   email: string;
@@ -50,12 +56,14 @@ export async function register(
 ): Promise<RegisterResponse> {
   const { username, email, code, password } = params;
   // 调用注册接口server/api/register.ts
-  return await request.post<RegisterResponse>("/api/register", {
+  const axios = getAxios();
+  const response = await axios.post<RegisterResponse>("/register", {
     username,
     email,
     code,
     password,
   } as RegisterRequest);
+  return response.data;
 }
 
 interface SendCodeRequest {
@@ -74,9 +82,11 @@ interface SendCodeResponse {
  * @returns 验证码响应
  */
 export async function sendCode(email: string): Promise<SendCodeResponse> {
-  return await request.post<SendCodeResponse>("/api/sendCode", {
+  const axios = getAxios();
+  const response = await axios.post<SendCodeResponse>("/sendCode", {
     email,
   } as SendCodeRequest);
+  return response.data;
 }
 
 /**
@@ -85,13 +95,11 @@ export async function sendCode(email: string): Promise<SendCodeResponse> {
  * @returns 登录响应
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
+  const axios = getAxios();
   try {
     // 调用登录接口server/api/login2.ts
-    const response = await request.post<LoginResponse>(
-      "/api/login2",
-      credentials
-    );
-    return response;
+    const response = await axios.post<LoginResponse>("/login2", credentials);
+    return response.data;
   } catch (error) {
     console.error("登录失败:", error);
     throw error;
@@ -102,8 +110,9 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  * 用户登出接口
  */
 export async function logout(): Promise<void> {
+  const axios = getAxios();
   try {
-    await request.post("/api/auth/logout");
+    await axios.post("/auth/logout");
   } catch (error) {
     console.error("登出失败:", error);
     throw error;

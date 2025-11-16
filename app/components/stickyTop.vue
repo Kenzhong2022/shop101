@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sticky-top-container h-72px py-16px flex justify-around items-center"
+    class="sticky-top-container h-10% py-16px flex justify-around items-center"
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >

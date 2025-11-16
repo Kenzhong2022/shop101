@@ -3,7 +3,7 @@
   <div class="search min-w-[300px] position-relative">
     <el-input
       v-model="input"
-      class="border-transparent w-full min-h-40px bg-#fff overflow-hidden"
+      class="border-transparent w-full min-h-20px bg-#fff overflow-hidden"
       placeholder="Please input"
     >
       <template #prefix>

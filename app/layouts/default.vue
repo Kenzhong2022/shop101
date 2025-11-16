@@ -1,5 +1,5 @@
 <template>
-  <div class="w-95% mx-auto overflow-hidden setBgc b-solid">
+  <div class="w-95% mx-auto overflow-hidden setBgc b-solid transform">
     <div
       class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
     >
@@ -25,17 +25,33 @@
         ></NuxtLayout>
 
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
+        <div class="flex-1 bg-white rounded-lg shadow-sm w-100% transform">
           <NuxtPage
             :keepalive="{
               max: 10, // 最多缓存 10 个页面实例
               exclude: [''], // 不排除任何页面（可添加页面路由名称来排除特定页面）
             }"
           ></NuxtPage>
+          <!-- 好友列表入口 -->
+          <div
+            class="friend-tab flex flex-col items-center"
+            @click="
+              () => {
+                isDrawerOpen = true;
+              }
+            "
+          >
+            <div>好友列表，添加好友，点击好友聊天</div>
+            <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
+          </div>
         </div>
       </div>
+
       <!-- 好友列表 -->
-      <LazyKkFdList></LazyKkFdList>
+      <LazyKkFdList
+        :drawer="isDrawerOpen"
+        @update:drawer="(newValue: boolean) => (isDrawerOpen = newValue)"
+      ></LazyKkFdList>
       <!-- 这是底部通用组件 -->
       <AppFooter />
     </div>
@@ -45,8 +61,11 @@
 <script setup lang="ts">
 // 引入全局 CSS 变量函数
 import { setThemeColor } from "@/plugins/global-css-vars.client";
-
+// 全局颜色变量
 const color = ref("");
+
+// 好友列表抽屉是否打开
+const isDrawerOpen = ref<boolean>(true);
 
 interface routeItem {
   name: string;
@@ -99,4 +118,18 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.friend-tab {
+  position: fixed;
+  right: 0;
+  top: 200px;
+  writing-mode: vertical-rl; /* 文字从上到下 */
+  white-space: nowrap; /* 不换行 */
+  background: var(--el-color-primary);
+  color: #fff;
+  padding: 12px;
+  border-radius: 14px 0 0 14px;
+  cursor: pointer;
+  z-index: 99;
+}
+</style>

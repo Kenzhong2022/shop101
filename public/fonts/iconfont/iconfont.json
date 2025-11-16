@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "3247647",
+      "name": "展开",
+      "font_class": "right-arrow",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "11348890",
+      "name": "back",
+      "font_class": "back",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "1301",
+      "name": "应用",
+      "font_class": "yingyong",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
       "icon_id": "15391387",
       "name": "用户",
       "font_class": "yonghu",

@@ -56,7 +56,44 @@ export async function deleteFriend(
   return response.data;
 }
 
+/**
+ * 获取好友聊天记录
+ * @param params 获取好友聊天记录参数（包含好友ID和拉取聊天记录数量，开始时间，结束时间）
+ * @returns 好友聊天记录列表
+ */
+export async function ChatRecords(
+  params: ChatRecordsRequest
+): Promise<ChatRecordsResponse> {
+  const axios = getAxios();
+  const response = await axios.post<ChatRecordsResponse>(
+    `/friends/chatRecords`,
+    params
+  );
+  return response.data;
+}
+
 // ==================== 类型声明 ====================
+
+export interface ChatRecords {
+  senderId: string; // 发送者ID
+  receiverId: string; // 接收者ID
+  content: string; // 聊天内容
+  createdAt: string; // 创建时间
+  seq: number; // 聊天记录序号 越大越新
+}
+
+export interface ChatRecordsResponse {
+  success: boolean;
+  message: string;
+  list: ChatRecords[]; // 好友聊天记录列表
+}
+
+export interface ChatRecordsRequest {
+  friendId: string; // 好友ID
+  count: number; // 拉取聊天记录数量
+  startTime?: string; // 开始时间（可选）
+  endTime?: string; // 结束时间（可选）
+}
 
 // 分页参数接口
 export interface PaginationParams {

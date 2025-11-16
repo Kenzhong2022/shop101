@@ -4,6 +4,7 @@
       class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
     >
       <!-- 页面跳转进度条组件 -->
+      <LazyKkColorPicker @change="handleColorChange" />
 
       <!-- 这是头部通用组件 -->
       <!-- 传递信息给子组件 -->
@@ -13,7 +14,7 @@
         :msg="msg"
       />
       <!-- 吸顶搜索 -->
-      <stickyTop class="w-100%" v-if="showStickyTop" />
+      <LazyStickyTop class="w-100%" v-if="showStickyTop" />
       <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
       <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
         <!-- 侧边栏：通过状态控制是否显示 -->
@@ -33,7 +34,8 @@
           ></NuxtPage>
         </div>
       </div>
-
+      <!-- 好友列表 -->
+      <LazyKkFdList></LazyKkFdList>
       <!-- 这是底部通用组件 -->
       <AppFooter />
     </div>
@@ -41,6 +43,11 @@
 </template>
 
 <script setup lang="ts">
+// 引入全局 CSS 变量函数
+import { setThemeColor } from "@/plugins/global-css-vars.client";
+
+const color = ref("");
+
 interface routeItem {
   name: string;
   path: string;
@@ -75,6 +82,16 @@ const getFirstRouteLevel = (path: string): string => {
   // 有第二个 / → 截到该位置；没有 → 整个路径就是第一个层级
   return secondSlashIndex > 0 ? path.slice(0, secondSlashIndex) : path;
 };
+
+// 处理颜色选择变化
+function handleColorChange(newHsl: string) {
+  color.value = newHsl;
+  console.log("即将转换主题色:", newHsl);
+  if (process.client) {
+    setThemeColor(newHsl);
+  }
+}
+
 onMounted(() => {
   console.log("当前路由", route);
   showMenu.value = getFirstRouteLevel(route.path) === "/category";

@@ -1,28 +1,12 @@
 <template>
   <div class="app-bg">
-    <kk-color-picker @change="handleColorChange" />
-
     <NuxtLayout>
       <NuxtPage></NuxtPage>
     </NuxtLayout>
   </div>
 </template>
 
-<script setup lang="ts">
-// 引入全局 CSS 变量函数
-import { setThemeColor } from "@/plugins/global-css-vars.client";
-
-const color = ref("");
-
-// 处理颜色选择变化
-function handleColorChange(newHsl: string) {
-  color.value = newHsl;
-  console.log("即将转换主题色:", newHsl);
-  if (process.client) {
-    setThemeColor(newHsl);
-  }
-}
-</script>
+<script setup lang="ts"></script>
 
 <style lang="scss">
 /* 基础字体：适配大部分屏幕（1vw ≈ 3.75px 在375px手机上，1vw≈19.2px 在1920px电脑上） */

@@ -1,6 +1,5 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
-  <LazyKkColorPicker @change="handleColorChange" />
   <LazyKkImage :src="banner6" />
   <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
   <!-- https://ibb.co/4wjH0LRK -->
@@ -15,7 +14,7 @@
         border: '4px solid var(--el-color-primary)',
         aspectRatio: '7/2',
       }"
-      class="rd-20px w-100%"
+      class="box-border rd-20px w-100%"
     >
       <el-carousel-item v-for="item in banners" :key="item.id">
         <NuxtImg
@@ -31,8 +30,6 @@
       <div
         class="absolute banner w-100% flex justify-center items-center"
         :style="{
-          width: 'calc(100% + 100px)',
-          left: '-50px',
           aspectRatio: '18/2',
         }"
       >
@@ -45,11 +42,6 @@
 </template>
 
 <script setup lang="ts">
-// 引入全局 CSS 变量函数
-import { setThemeColor } from "@/plugins/global-css-vars.client";
-
-import { ref, onMounted } from "#imports";
-const color = ref("");
 // 页面元数据
 definePageMeta({
   title: "首页",
@@ -95,15 +87,6 @@ const banners: Banner[] = [
     image: banner4,
   },
 ];
-
-// 处理颜色选择变化
-function handleColorChange(newHsl: string) {
-  color.value = newHsl;
-  console.log("即将转换主题色:", newHsl);
-  if (process.client) {
-    setThemeColor(newHsl);
-  }
-}
 </script>
 
 <style scoped>

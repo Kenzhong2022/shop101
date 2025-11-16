@@ -8,7 +8,7 @@
   >
     <div class="w-full flex flex-col gap-20px">
       <!-- 页面标题 -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-8px">
         <div
           class="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full"
         >
@@ -23,11 +23,11 @@
       </div>
 
       <!-- 登录/注册表单 -->
-      <el-card class="shadow-lg mx-auto w-80%">
+      <el-card class="shadow-lg mx-auto">
         <!-- 模式切换标签 -->
         <el-tabs
           v-model="activeTab"
-          class="mb-6"
+          class="mb-6px"
           @tab-change="onTabChange(activeTab)"
         >
           <el-tab-pane label="登录" name="login" />
@@ -101,12 +101,7 @@
                 size="small"
               >
                 <template #suffix>
-                  <el-button
-                    link
-                    type="primary"
-                    @click="handleSendCode"
-                    class="p-0"
-                  >
+                  <el-button type="primary" @click="handleSendCode" class="p-0">
                     获取验证码
                   </el-button>
                 </template>
@@ -128,7 +123,7 @@
           <!-- 登录模式下的额外选项 -->
           <div
             v-if="isLoginMode"
-            class="flex items-center justify-between mb-4"
+            class="flex items-center justify-between mb-4px"
           >
             <el-checkbox v-model="form.rememberMe" label="记住我" />
             <el-button link type="primary" @click="handleForgotPassword">
@@ -152,12 +147,12 @@
         </el-form>
 
         <!-- 分隔线 -->
-        <div class="relative my-6">
+        <div class="relative my-6px">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300"></div>
           </div>
           <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">或者</span>
+            <span class="px-2px bg-white text-gray-500">或者</span>
           </div>
         </div>
 
@@ -183,7 +178,7 @@
         </div>
 
         <!-- 注册模式下的协议 -->
-        <div v-if="!isLoginMode" class="mt-6 text-center">
+        <div v-if="!isLoginMode" class="mt-6px text-center">
           <p class="text-xs text-gray-500">
             注册即表示您同意我们的
             <el-button
@@ -208,9 +203,9 @@
       </el-card>
 
       <!-- 测试提示 -->
-      <div class="mt-6 text-center text-xs text-gray-500">
+      <div class="mt-6px text-center text-xs text-gray-500">
         <p>测试账户: user@shop101.com / Aa123456</p>
-        <p class="mt-1">路由守卫已激活 - 查看控制台输出</p>
+        <p class="mt-1px">路由守卫已激活 - 查看控制台输出</p>
       </div>
 
       <!-- 服务条款对话框 -->
@@ -505,3 +500,9 @@ onMounted(() => {
   });
 });
 </script>
+
+<style scoped lang="scss">
+:deep(.el-input__wrapper) {
+  padding: 10px;
+}
+</style>

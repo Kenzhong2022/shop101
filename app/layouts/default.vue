@@ -64,7 +64,7 @@ import { setThemeColor } from "@/plugins/global-css-vars.client";
 const color = ref("");
 
 // 好友列表抽屉是否打开
-const isDrawerOpen = ref<boolean>(true);
+const isDrawerOpen = ref<boolean>(false);
 
 interface routeItem {
   name: string;

@@ -30,8 +30,12 @@ export default defineNuxtConfig({
     inlineSSRStyles: true, // 首屏样式直接塞进 <style>
     payloadExtraction: false, // 避免把样式再打一份 JSON 到客户端
   },
+
   // 处理304
   nitro: {
+    experimental: {
+      websocket: true,
+    },
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
       "/_nuxt/**": {
@@ -169,8 +173,10 @@ export default defineNuxtConfig({
 
   // 组件自动导入（Nuxt 原生配置，无需与 unplugin 重复）
   components: {
-    dirs: ["~/components"], // 对应 app/components
+    dirs: ["~/components"], // 对应 app/components 目录 和 app/composables 目录
     global: true,
   },
-  composables: ["~/composables/tools"],
+  composables: {
+    directories: ["~/composables"], // 自动导入 ~/composables 下的所有 .js/.ts 文件
+  },
 });

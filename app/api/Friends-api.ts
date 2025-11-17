@@ -72,7 +72,28 @@ export async function ChatRecords(
   return response.data;
 }
 
+export async function sendMessage(
+  data: SendMessageRequest
+): Promise<SendMessageResponse> {
+  const axios = getAxios();
+  const response = await axios.post<SendMessageResponse>(
+    `/friends/sendMessage`,
+    data
+  );
+  return response.data;
+}
+
 // ==================== 类型声明 ====================
+
+export interface SendMessageRequest {
+  friendId: string; // 好友ID
+  content: string; // 聊天内容
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message: string;
+}
 
 export interface ChatRecords {
   senderId: string; // 发送者ID

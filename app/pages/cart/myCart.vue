@@ -1,3 +1,8 @@
 <template>
-    <h1>我的购物车</h1>
+  <div>
+    <Connection />
+    <!-- 直接使用客户端组件 -->
+  </div>
 </template>
+
+<script setup></script>

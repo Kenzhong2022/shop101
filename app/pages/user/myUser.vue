@@ -16,7 +16,7 @@
     </h2>
     <h2>
       过期时间为：{{
-        formatTime(useUser.expireTime, {
+        formatTime(userState.expireTime, {
           format: "dateTime",
           dateSeparator: "-",
           timeSeparator: ":",
@@ -167,6 +167,7 @@ definePageMeta({
 });
 
 import { useUser } from "~/composables/useUser";
+const userState = useUser(); // 关键：加括号调用
 import formatTime from "~/composables/tools";
 
 const expTime = ref<number>(0);
@@ -182,14 +183,14 @@ onMounted(() => {
 onActivated(() => {
   console.log("页面激活时调用");
   // 重新获取cookie中的token
-  useUser.value.token = useCookie("auth-token").value as string;
-  useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
+  userState.value.token = useCookie("auth-token").value as string;
+  userState.value.expireTime = Number(userState.value.token.split(".")[1]);
 
   // 检查token是否过期
   // 使用composables中useUser的信息
-  expTime.value = useUser.value.expireTime;
-  console.log("token:", useUser.value.token);
-  console.log("过期时间:", typeof useUser.value.expireTime);
+  expTime.value = userState.value.expireTime;
+  console.log("token:", userState.value.token);
+  console.log("过期时间:", typeof userState.value.expireTime);
   let t = new Date().getTime();
   console.log(
     "当前时间:",
@@ -201,7 +202,7 @@ onActivated(() => {
   );
   console.log(
     "过期时间格式化:",
-    formatTime(useUser.value.expireTime, {
+    formatTime(userState.value.expireTime, {
       format: "dateTime",
       dateSeparator: "-",
       timeSeparator: ":",

@@ -1,9 +1,9 @@
 /**
  * Axios 插件配置
- * 
+ *
  * 功能：为整个 Nuxt 应用提供统一配置的 Axios 实例
  * 定位：作为全局 HTTP 请求工具，替代原生 axios
- * 
+ *
  * 核心特性：
  * 1. 统一的基础路径和超时配置
  * 2. 自动添加 Authorization 令牌（客户端环境）
@@ -12,10 +12,10 @@
  * 5. HTTP 状态码智能提示（401/403/404/500等）
  * 6. 业务逻辑错误自动识别（基于 success: false 字段）
  * 7. 客户端友好的错误提示（使用 Element Plus ElMessage）
- * 
+ *
  * 使用方式：
  * 在组件或 API 文件中通过 useNuxtApp().$axios 获取配置好的实例
- * 
+ *
  * 示例：
  * const { $axios } = useNuxtApp()
  * const response = await $axios.get('/user/profile')
@@ -103,8 +103,20 @@ export default defineNuxtPlugin((nuxtApp) => {
 
             if (process.client) {
               ElMessage.error(message);
-              // 可以在这里添加跳转到登录页的逻辑
-              // navigateTo('/login')
+              console.log(
+                "当前页面URL【编码】:",
+                location.href,
+                encodeURIComponent(location.href)
+              );
+              console.log(
+                "当前页面URL【解码】:",
+                location.href,
+                decodeURIComponent(encodeURIComponent(location.href))
+              );
+              // 跳转到登录页并携带当前页面URL作为重定向参数
+              navigateTo(
+                "/login/myLogin?redirect=" + encodeURIComponent(location.href)
+              );
             }
             break;
 

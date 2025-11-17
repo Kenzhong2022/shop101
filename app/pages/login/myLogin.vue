@@ -268,7 +268,7 @@ import {
   Promotion,
 } from "@element-plus/icons-vue";
 import { useUser } from "~/composables/useUser";
-
+const userState = useUser(); // 关键：加括号调用
 // 页面元信息
 definePageMeta({
   title: "登录/注册",
@@ -395,13 +395,17 @@ const handleSubmit = async () => {
           // 登录成功，将 token 存储到 localStorage
           if (res.data?.token) {
             localStorage.setItem("token", res.data.token);
+            userState.value.user_id =
+              Number(res.data?.token.split(".")[0]) || 0;
+            // 现在就可以读/写
+            userState.value.token = res.data?.token || "";
+            userState.value.expireTime = Number(
+              userState.value.token.split(".")[1]
+            );
           }
 
-          // 现在就可以读/写
-          useUser.value.token = res.data?.token || "";
-          useUser.value.expireTime = Number(useUser.value.token.split(".")[1]);
-          console.log("token:", useUser.value.token);
-          console.log("过期时间:", useUser.value.expireTime);
+          console.log("token:", userState.value.token);
+          console.log("过期时间:", userState.value.expireTime);
           //存入token到cookie
           useCookie("auth-token").value = res.data?.token || "";
 

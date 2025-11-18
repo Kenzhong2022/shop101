@@ -54,10 +54,7 @@ export default getNeon;
   } catch (e) {
     console.error("\n❌ 数据库连接失败！");
     //数据库信息
-    console.error(
-      "数据库URL:",
-      NUXT_NEON_DATABASE_URL.replace(/:(.*)@/, ":***@")
-    );
+    console.error("数据库URL:", NUXT_NEON_DATABASE_URL);
     console.error("错误信息:", e.message);
     console.error("======================================\n");
   }

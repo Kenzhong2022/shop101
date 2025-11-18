@@ -23,7 +23,6 @@ export default defineNuxtConfig({
     // 客户端可访问的配置（放这里会暴露给前端，数据库相关一律不放这）
     public: {
       // 比如前端需要的接口基础路径等，数据库相关一律不放这
-      socketUrl: process.env.NUXT_PUBLIC_SOCKET_URL,
       SOCKET_URL: process.env.NUXT_PUBLIC_SOCKET_URL,
     },
   },

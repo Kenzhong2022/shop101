@@ -2,7 +2,8 @@
 import { neon } from "@neondatabase/serverless";
 
 // 1. 用 Nuxt 官方方式读 env（自动导入，无需 import）
-const { NUXT_NEON_DATABASE_URL } = useRuntimeConfig();
+const NUXT_NEON_DATABASE_URL =
+  "postgresql://neondb_owner:npg_OXBCtqD50PZK@ep-misty-forest-a1e20hnb.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
 
 if (!NUXT_NEON_DATABASE_URL) {
   throw new Error("❌ 未配置 NUXT_NEON_DATABASE_URL 环境变量");

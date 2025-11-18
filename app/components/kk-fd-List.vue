@@ -263,6 +263,7 @@ const inputMessage = ref("");
 const handleSendMessage = () => {
   console.log("发送消息", inputMessage.value, userState.value);
   console.log("last_read_seq", chatRecords.value[0].last_read_seq);
+  // 构建参数
   const payload = {
     roomId: Number(chatRecords.value[0].room_id),
     sender_id: Number(userState.value.user_id) || -1,
@@ -278,8 +279,10 @@ const handleSendMessage = () => {
   };
   console.log("payload", payload);
   // emit 事件（发送消息到服务端）
-  socket.emit("chat", payload);
-
+  socket.emit("chat", payload).then((res) => {
+    console.log("发送消息成功", res);
+  });
+  console.log("清空", err);
   // 清空输入框
   inputMessage.value = "";
 };

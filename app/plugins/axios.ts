@@ -100,17 +100,17 @@ export default defineNuxtPlugin((nuxtApp) => {
           case 401:
             const message = data?.message || "登录已过期，请重新登录";
             console.error(`[Axios] 响应拦截器 - 401未授权: ${message}`);
-
+            const route = useRoute();
+            const currentPath = route.fullPath; // 获取当前完整路径（如 /friends?page=2#chat）
+            console.log("当前页面URL【编码】:", currentPath);
             if (process.client) {
               ElMessage.error(message);
               console.log(
                 "当前页面URL【编码】:",
-                location.href,
                 encodeURIComponent(location.href)
               );
               console.log(
                 "当前页面URL【解码】:",
-                location.href,
                 decodeURIComponent(encodeURIComponent(location.href))
               );
               // 跳转到登录页并携带当前页面URL作为重定向参数

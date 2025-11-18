@@ -394,6 +394,8 @@ const handleSubmit = async () => {
           console.log("登录成功后端返回token：", res.data?.token);
           // 登录成功，将 token 存储到 localStorage
           if (res.data?.token) {
+            //存入token到cookie
+            useCookie("auth-token").value = res.data?.token || "";
             localStorage.setItem("token", res.data.token);
             userState.value.user_id =
               Number(res.data?.token.split(".")[0]) || 0;
@@ -402,12 +404,9 @@ const handleSubmit = async () => {
             userState.value.expireTime = Number(
               userState.value.token.split(".")[1]
             );
+            console.log("token:", userState.value.token);
+            console.log("过期时间:", userState.value.expireTime);
           }
-
-          console.log("token:", userState.value.token);
-          console.log("过期时间:", userState.value.expireTime);
-          //存入token到cookie
-          useCookie("auth-token").value = res.data?.token || "";
 
           // 成功通知
           ElNotification({
@@ -416,9 +415,17 @@ const handleSubmit = async () => {
             type: "success",
             duration: 3000,
           });
-
-          // 登录成功，跳转到用户中心
-          navigateTo("/user/myUser");
+          // 根据url中是否有redirect参数，判断是否跳转到指定页面
+          const redirect = useRoute().query.redirect as string | undefined;
+          console.log("redirect:", redirect);
+          const target = redirect?.slice("http://localhost:3000".length);
+          if (target) {
+            // 登录成功，跳转到用户中心
+            navigateTo(target);
+          } else {
+            // 登录成功，跳转到用户中心
+            navigateTo("/user/myUser");
+          }
         }
       });
     } else {

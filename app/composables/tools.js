@@ -82,5 +82,17 @@ const formatTime = (time, options = {}) => {
   }
 };
 
+/**
+ * 从 http://xxxx/目标url 中分离出目标url
+ * @param fullUrl 完整URL（如 http://xxxx/user/list?page=2#tab1）
+ * @returns 目标url（如 user/list?page=2#tab1），匹配失败返回空字符串
+ */
+const extractTargetUrl = (fullUrl) => {
+  const regex = /^(?:https?:\/\/)?[^\/]+\/(.*)$/;
+  const matchResult = fullUrl.match(regex);
+  // 匹配成功则返回捕获的目标url，失败返回空字符串
+  return matchResult?.[1] || "";
+};
 // 导出（支持直接导出函数，更方便调用）
 export default formatTime;
+export { extractTargetUrl };

@@ -37,6 +37,10 @@ export default defineNitroPlugin((nitroApp) => {
   io.on("connection", (socket) => {
     console.log("[ws] 有新客户端连接 🚀");
     
+    // 向客户端发送连接成功的问候
+    socket.emit("hello", "来自服务器的问候");
+    console.log(`[ws] 向客户端 ${socket.id} 发送问候消息`);
+    
     // 监听客户端发送的 chat 事件
     socket.on("chat", (payload) => {
       console.log("[ws] 客户端发送消息:", payload);
@@ -78,8 +82,9 @@ export default defineNitroPlugin((nitroApp) => {
 
 1. **自动连接**: 服务器启动时自动初始化 Socket.IO
 2. **事件监听**: 监听 `connection` 和 `disconnect` 事件
-3. **消息处理**: 接收 `chat` 事件并广播响应
-4. **路由配置**: 处理 `/socket.io/` 路径的 WebSocket 请求
+3. **问候功能**: 客户端连接成功后自动发送问候消息
+4. **消息处理**: 接收 `chat` 事件并广播响应
+5. **路由配置**: 处理 `/socket.io/` 路径的 WebSocket 请求
 
 ## 🚀 客户端配置详解
 
@@ -130,16 +135,24 @@ function onChat(payload) {
   msgList.value.push(payload);
 }
 
+// 监听服务器问候事件
+function onHello(message) {
+  console.log("[ws] 收到服务器问候:", message);
+  msgList.value.push({ from: "服务器", body: message });
+}
+
 // 绑定事件
 socket.on("connect", onConnect);
 socket.on("disconnect", onDisconnect);
 socket.on("chat", onChat);
+socket.on("hello", onHello); // 监听问候事件
 
 // 组件卸载时解绑事件
 onBeforeUnmount(() => {
   socket.off("connect", onConnect);
   socket.off("disconnect", onDisconnect);
   socket.off("chat", onChat);
+  socket.off("hello", onHello); // 解绑问候事件
 });
 </script>
 
@@ -187,6 +200,7 @@ npm run dev
 
 - ✅ 连接状态显示为 "connected"
 - ✅ 传输方式显示（如 "polling" 或 "websocket"）
+- ✅ 连接成功后自动收到服务器问候消息
 - ✅ 发送消息后，服务端会广播响应
 - ✅ 消息列表显示完整的对话记录
 
@@ -227,6 +241,9 @@ npm run dev
 ### 服务端事件
 
 | 事件名称 | 方向 | 描述 |
+|---------|------|------|
+| `hello` | 服务端→客户端 | 连接成功后的问候消息 |
+| `chat` | 服务端→客户端 | 广播聊天消息 |
 |---------|------|------|
 | `chat` | 服务端→客户端 | 广播聊天消息 |
 

@@ -13,6 +13,8 @@ export default defineNitroPlugin((nitroApp) => {
 
   io.on("connection", (socket) => {
     console.log("[ws] 有新客户端连接 🚀");
+    // 向客户端发送连接成功的问候
+    socket.emit("hello", "来自服务器【本地的nuxt-socket】的问候");
     socket.on("join", (roomId) => {
       socket.join(`room${roomId}`);
       console.log(`[ws] ${socket.id} 加入房间 room${roomId}`);

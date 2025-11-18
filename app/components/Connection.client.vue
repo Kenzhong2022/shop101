@@ -46,11 +46,18 @@ function onServerTime({ msg, time }) {
   console.log(`[${time}] ${msg}`);
 }
 
+/* 监听服务器问候事件 */
+function onHello(message) {
+  console.log("[ws] 收到服务器问候:", message);
+  msgList.value.push({ from: "服务器", body: message });
+}
+
 // 绑定事件 （连接成功、断开、自定义事件）
 socket.on("connect", onConnect);
 socket.on("disconnect", onDisconnect);
 socket.on("chat", onChat); // ② 注册监听
 socket.on("serverTime", onServerTime);
+socket.on("hello", onHello); // 监听服务器问候事件
 
 /* 组件卸载时统一解绑, 避免内存泄漏 */
 onBeforeUnmount(() => {
@@ -63,6 +70,8 @@ onBeforeUnmount(() => {
   socket.off("chat", onChat);
   // 解绑服务端时间事件
   socket.off("serverTime", onServerTime);
+  // 解绑问候事件
+  socket.off("hello", onHello);
 });
 </script>
 

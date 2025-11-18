@@ -317,7 +317,6 @@ function onServerTime({ msg, time }) {
 // 监听服务器问候事件
 function onHello(greeting) {
   console.log("【客户端】收到服务器问候:", greeting);
-  // 可以在这里添加显示问候消息的逻辑
 }
 
 // 绑定事件 （连接成功、断开、自定义事件）

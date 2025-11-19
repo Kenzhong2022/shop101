@@ -15,14 +15,14 @@
       <LazyStickyTop class="w-100% max-w-1600px mx-auto" v-if="showStickyTop" />
       <!-- 好友列表入口 -->
       <div
-        class="friend-tab flex flex-col items-center"
+        class="friend-tab flex flex-col items-center h-20%"
         @click="
           () => {
             isDrawerOpen = true;
           }
         "
       >
-        <div>好友列表，添加好友，点击好友聊天</div>
+        <div>好友列表</div>
         <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
       </div>
 

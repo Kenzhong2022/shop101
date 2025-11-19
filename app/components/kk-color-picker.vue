@@ -282,7 +282,7 @@ const applyColor = async () => {
 
 .theme-tab {
   position: fixed;
-  top: 50%;
+  top: 50px;
   left: 0px;
   writing-mode: vertical-rl; /* 文字从上到下 */
   white-space: nowrap; /* 不换行 */

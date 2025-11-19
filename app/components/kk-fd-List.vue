@@ -3,6 +3,7 @@
   <div>
     <!-- 好友列表抽屉:关闭遮罩层，可以穿透遮罩层点击抽屉外的内容 -->
     <el-drawer
+      v-loading="loading"
       :modal="false"
       :modal-penetrable="true"
       :resizable="allowResize"
@@ -35,6 +36,7 @@
           </div>
         </div>
       </template>
+      <!-- 好友列表 -->
       <template #default>
         <div class="flex flex-col h-full">
           <div class="p-10px w-full flex justify-center">
@@ -63,14 +65,21 @@
 
     <!-- 聊天弹窗 -->
     <el-dialog
+      class="chat-room-dialog"
+      v-loading="loading"
       :modal="false"
       :modal-penetrable="true"
       v-model="chatRoomDialogVisible"
       title="Tips"
-      width="800"
+      :width="isMobile ? '100%' : '800px'"
       draggable
+      @close="handleCloseChatRoomDialog"
     >
-      <template #header>聊天室</template>
+      <template #header>
+        <header class="text-center text-2xl font-bold">
+          {{ curFd.username }}
+        </header>
+      </template>
       <template #default>
         <!-- 聊天室双方聊天内容 -->
         <div class="bg-[#ccc] p-10px">
@@ -113,7 +122,12 @@
       <template #footer>
         <!-- 用户输入部分 -->
         <div class="flex flex-row gap-2px">
-          <el-input v-model="inputMessage" placeholder="请输入消息"></el-input>
+          <!-- 输入框点击enter 发送消息 -->
+          <el-input
+            v-model="inputMessage"
+            @keyup.enter="handleSendMessage"
+            placeholder="请输入消息"
+          ></el-input>
           <el-button type="primary" @click="handleSendMessage">发送</el-button>
         </div>
       </template>
@@ -140,6 +154,7 @@ const transport = ref(
   socket.connected ? socket.io.engine.transport.name : "N/A"
 );
 
+//父组件传递的抽屉状态
 const props = defineProps({
   drawer: {
     type: Boolean,
@@ -148,8 +163,12 @@ const props = defineProps({
 });
 import { useMediaQuery, useElementSize } from "@vueuse/core";
 
+//加载中
+const loading = ref(true);
+
 // 响应式判断是否为移动端
 const isMobile = useMediaQuery("(max-width: 768px)");
+
 // 根据是否为移动端动态设置抽屉宽度
 const drawerWidth = computed(() => (isMobile.value ? "100%" : "30%"));
 
@@ -165,8 +184,9 @@ watch(
   async (val) => {
     if (!val) return;
     await nextTick();
-    // el-drawer 渲染后类名 .el-drawer 一定存在
+    // el-drawer 渲染后类名 .el-drawer 一定存在 （抽屉打开时）就可以获取到 抽屉根节点
     drawerEl.value = document.querySelector(".el-drawer");
+    handleSearch("");
   }
 );
 
@@ -261,11 +281,26 @@ const handleClickFd = (fd) => {
 const inputMessage = ref("");
 // 定义方法：handleSendMessage
 const handleSendMessage = () => {
-  console.log("发送消息", inputMessage.value, userState.value);
+  console.log("发送消息", inputMessage.value);
+  // 校验用户输入
+  if (!inputMessage.value.trim()) {
+    // ElMessage({
+    //   message: "请输入消息",
+    //   type: "warning",
+    //   // 持续时间 2s
+    //   duration: 2000,
+    //   // 居中显示
+    //   center: true,
+    //   appendTo: document.querySelector(".chat-room-dialog"),
+    // });
+    const { $message } = useNuxtApp();
+    $message.warning("请输入消息");
+    return;
+  }
   console.log("last_read_seq", chatRecords.value[0].last_read_seq);
   // 构建参数
   const payload = {
-    roomId: Number(chatRecords.value[0].room_id),
+    roomId: Number(chatRecords.value[0].room_id) || -1,
     sender_id: Number(userState.value.user_id) || -1,
     msg_type: 1,
     body: inputMessage.value,
@@ -277,6 +312,10 @@ const handleSendMessage = () => {
     }),
     last_read_seq: chatRecords.value[chatRecords.value.length - 1].seq || -1,
   };
+  ElMessage({
+    message: `发送成功:${payload.body}用户id是：${payload.sender_id}`,
+    type: "success",
+  });
   console.log("payload", payload);
   // emit 事件（发送消息到服务端）
   socket.emit("chat", payload).then((res) => {
@@ -299,6 +338,17 @@ function onConnect() {
   // 加入房间
   socket.emit("join", 1);
 }
+
+/**
+ * @description 关闭聊天弹窗，断开连接
+ */
+const handleCloseChatRoomDialog = () => {
+  console.log("关闭聊天弹窗");
+  // 关闭弹窗
+  chatRoomDialogVisible.value = false;
+  // 断开连接
+  socket.disconnect();
+};
 
 // 断开连接回调
 function onDisconnect() {

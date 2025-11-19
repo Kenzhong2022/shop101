@@ -1,6 +1,6 @@
 <template>
   <!-- 搜索组件 -->
-  <div class="search min-w-[300px] position-relative flex-auto box-border px-4">
+  <div class="search min-w-[300px] position-relative flex-auto box-border">
     <el-input
       v-model="input"
       class="border-transparent w-full bg-#fff overflow-hidden"
@@ -27,9 +27,15 @@ const input = ref("");
 const emit = defineEmits(["search"]);
 
 // 定义方法：handleSearch
+/**
+ * 搜索方法
+ * @description 当用户点击搜索按钮时，触发搜索事件，将输入框中的值作为搜索关键词。并且清空输入框。
+ */
 const handleSearch = () => {
   // 触发事件：search
   emit("search", input.value);
+  // 清空输入框
+  input.value = "";
 };
 </script>
 

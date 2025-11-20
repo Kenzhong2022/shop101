@@ -69,6 +69,7 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
     const token = useCookie("auth-token").value;
     // 保存to的路径，用于登录后跳转回原页面
     const redirectPath = to.fullPath;
+    console.log("🔄 保存跳转路径:", redirectPath);
     // 1.检查token是否存在
     if (!token) {
       console.log("token为空，重定向到登录页");

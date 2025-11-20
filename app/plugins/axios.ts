@@ -107,15 +107,15 @@ export default defineNuxtPlugin((nuxtApp) => {
               ElMessage.error(message);
               console.log(
                 "当前页面URL【编码】:",
-                encodeURIComponent(location.href)
+                encodeURIComponent(currentPath)
               );
               console.log(
                 "当前页面URL【解码】:",
-                decodeURIComponent(encodeURIComponent(location.href))
+                decodeURIComponent(encodeURIComponent(currentPath))
               );
               // 跳转到登录页并携带当前页面URL作为重定向参数
               navigateTo(
-                "/login/myLogin?redirect=" + encodeURIComponent(location.href)
+                "/login/myLogin?redirect=" + encodeURIComponent(currentPath)
               );
             }
             break;

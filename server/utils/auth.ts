@@ -37,8 +37,11 @@ export function checkToken(token: string): number | ErrorResponse {
  * @param key 签名密钥
  * @returns HMAC签名结果
  */
-export function generateSignature(info: string, key: string): string {
-  return crypto.createHmac("sha256", key).update(info).digest("hex");
+export function generateSignature(info: string, secretKey: string): string {
+  //1. 校验参数
+  if (!info || !secretKey) throw new Error("参数不能为空");
+  //2. 生成签名 首先使用 SHA-256 算法和密钥 SECRET 创建 HMAC 实例， 然后更新 HMAC 实例，添加 info 字符串，最后计算签名并转换为十六进制字符串
+  return crypto.createHmac("sha256", secretKey).update(info).digest("hex");
 }
 
 /**
@@ -75,10 +78,11 @@ export function verifySignature(
  * @returns 格式为 uid.exp.sig 的登录令牌
  */
 export function generateLoginToken(
-  uid: string,
+  uid: number,
   exp: string,
   secretKey: string
 ): string {
   const sig = generateSignature(`${uid}.${exp}`, secretKey);
+  // 生成登录令牌: 用户ID.过期时间戳.签名
   return `${uid}.${exp}.${sig}`;
 }

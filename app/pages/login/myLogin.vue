@@ -408,20 +408,25 @@ const handleSubmit = async () => {
             type: "success",
             duration: 3000,
           });
+          const { $message } = useNuxtApp();
+
           // 根据url中是否有redirect参数，判断是否跳转到指定页面
           const redirect = useRoute().query.redirect as string;
-          const devMode = "http://localhost:3000";
-          const prodMode = "https://shop101-nuxt.netlify.app/";
-          const url = redirect.includes(prodMode) ? prodMode : devMode;
-          console.log("url:", url);
-          const target = redirect?.slice(url.length);
-          if (target) {
-            // 登录成功，跳转到用户中心
-            navigateTo(target);
-          } else {
-            // 登录成功，跳转到用户中心
-            navigateTo("/user/myUser");
+          console.log("redirect:", decodeURIComponent(redirect));
+          if (redirect) {
+            navigateTo(decodeURIComponent(redirect));
+            $message.success(
+              `登录成功！拥有backUrl参数，${decodeURIComponent(
+                redirect
+              )}将跳转到该页面`
+            );
+            return;
           }
+          $message.success(
+            "登录成功！固定跳转到用户中心方便查看token的过期时间"
+          );
+          // 登录成功，跳转到用户中心
+          navigateTo("/user/myUser");
         }
       });
     } else {

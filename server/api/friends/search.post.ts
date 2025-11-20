@@ -15,6 +15,7 @@ interface SearchOptions {
   sortBy?: string; // 排序字段
   order?: "asc" | "desc"; // 排序方式
   status?: "online" | "offline" | "all"; // 好友状态
+  userId: number; // 用户ID
 }
 
 // 搜索好友参数接口（包含分页和选项）
@@ -56,6 +57,7 @@ export default defineEventHandler(
         status = "all",
         sortBy = "username",
         order = "asc",
+        userId = 0,
       } = body;
       console.log("📝 搜索参数:", {
         keyword,
@@ -64,23 +66,24 @@ export default defineEventHandler(
         status,
         sortBy,
         order,
+        userId, //排除自己
       });
 
       const offset = (page - 1) * pageSize; // 计算偏移量
       const searchKeyword = `%${keyword}%`; // 模糊搜索关键词
 
       console.log(
-        `🔍 准备执行SQL查询 - 关键词: ${searchKeyword}, 排序: ${sortBy} ${order}, 分页: ${pageSize} OFFSET ${offset}`
+        `🔍 准备执行SQL查询 - 关键词: SELECT * FROM (SELECT * FROM users WHERE id not in (${userId}))  WHERE username LIKE ${searchKeyword}`
       );
       let rows: Friend[] = [];
       if (keyword) {
         rows = (await mySql`
-      SELECT * FROM users WHERE username LIKE ${searchKeyword}  
+      SELECT * FROM users WHERE id not in (${userId}) AND username LIKE ${searchKeyword}
     `) as Friend[];
         console.log("🔍 执行SQL查询结果:", rows[0]);
       } else {
         rows = (await mySql`
-        SELECT * FROM users 
+        SELECT * FROM users WHERE id not in (${userId}) 
       `) as Friend[];
         console.log(
           "🔍 执行SQL查询结果:",

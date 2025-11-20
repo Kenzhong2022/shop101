@@ -7,14 +7,18 @@
 
 import crypto from "node:crypto";
 const SECRET = process.env.HMAC_SECRET_KEY || "abc123"; // 从环境变量获取密钥，默认值为 "abc123"
-
+interface ErrorResponse {
+  code: number;
+  message: string;
+}
 // 检查 token 是否有效
-export function checkToken(token: string): number {
+export function checkToken(token: string): number | ErrorResponse {
   // token 格式：uid.exp.sig （uid 为用户 id，exp 为过期时间戳，sig 为签名）
   const [uid, exp, sig] = token.split(".");
   if (!uid || !exp || !sig) throw new Error("格式不对");
 
-  if (Date.now() > Number(exp)) throw new Error("已过期");
+  if (Date.now() > Number(exp))
+    return { code: 401, message: "已过期" } as ErrorResponse;
 
   // 验证签名
   const expect = crypto

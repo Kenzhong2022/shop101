@@ -28,14 +28,18 @@ let observer: IntersectionObserver | null = null;
 onMounted(() => {
   if (typeof window === "undefined" || !lazyImgRef.value) return;
 
+  // 2. 配置 IntersectionObserver 选项
   observer = new IntersectionObserver(
     (entries) => {
+      // 3. 遍历所有触发的元素
       for (const entry of entries) {
         console.log(
           "ratio:",
           entry.intersectionRatio,
           "boundingRect:",
-          entry.boundingClientRect.height
+          entry.boundingClientRect.height,
+          "isIntersecting:",
+          entry.isIntersecting
         );
         // 元素进入视口时触发
         if (entry?.isIntersecting) {
@@ -47,6 +51,7 @@ onMounted(() => {
       }
     },
     {
+      // 元素进入视口时触发
       threshold: 1,
     }
   );

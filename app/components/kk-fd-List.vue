@@ -3,7 +3,6 @@
   <div>
     <!-- 好友列表抽屉:关闭遮罩层，可以穿透遮罩层点击抽屉外的内容 -->
     <el-drawer
-      v-loading="loading"
       :modal="false"
       :modal-penetrable="true"
       :resizable="allowResize"
@@ -21,7 +20,7 @@
             class="flex items-center hover:text-primary"
             @click="handleDrawerUpdate(false)"
           >
-            {{ isMobile.value ? "返回首页" : "关闭好友列表" }}
+            {{ isMobile ? "返回首页" : "关闭好友列表" }}
             <i
               class="iconfont icon-back text-primary"
               :style="{ fontSize: '20px' }"
@@ -39,26 +38,30 @@
       <!-- 好友列表 -->
       <template #default>
         <div class="flex flex-col h-full">
-          <div class="p-10px w-full flex justify-center">
+          <div class="flex-1 p-10px w-full flex justify-center">
             <LazyKkSearch @search="handleSearch" class="flex-1"></LazyKkSearch>
           </div>
-          <div class="flex-auto flex flex-col p-20px">
-            <div
-              v-for="fd in friendList"
-              :key="fd.id"
-              class="flex flex-row h-200px b-solid b-primary mb-10px p-20px box-border hover:cursor-pointer"
-              @click="handleClickFd(fd)"
-            >
-              <el-image
-                :src="'/icon头像1.webp'"
-                class="h-100% rounded-full"
-              ></el-image>
-              <div class="flex flex-col justify-between">
-                <div class="text-lg font-bold">用户名: {{ fd.username }}</div>
+          <h4>测试滚动功能</h4>
+          <el-scrollbar height="500px">
+            <div class="flex-auto flex flex-col p-20px">
+              <!-- 一位好友 -->
+              <div
+                v-for="fd in friendList"
+                :key="fd.id"
+                class="flex flex-row h-200px b-solid b-primary mb-10px p-20px box-border hover:cursor-pointer"
+                @click="handleClickFd(fd)"
+              >
+                <el-image
+                  :src="'/icon头像1.webp'"
+                  class="h-100% rounded-full"
+                ></el-image>
+                <div class="flex flex-col justify-between">
+                  <div class="text-lg font-bold">用户名: {{ fd.username }}</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="flex-1">底部</div>
+          </el-scrollbar>
+          <div class="bg-#ccc">底部</div>
         </div>
       </template>
     </el-drawer>
@@ -66,7 +69,6 @@
     <!-- 聊天弹窗 -->
     <el-dialog
       class="chat-room-dialog"
-      v-loading="loading"
       :modal="false"
       :modal-penetrable="true"
       v-model="chatRoomDialogVisible"
@@ -77,7 +79,7 @@
     >
       <template #header>
         <header class="text-center text-2xl font-bold">
-          {{ curFd.username }}
+          {{ curFd.username }}{{ userState.user_id }}
         </header>
       </template>
       <template #default>
@@ -169,8 +171,9 @@ const loading = ref(true);
 // 响应式判断是否为移动端
 const isMobile = useMediaQuery("(max-width: 768px)");
 
-// 根据是否为移动端动态设置抽屉宽度
-const drawerWidth = computed(() => (isMobile.value ? "100%" : "30%"));
+// 1. 先给“占位值”
+const ssrWidth = "30%"; // 跟服务端保持一致，随便写 30% / 100% 都行
+const drawerWidth = ref(ssrWidth);
 
 // 2. 抽屉根节点（等 DOM 渲染完再挂）
 const drawerEl = ref(null);
@@ -192,15 +195,20 @@ watch(
 
 // 5. 如果你想根据宽度关闭 resizable
 const allowResize = computed(() => {
-  // 当抽屉宽度大于 520px 时，允许调整大小
+  //宽度可调整但 当前宽度与可视窗口的比例不能小于30%
   console.log("curDrawerWidth.value", curDrawerWidth.value);
-  return curDrawerWidth.value > 520;
+  return curDrawerWidth.value >= 380;
 });
 const scrollbarRef = ref(null);
 
 onMounted(() => {
   console.log("drawerWidth", drawerWidth.value);
   console.log("userState.value", userState.value);
+  const mql = window.matchMedia("(max-width: 768px)");
+  const setWidth = () => (drawerWidth.value = mql.matches ? "100%" : "30%");
+  setWidth(); // 第一次
+  mql.addEventListener("change", setWidth); // 窗口大小变化也更新
+  onBeforeUnmount(() => mql.removeEventListener("change", setWidth));
 });
 const emit = defineEmits(["update:drawer"]);
 // 3. 抽屉状态变化时，通知父组件更新值
@@ -218,6 +226,7 @@ const handleSearch = (val) => {
   // 搜索好友
   const params = {
     keyword: val,
+    userId: userState.value.user_id,
   };
   // 调用搜索好友接口
   searchFriends(params).then((res) => {
@@ -267,6 +276,7 @@ const handleClickFd = (fd) => {
     chatRecords.value = res.list || [];
     //打开聊天弹窗
     chatRoomDialogVisible.value = true;
+    console.log("userState.value.user_id:", userState.value);
     // 连接到服务器
     socket.connect();
     // 等待滚动条渲染完成
@@ -282,8 +292,9 @@ const inputMessage = ref("");
 // 定义方法：handleSendMessage
 const handleSendMessage = () => {
   console.log("发送消息", inputMessage.value);
+  const msg = inputMessage.value;
   // 校验用户输入
-  if (!inputMessage.value.trim()) {
+  if (!msg.trim()) {
     // ElMessage({
     //   message: "请输入消息",
     //   type: "warning",
@@ -303,7 +314,7 @@ const handleSendMessage = () => {
     roomId: Number(chatRecords.value[0].room_id) || -1,
     sender_id: Number(userState.value.user_id) || -1,
     msg_type: 1,
-    body: inputMessage.value,
+    body: msg,
     // 格式化时间戳
     update_at: formatTime(new Date(), {
       format: "dateTime",
@@ -318,10 +329,7 @@ const handleSendMessage = () => {
   });
   console.log("payload", payload);
   // emit 事件（发送消息到服务端）
-  socket.emit("chat", payload).then((res) => {
-    console.log("发送消息成功", res);
-  });
-  console.log("清空", err);
+  socket.emit("chat", payload);
   // 清空输入框
   inputMessage.value = "";
 };

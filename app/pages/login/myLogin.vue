@@ -394,18 +394,11 @@ const handleSubmit = async () => {
           console.log("登录成功后端返回token：", res.data?.token);
           // 登录成功，将 token 存储到 localStorage
           if (res.data?.token) {
-            //存入token到cookie
-            useCookie("auth-token").value = res.data?.token || "";
+            // 使用封装的 updateUserState 方法更新用户状态
+            const { updateUserState } = await import("~/composables/useUser");
+            // 同时存储到 localStorage（向后兼容）
             localStorage.setItem("token", res.data.token);
-            userState.value.user_id =
-              Number(res.data?.token.split(".")[0]) || 0;
-            // 现在就可以读/写
-            userState.value.token = res.data?.token || "";
-            userState.value.expireTime = Number(
-              userState.value.token.split(".")[1]
-            );
-            console.log("token:", userState.value.token);
-            console.log("过期时间:", userState.value.expireTime);
+            updateUserState(userState, res.data.token);
           }
 
           // 成功通知
@@ -416,9 +409,12 @@ const handleSubmit = async () => {
             duration: 3000,
           });
           // 根据url中是否有redirect参数，判断是否跳转到指定页面
-          const redirect = useRoute().query.redirect as string | undefined;
-          console.log("redirect:", redirect);
-          const target = redirect?.slice("http://localhost:3000".length);
+          const redirect = useRoute().query.redirect as string;
+          const devMode = "http://localhost:3000";
+          const prodMode = "https://shop101-nuxt.netlify.app/";
+          const url = redirect.includes(prodMode) ? prodMode : devMode;
+          console.log("url:", url);
+          const target = redirect?.slice(url.length);
           if (target) {
             // 登录成功，跳转到用户中心
             navigateTo(target);

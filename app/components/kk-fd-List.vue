@@ -320,10 +320,10 @@ const handleSendMessage = () => {
     $message.warning("请输入消息");
     return;
   }
-  console.log("last_read_seq", chatRecords.value[0].last_read_seq);
+  console.log("last_read_seq", chatRecords?.value[0].seq);
   // 构建参数
   const payload = {
-    roomId: Number(chatRecords.value[0].room_id) || -1,
+    roomId: Number(chatRecords?.value[0]?.room_id) || -1,
     sender_id: Number(userState.value.user_id) || -1,
     msg_type: 1,
     body: msg,

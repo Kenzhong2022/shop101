@@ -142,8 +142,21 @@
 import { ref, onMounted } from "#imports";
 import { ChatRecords } from "~/api/Friends-api";
 import formatTime from "~/composables/tools";
-import { useUser } from "~/composables/useUser";
+import { useUser, getCurrentUser } from "~/composables/useUser";
 const userState = useUser(); // 关键：加括号调用
+
+// 调试：监听用户状态变化
+watchEffect(() => {
+  console.log("[kk-fd-List] 用户状态变化:", {
+    user_id: userState.value.user_id,
+    token: userState.value.token,
+  });
+});
+
+// 调试：获取当前用户信息
+onMounted(() => {
+  console.log("[kk-fd-List] 组件挂载时用户信息:", getCurrentUser());
+});
 
 // 引入搜索好友接口
 import { searchFriends } from "~/api/Friends-api";
@@ -203,7 +216,6 @@ const scrollbarRef = ref(null);
 
 onMounted(() => {
   console.log("drawerWidth", drawerWidth.value);
-  console.log("userState.value", userState.value);
   const mql = window.matchMedia("(max-width: 768px)");
   const setWidth = () => (drawerWidth.value = mql.matches ? "100%" : "30%");
   setWidth(); // 第一次
@@ -276,7 +288,7 @@ const handleClickFd = (fd) => {
     chatRecords.value = res.list || [];
     //打开聊天弹窗
     chatRoomDialogVisible.value = true;
-    console.log("userState.value.user_id:", userState.value);
+
     // 连接到服务器
     socket.connect();
     // 等待滚动条渲染完成

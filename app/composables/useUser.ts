@@ -1,171 +1,126 @@
-/**
- * 用户状态管理 Composable
- *
- * @使用说明
- *
- * 1. 基本使用方法：
- *    ```javascript
- *    // 在组件中导入和使用
- *    import { useUser } from '~/composables/useUser'
- *
- *    // 获取用户状态（响应式）
- *    const userState = useUser()
- *
- *    // 访问用户数据
- *    console.log('用户ID:', userState.value.user_id)
- *    console.log('Token:', userState.value.token)
- *    console.log('过期时间:', userState.value.expireTime)
- *    ```
- *
- * 2. 在模板中使用：
- *    ```vue
- *    <template>
- *      <div v-if="userState.user_id > 0">
- *        欢迎用户 {{ userState.user_id }}
- *      </div>
- *      <div v-else>
- *        请先登录
- *      </div>
- *    </template>
- *    ```
- *
- * 3. 更新用户状态：
- *    ```javascript
- *    // 登录成功后更新用户信息
- *    const handleLogin = (token) => {
- *      // 存储到 cookie
- *      useCookie('auth-token').value = token
- *
- *      // 更新用户状态
- *      userState.value.user_id = Number(token.split('.')[0])
- *      userState.value.token = token
- *      userState.value.expireTime = Number(token.split('.')[1])
- *    }
- *    ```
- *
- * 4. 检查登录状态：
- *    ```javascript
- *    // 检查是否已登录
- *    const isLoggedIn = computed(() => userState.value.user_id > 0)
- *
- *    // 检查 token 是否过期
- *    const isTokenExpired = computed(() => {
- *      return Date.now() > userState.value.expireTime
- *    })
- *    ```
- *
- * @注意
- * - 返回的是 ref 对象，需要通过 .value 访问和修改
- * - 用户状态会自动从 cookie 初始化
- * - token 格式："userId.expireTime.xxx"
- */
+// composables/useUser.ts
+import type { MaybeRef } from "@vueuse/core";
+import { ref, computed, unref, watchEffect, type Ref } from "vue";
+import { useCookie } from "#app";
 
-import { ref, computed } from "vue";
-import { useCookie } from "#app"; // Nuxt 3 内置，兼顾客户端/服务端读 Cookie
-
-// 用户状态类型定义（保留原结构）
-interface UserState {
-  user_id: number; // 用户ID
-  token: string; // 用户token
-  expireTime: number; // token过期时间戳
+export interface UserState {
+  user_id: number;
+  token: string;
+  expireTime: number;
 }
 
-/**
- * 用户状态管理 Composable
- * @returns {Ref<UserState>} 响应式用户状态对象
- */
+/** 统一 cookie 配置，防止多实例不一致 */
+const cookieOptions = {
+  httpOnly: false, // 前端需要读写
+  secure: true,
+  sameSite: "lax",
+  maxAge: 60 * 60 * 24 * 7, // 7 天
+};
+
+// 全局共享的用户状态实例
+let globalUserState: Ref<UserState> | null = null;
+
 export function useUser() {
-  const userState = ref<UserState>({
-    user_id: -1,
-    token: "",
-    expireTime: 0,
-  });
+  // 如果全局实例不存在，创建它
+  if (!globalUserState) {
+    globalUserState = ref<UserState>({
+      user_id: -1,
+      token: "",
+      expireTime: 0,
+    });
 
-  /**
-   * 从 cookie 初始化用户状态
-   * token 格式：userId.expireTime.xxx
-   */
-  const initUserState = () => {
-    const token = useCookie("auth-token").value as string;
-    if (!token) {
-      return;
+    /** 只在客户端初始化一次 */
+    const initUserState = () => {
+      if (process.server) return;
+      const token = useCookie<string | null>("auth-token").value;
+      if (!token) return;
+
+      const [uid, exp, sign] = token.split(".");
+      console.log("打印参数", uid, exp, sign);
+      globalUserState!.value.user_id = Number(uid) || -1;
+      globalUserState!.value.token = token;
+      globalUserState!.value.expireTime = Number(exp) || 0;
+    };
+
+    initUserState();
+    /* 👇 一旦任何属性变化就打印 */
+    if (process.client) {
+      watchEffect(() => {
+        console.log(">".repeat(20));
+        console.log("[useUser] userState changed", {
+          ...globalUserState!.value,
+        });
+        console.log("<".repeat(20));
+      });
     }
+  }
 
-    try {
-      const tokenParts = token.split(".");
-      if (tokenParts.length >= 2) {
-        userState.value.user_id = Number(tokenParts[0]) || -1;
-        userState.value.token = token;
-        userState.value.expireTime = Number(tokenParts[1]) || 0;
-      }
-    } catch (error) {
-      console.error("解析 token 失败:", error);
-      // token 解析失败时重置状态
-      userState.value.user_id = -1;
-      userState.value.token = "";
-      userState.value.expireTime = 0;
-    }
-  };
-
-  // 初始化用户状态
-  initUserState();
-
-  return userState;
+  return globalUserState;
 }
 
-/**
- * 检查用户是否已登录
- * @param userState - 用户状态对象
- * @returns {boolean} 是否已登录
- */
-export const isUserLoggedIn = (userState: Ref<UserState>) => {
+/* ---------- 以下工具函数都使用全局状态 ---------- */
+
+/** 检查用户是否已登录 */
+export const isUserLoggedIn = () => {
+  const userState = useUser();
   return computed(() => userState.value.user_id > 0);
 };
 
-/**
- * 检查 token 是否过期
- * @param userState - 用户状态对象
- * @returns {boolean} 是否过期
- */
-export const isTokenExpired = (userState: Ref<UserState>) => {
+/** 检查 token 是否过期（容忍 30 s 时钟偏移） */
+export const isTokenExpired = () => {
+  const userState = useUser();
   return computed(() => {
-    if (!userState.value.expireTime) return true;
-    return Date.now() > userState.value.expireTime;
+    const exp = userState.value.expireTime;
+    if (!exp) return true;
+    return Date.now() + 30_000 > exp; // 容忍 30 s 时钟偏移
   });
 };
 
-/**
- * 更新用户状态（登录时使用）
- * @param userState - 用户状态对象
- * @param token - 用户 token
- */
-export const updateUserState = (userState: Ref<UserState>, token: string) => {
-  try {
-    const tokenParts = token.split(".");
-    if (tokenParts.length >= 2) {
-      // 先更新 cookie
-      useCookie("auth-token").value = token;
+/** 更新用户状态（token 解析后写入 cookie 和响应式状态） */
+export const updateUserState = (token: string) => {
+  //字符串转数组，解析token
+  const arr = token.split(".");
+  if (arr.length !== 3) return;
+  console.log("[updateUserState] 打印参数", arr);
+  const [uid, exp, sign] = arr;
+  if (!uid || !exp || !sign) return;
 
-      // 再更新状态
-      userState.value.user_id = Number(tokenParts[0]) || -1;
-      userState.value.token = token;
-      userState.value.expireTime = Number(tokenParts[1]) || 0;
-    }
-  } catch (error) {
-    console.error("更新用户状态失败:", error);
-  }
+  const userState = useUser();
+
+  // 先更新 cookie
+  useCookie("auth-token").value = token;
+
+  // 再更新全局状态
+  useUser().value.user_id = Number(uid);
+  useUser().value.token = token;
+  useUser().value.expireTime = Number(exp);
 };
 
-/**
- * 清除用户状态（登出时使用）
- * @param userState - 用户状态对象
- */
-export const clearUserState = (userState: Ref<UserState>) => {
+/** 清除用户状态（cookie 和响应式状态） */
+export const clearUserState = () => {
+  const userState = useUser();
+
   // 清除 cookie
   useCookie("auth-token").value = null;
 
-  // 重置状态
+  // 重置全局状态
   userState.value.user_id = -1;
   userState.value.token = "";
   userState.value.expireTime = 0;
+
+  console.log("[clearUserState] 用户状态已清除");
+};
+
+/** 获取当前用户信息（调试用） */
+export const getCurrentUser = () => {
+  const userState = useUser();
+  return {
+    user_id: userState.value.user_id,
+    token: userState.value.token,
+    expireTime: userState.value.expireTime,
+    isLoggedIn: userState.value.user_id > 0,
+    isExpired: userState.value.expireTime
+      ? Date.now() > userState.value.expireTime
+      : true,
+  };
 };

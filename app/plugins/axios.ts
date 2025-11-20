@@ -41,12 +41,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         const token = useCookie("auth-token").value;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
-          console.log(
-            `[Axios] 请求拦截器 - 添加Authorization头: Bearer ${token.substring(
-              0,
-              10
-            )}...`
-          );
+          // console.log(
+          //   `[Axios] 请求拦截器 - 添加Authorization头: Bearer ${token.substring(
+          //     0,
+          //     10
+          //   )}...`
+          // );
         } else {
           console.log("[Axios] 请求拦截器 - 未找到token");
         }
@@ -55,9 +55,9 @@ export default defineNuxtPlugin((nuxtApp) => {
       // 添加请求时间戳
       config.headers["X-Request-Time"] = new Date().toISOString();
 
-      console.log(
-        `[Axios] 请求拦截器 - ${config.method?.toUpperCase()} ${config.url}`
-      );
+      // console.log(
+      //   `[Axios] 请求拦截器 - ${config.method?.toUpperCase()} ${config.url}`
+      // );
       return config;
     },
     (error) => {
@@ -69,11 +69,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   // 响应拦截器
   axiosInstance.interceptors.response.use(
     (response) => {
-      console.log(
-        `[Axios] 响应拦截器 - ${response.config.method?.toUpperCase()} ${
-          response.config.url
-        } - 状态码: ${response.status}`
-      );
+      // console.log(
+      //   `[Axios] 响应拦截器 - ${response.config.method?.toUpperCase()} ${
+      //     response.config.url
+      //   } - 状态码: ${response.status}`
+      // );
 
       // 检查业务逻辑错误
       if (response.data && response.data.success === false) {

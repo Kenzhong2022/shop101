@@ -55,33 +55,33 @@ onMounted(() => {
 });
 
 onActivated(() => {
-  console.log("页面激活时调用");
+  // console.log("页面激活时调用");
   // 重新获取cookie中的token
-  userState.value.token = useCookie("auth-token").value as string;
-  userState.value.expireTime = Number(userState.value.token.split(".")[1]);
+  // userState.value.token = useCookie("auth-token").value as string;
+  // userState.value.expireTime = Number(userState.value.token.split(".")[1]);
 
   // 检查token是否过期
   // 使用composables中useUser的信息
   expTime.value = userState.value.expireTime;
-  console.log("token:", userState.value.token);
-  console.log("过期时间:", typeof userState.value.expireTime);
-  let t = new Date().getTime();
-  console.log(
-    "当前时间:",
-    formatTime(t, {
-      format: "dateTime",
-      dateSeparator: "-",
-      timeSeparator: ":",
-    })
-  );
-  console.log(
-    "过期时间格式化:",
-    formatTime(userState.value.expireTime, {
-      format: "dateTime",
-      dateSeparator: "-",
-      timeSeparator: ":",
-    })
-  );
+  // console.log("token:", userState.value.token);
+  // console.log("过期时间:", typeof userState.value.expireTime);
+  // let t = new Date().getTime();
+  // console.log(
+  //   "当前时间:",
+  //   formatTime(t, {
+  //     format: "dateTime",
+  //     dateSeparator: "-",
+  //     timeSeparator: ":",
+  //   })
+  // );
+  // console.log(
+  //   "过期时间格式化:",
+  //   formatTime(userState.value.expireTime, {
+  //     format: "dateTime",
+  //     dateSeparator: "-",
+  //     timeSeparator: ":",
+  //   })
+  // );
 });
 
 // 处理token过期

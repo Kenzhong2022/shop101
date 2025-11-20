@@ -21,27 +21,27 @@ export interface RouteMeta {
 }
 export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
   // 打印基本的路由跳转信息
-  console.log("🔄 路由跳转:", {
-    from: from.path || "首次访问",
-    to: to.path || "未设置路径",
-    fullPath: to.fullPath || "未设置完整路径",
-    query: to.query || "未设置查询参数",
-    params: to.params || "未设置路径参数",
-    name: to.name || "未设置名称",
-    meta: to.meta || "未设置元数据",
-  });
+  // console.log("🔄 路由跳转:", {
+  //   from: from.path || "首次访问",
+  //   to: to.path || "未设置路径",
+  //   fullPath: to.fullPath || "未设置完整路径",
+  //   query: to.query || "未设置查询参数",
+  //   params: to.params || "未设置路径参数",
+  //   name: to.name || "未设置名称",
+  //   meta: to.meta || "未设置元数据",
+  // });
 
   // 检查是否跳转到会员中心页面
   const isUserCenter = to.path.includes("/user") || to.path.includes("/myUser");
 
   if (isUserCenter) {
-    console.log("🎯 准备进入会员中心");
-    console.log("📍 当前路径:", to.path);
-    console.log("🔍 路由信息:", {
-      name: to.name,
-      title: to.meta?.title || "未设置标题",
-      layout: to.meta?.layout || "默认布局",
-    });
+    // console.log("🎯 准备进入会员中心");
+    // console.log("📍 当前路径:", to.path);
+    // console.log("🔍 路由信息:", {
+    //   name: to.name,
+    //   title: to.meta?.title || "未设置标题",
+    //   layout: to.meta?.layout || "默认布局",
+    // });
   }
 
   // 可以在这里添加更多的路由守卫逻辑

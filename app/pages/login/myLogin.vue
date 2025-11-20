@@ -380,6 +380,7 @@ const handleSubmit = async () => {
   try {
     // 调用登录 API 或注册 API
     if (isLoginMode.value) {
+      // 登录模式
       await login({
         email: form.email,
         password: form.password,
@@ -391,14 +392,15 @@ const handleSubmit = async () => {
           ElMessage.error(res.message || "登录失败");
         } else {
           // 登录成功处理
-          console.log("登录成功后端返回token：", res.data?.token);
+          // console.log("登录成功后端返回token：", res.data?.token);
           // 登录成功，将 token 存储到 localStorage
           if (res.data?.token) {
             // 使用封装的 updateUserState 方法更新用户状态
             const { updateUserState } = await import("~/composables/useUser");
             // 同时存储到 localStorage（向后兼容）
             localStorage.setItem("token", res.data.token);
-            updateUserState(userState, res.data.token);
+            useCookie("auth-token").value = res.data.token;
+            updateUserState(res.data.token);
           }
 
           // 成功通知

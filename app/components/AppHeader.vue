@@ -43,6 +43,17 @@
             </el-dropdown>
           </div>
         </NuxtLink>
+        <NuxtLink to="/train">
+          <div
+            class="text-[#333] transition-colors duration-300 flex items-center gap-2px text-[18px]"
+          >
+            <i
+              class="iconfont icon-activity text-28px color-main"
+              style="color: var(--el-color-primary)"
+            ></i>
+            <span class="hover:text-primary">训练场</span>
+          </div>
+        </NuxtLink>
       </el-scrollbar>
     </nav>
   </header>

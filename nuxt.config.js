@@ -26,6 +26,16 @@ export default defineNuxtConfig({
       SOCKET_URL: process.env.NUXT_PUBLIC_SOCKET_URL,
     },
   },
+
+  cloudinary: {
+    cloudName: "dlji1nmdj", // udinary 云名称
+    uploadPreset: "shop01-upload-preset", // 替换为你的预设名称
+    apiKey: "621639418357725",
+    analytics: true,
+    cloud: {},
+    url: {},
+  },
+
   // 1. 关键 CSS 内联 + 其余样式异步
   experimental: {
     inlineSSRStyles: true, // 首屏样式直接塞进 <style>
@@ -70,7 +80,12 @@ export default defineNuxtConfig({
   },
 
   // 模块配置（核心：仅保留 @element-plus/nuxt 和 @unocss/nuxt）
-  modules: ["@element-plus/nuxt", "@unocss/nuxt", "@nuxt/image"],
+  modules: [
+    "@element-plus/nuxt",
+    "@unocss/nuxt",
+    "@nuxt/image",
+    "@nuxtjs/cloudinary",
+  ],
 
   // 图片优化模块配置
   image: {

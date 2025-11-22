@@ -29,7 +29,7 @@ export default defineNuxtConfig({
 
   cloudinary: {
     cloudName: "dlji1nmdj", // udinary 云名称
-    uploadPreset: "shop01-upload-preset", // 替换为你的预设名称
+    uploadPreset: "shop101-upload-preset", // 替换为你的预设名称
     apiKey: "621639418357725",
     analytics: true,
     cloud: {},
@@ -73,6 +73,11 @@ export default defineNuxtConfig({
         {
           // 引入 ColorThief 库
           src: "https://cdn.jsdelivr.net/npm/colorthief@2.3.2/dist/color-thief.umd.js",
+          defer: true, // 异步加载，不阻塞渲染
+        },
+        {
+          // 引入 Cloudinary 上传小部件
+          src: "https://upload-widget.cloudinary.com/global/all.js",
           defer: true, // 异步加载，不阻塞渲染
         },
       ],

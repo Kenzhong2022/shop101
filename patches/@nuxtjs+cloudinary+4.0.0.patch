@@ -1,0 +1,52 @@
+diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
+index 628810c..2b7dca6 100644
+--- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
++++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
+@@ -9,7 +9,7 @@ import type {
+ import { pollForProcessingImage } from '@cloudinary-util/util'
+ import { useCldImageUrl } from '../composables/useCldImageUrl'
+ 
+-export interface CldImageProps extends ImageOptions {
++export interface CldImageProps extends /* @vue-ignore */ ImageOptions {
+   loading?: 'eager' | 'lazy'
+   fetchPriority?: 'high' | 'low' | 'auto'
+   // Adding below as required props to promote good patterns in developing images
+diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue
+index 77b5af4..b12a5dc 100644
+--- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue
++++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue
+@@ -12,7 +12,7 @@ const OG_IMAGE_HEIGHT = 1254
+ 
+ const { currentRoute } = useRouter()
+ 
+-export type CldOgImageProps = CldImageProps & {
++export type CldOgImageProps = /* @vue-ignore */ CldImageProps & {
+   excludeTags?: Array<string>
+   twitterTitle?: string
+   alt?: string
+diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldUploadWidget.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldUploadWidget.vue
+index 0910b1d..77a81ce 100644
+--- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldUploadWidget.vue
++++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldUploadWidget.vue
+@@ -15,7 +15,7 @@ import { triggerOnIdle } from '../util/triggerOnIdle'
+ import { useRuntimeConfig } from '#imports'
+ 
+ export interface CldUploadWidgetProps
+-  extends GenerateUploadWidgetResultCallback {
++  extends /* @vue-ignore */ GenerateUploadWidgetResultCallback {
+   options?: GetUploadWidgetOptions
+   signatureEndpoint?: URL | RequestInfo
+   uploadPreset?: string
+diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldVideoPlayer.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldVideoPlayer.vue
+index 49c5857..b5d6ab5 100644
+--- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldVideoPlayer.vue
++++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldVideoPlayer.vue
+@@ -29,7 +29,7 @@ export interface CloudinaryVideoPlayerOptionsColors {
+   text?: string
+ }
+ 
+-export type CldVideoPlayerProps = GetVideoPlayerOptions & {
++export type CldVideoPlayerProps = /* @vue-ignore */ GetVideoPlayerOptions & {
+   autoPlay?: boolean
+   autoplayMode?: 'never' | 'always' | 'on-scroll'
+   className?: string

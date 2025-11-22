@@ -1,16 +1,98 @@
 diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
-index 628810c..2b7dca6 100644
+index 628810c..903c155 100644
 --- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
 +++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldImage.vue
-@@ -9,7 +9,7 @@ import type {
+@@ -1,5 +1,5 @@
+ <script setup lang="ts">
+-import { ref } from 'vue'
++import { ref, toRefs, watchEffect } from 'vue'
+ import { Image } from '@unpic/vue'
+ import type {
+   ConstructUrlProps,
+@@ -9,15 +9,17 @@ import type {
  import { pollForProcessingImage } from '@cloudinary-util/util'
  import { useCldImageUrl } from '../composables/useCldImageUrl'
  
 -export interface CldImageProps extends ImageOptions {
 +export interface CldImageProps extends /* @vue-ignore */ ImageOptions {
++  src: string//新增
++  quality?: number//新增
++  gravity: string//新增
++  crop: any//新增
    loading?: 'eager' | 'lazy'
    fetchPriority?: 'high' | 'low' | 'auto'
-   // Adding below as required props to promote good patterns in developing images
+-  // Adding below as required props to promote good patterns in developing images
+   alt: string
+   width: string | number
+   height: string | number
+   config?: ConfigOptions
+-  // Unpic props
+   layout?: 'constrained' | 'fullWidth' | 'fixed'
+   priority?: boolean
+   background?: 'auto' | string
+@@ -30,44 +32,41 @@ const { config, ...options } = props
+ const { url } = useCldImageUrl({ options, config } as ConstructUrlProps)
+ 
+ const transformUrl = () => {
+-  const options = {
+-    ...props,
+-  }
+ 
+-  options.width
+-    = typeof options.width === 'string'
+-      ? Number.parseInt(options.width)
+-      : options.width
+-  options.height
+-    = typeof options.height === 'string'
+-      ? Number.parseInt(options.height)
+-      : options.height
++  const ops = { ...props } as any
++
++  ops.width = typeof ops.width === 'string' ? Number.parseInt(ops.width) : ops.width
++  ops.height = typeof ops.height === 'string' ? Number.parseInt(ops.height) : ops.height
+ 
+-  const { url } = useCldImageUrl({ options, config } as ConstructUrlProps)
++  const { url: newUrl } = useCldImageUrl({ options: ops, config } as ConstructUrlProps)
++  console.log('transformUrl 返回的新 url', newUrl)
+ 
+-  return url
++  return newUrl
+ }
+ 
++/* ===== 5. 错误处理 ===== */
+ const imgKey = ref('image-key')
+ 
+ const handleError = async (payload: Event) => {
+   const eventPayload = payload.target as EventTarget & { src: string }
++
+   const result = await pollForProcessingImage(eventPayload)
+ 
+-  if (
+-    typeof result.error === 'string'
+-    && process.env.NODE_ENV === 'development'
+-  ) {
+-    console.error(
+-      `[CldImage] Failed to load image ${props.src}: ${result.error}`,
+-    )
++  if (typeof result.error === 'string' && process.env.NODE_ENV === 'development') {
++    console.error(`[CldImage] 加载失败: ${result.error}`)
+   }
+ 
+-  if (result.success) imgKey.value = `${imgKey.value}-${Math.random()}`
++  if (result.success) {
++    imgKey.value = `${imgKey.value}-${Math.random()}`
++    // console.log('轮询成功，强制重新渲染，新 key', imgKey.value)
++  }
+ }
+ </script>
+ 
+ <template>
++  <!-- 6. 渲染时临时可视化（开发完可删） -->
++  <pre v-if="false">{{ JSON.stringify(props, null, 2) }}</pre>
++
+   <Image
+     :key="imgKey"
+     :src="url"
 diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue b/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue
 index 77b5af4..b12a5dc 100644
 --- a/node_modules/@nuxtjs/cloudinary/dist/runtime/components/CldOgImage.vue
@@ -50,3 +132,18 @@ index 49c5857..b5d6ab5 100644
    autoPlay?: boolean
    autoplayMode?: 'never' | 'always' | 'on-scroll'
    className?: string
+diff --git a/node_modules/@nuxtjs/cloudinary/dist/runtime/composables/useCldImageUrl.mjs b/node_modules/@nuxtjs/cloudinary/dist/runtime/composables/useCldImageUrl.mjs
+index 26f36cb..c3322ea 100644
+--- a/node_modules/@nuxtjs/cloudinary/dist/runtime/composables/useCldImageUrl.mjs
++++ b/node_modules/@nuxtjs/cloudinary/dist/runtime/composables/useCldImageUrl.mjs
+@@ -3,8 +3,8 @@ import nuxtPkg from "nuxt/package.json";
+ import pkg from "../../../package.json";
+ import { useRuntimeConfig } from "#imports";
+ export const useCldImageUrl = (props) => {
+-  if (!props.options.src)
+-    console.error("`[@nuxtjs/cloudinary]`: Property `src` is missing");
++  // if (!props.options.src)
++  //   console.log("`[@nuxtjs/cloudinary]`: Property `src` is missing123");
+   const moduleConfig = useRuntimeConfig().public.cloudinary;
+   const cldCloudName = props.config?.cloud?.cloudName || moduleConfig.cloud?.cloudName || moduleConfig?.cloudName;
+   if (!cldCloudName)

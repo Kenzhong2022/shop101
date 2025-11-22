@@ -3,8 +3,11 @@ import { CloudinaryImage } from "@cloudinary/url-gen";
 import { fill } from "@cloudinary/url-gen/actions/resize";
 import { blur } from "@cloudinary/url-gen/actions/effect";
 import { quality } from "@cloudinary/url-gen/actions/delivery";
+import { faces } from "@cloudinary/url-gen/qualifiers/region";
 
-const tempUrl = ref("");
+const tempUrl = ref(
+  "https://res.cloudinary.com/dlji1nmdj/image/upload/v1763829187/xf9vkdeutxbntitecofx?_a=DBDAAEAEZAA0"
+);
 const loading = ref(false);
 
 // 调试：监听 tempUrl 变化
@@ -78,16 +81,14 @@ function createAndOpen() {
       <p>
         地址：<a :href="tempUrl" target="_blank">{{ tempUrl }}</a>
       </p>
-      <img :src="tempUrl" width="200" />
       <CldImage
-        src="cld-sample-5"
-        options="{
-        src:123
-        }"
-        abc="123"
-        width="400"
-        height="400"
+        :src="tempUrl"
+        width="200"
+        height="200"
         alt="My Awesome Image"
+        :quality="50"
+        gravity="face"
+        crop="thumb"
       />
     </div>
     <div v-else>

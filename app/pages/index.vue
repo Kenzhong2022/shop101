@@ -14,19 +14,18 @@
         aspectRatio: '7/2',
       }"
       class="box-border rd-20px w-100%"
+      ref="carousel"
     >
       <el-carousel-item
         ref="carouselItem"
         v-for="item in banners"
         :key="item.id"
       >
-        <NuxtImg
-          :src="
-            'https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762/' +
-            item.image
-          "
+        <kk-cld-image
+          :src="item.image"
           :alt="item.title"
-          style="width: 100%; height: 100%; object-fit: fit"
+          :width="800"
+          :height="450"
         />
       </el-carousel-item>
     </el-carousel>
@@ -204,7 +203,9 @@ function observeLast() {
   }
 }
 
+const carousel = ref<HTMLDivElement>();
 onMounted(() => {
+  console.log(123, carousel.value);
   observeLast(); // 首次监听
   loadingGoods.value = false;
 });

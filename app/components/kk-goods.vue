@@ -40,14 +40,8 @@ const props = defineProps({
 });
 
 const shadowMode = ref<"never" | "always" | "hover">("never");
-/* 拿到 el-card 的 DOM */
-const imgRef = ref<HTMLElement>();
-/* 实时宽高 */
-const { width: w, height: h } = useElementSize(imgRef);
-onMounted(async () => {
-  await nextTick();
-  console.log("宽高：", w.value, h.value);
-});
+
+onMounted(async () => {});
 </script>
 
 <style scoped lang="scss">

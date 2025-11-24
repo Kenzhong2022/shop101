@@ -178,14 +178,10 @@ const props = defineProps({
 });
 import { useMediaQuery, useElementSize } from "@vueuse/core";
 
-//加载中
-const loading = ref(true);
-
-// 响应式判断是否为移动端
-const isMobile = useMediaQuery("(max-width: 768px)");
-
+// 参数2 就是 SSR 时的默认值
+const isMobile = ref(false);
 // 1. 先给“占位值”
-const ssrWidth = "30%"; // 跟服务端保持一致，随便写 30% / 100% 都行
+const ssrWidth = "30%";
 const drawerWidth = ref(ssrWidth);
 
 // 2. 抽屉根节点（等 DOM 渲染完再挂）
@@ -213,15 +209,19 @@ const allowResize = computed(() => {
   return curDrawerWidth.value >= 380;
 });
 const scrollbarRef = ref(null);
-
+const setWidth = () => {
+  console.log("设置抽屉宽度");
+  drawerWidth.value = mql.matches ? "100%" : "30%";
+};
+let mql = null;
 onMounted(() => {
-  console.log("drawerWidth", drawerWidth.value);
-  const mql = window.matchMedia("(max-width: 768px)");
-  const setWidth = () => (drawerWidth.value = mql.matches ? "100%" : "30%");
+  mql = window.matchMedia("(max-width: 768px)");
+  console.log("mql", mql);
+  isMobile.value = mql.matches;
   setWidth(); // 第一次
   mql.addEventListener("change", setWidth); // 窗口大小变化也更新
-  onBeforeUnmount(() => mql.removeEventListener("change", setWidth));
 });
+
 const emit = defineEmits(["update:drawer"]);
 // 3. 抽屉状态变化时，通知父组件更新值
 const handleDrawerUpdate = (isOpen) => {
@@ -400,6 +400,8 @@ socket.on("hello", onHello); // 监听服务器问候事件
 
 /* 组件卸载时统一解绑, 避免内存泄漏 */
 onBeforeUnmount(() => {
+  mql.removeEventListener("change", setWidth);
+
   console.log("[ws] 组件卸载时解绑事件");
   // 解绑事件
   socket.off("connect", onConnect);

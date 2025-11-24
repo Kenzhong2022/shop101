@@ -1,13 +1,13 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
-  <LazyKkImage :src="banner6" />
+
   <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
   <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->
   <div class="flex flex-col gap-50px" :style="{ flex: 1 }">
     <!-- 轮播图内容 -->
     <el-carousel
-      :interval="1500"
+      :interval="150000"
       type="card"
       width="800px"
       :style="{
@@ -16,9 +16,16 @@
       }"
       class="box-border rd-20px w-100%"
     >
-      <el-carousel-item v-for="item in banners" :key="item.id">
+      <el-carousel-item
+        ref="carouselItem"
+        v-for="item in banners"
+        :key="item.id"
+      >
         <NuxtImg
-          :src="item.image"
+          :src="
+            'https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762/' +
+            item.image
+          "
           :alt="item.title"
           style="width: 100%; height: 100%; object-fit: fit"
         />
@@ -36,7 +43,11 @@
         <div class="reflect-container">Wear Freedom ， shine your beauty</div>
       </div>
     </div>
-
+    <div v-for="i in 5" :key="i">
+      <div class="flex">
+        <kk-goods v-for="i in 6" :key="i" />
+      </div>
+    </div>
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>
@@ -58,12 +69,11 @@ interface Banner {
 }
 
 // 直接导入图片，确保路径被正确处理
-const banner1 = "/img/banners/banner1.webp";
-const banner2 = "/img/banners/banner2.webp";
-const banner3 = "/img/banners/banner3.webp";
-const banner4 = "/img/banners/banner4.webp";
-const banner5 = "/img/banners/写真杂志1.webp";
-const banner6 = "/img/banners/写真杂志2.webp";
+const banner1 = "banner1_zbk4tg"; //"/img/banners/banner1.webp";
+const banner2 = "banner2_xpc88k"; //"/img/banners/banner2.webp";
+const banner3 = "banner3_cekakw"; //"/img/banners/banner3.webp";
+const banner4 = "banner4_guxg75"; // "/img/banners/banner4.webp";
+const banner5 = "写真杂志1_g0ogwr"; //"/img/banners/写真杂志1.webp";
 
 const banners: Banner[] = [
   {
@@ -87,6 +97,8 @@ const banners: Banner[] = [
     image: banner4,
   },
 ];
+
+onMounted(async () => {});
 </script>
 
 <style scoped>

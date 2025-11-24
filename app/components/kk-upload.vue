@@ -5,9 +5,7 @@ import { blur } from "@cloudinary/url-gen/actions/effect";
 import { quality } from "@cloudinary/url-gen/actions/delivery";
 import { faces } from "@cloudinary/url-gen/qualifiers/region";
 
-const tempUrl = ref(
-  "https://res.cloudinary.com/dlji1nmdj/image/upload/v1763829187/xf9vkdeutxbntitecofx?_a=DBDAAEAEZAA0"
-);
+const tempUrl = ref("banner4_guxg75");
 const loading = ref(false);
 
 // 调试：监听 tempUrl 变化
@@ -90,6 +88,7 @@ function createAndOpen() {
         gravity="face"
         crop="thumb"
       />
+      <h1>二次封装 cld-image 组件</h1>
     </div>
     <div v-else>
       <p style="color: red">等待上传图片...</p>

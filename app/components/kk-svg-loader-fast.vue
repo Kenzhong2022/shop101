@@ -62,7 +62,7 @@
         x="0"
         :y="textY"
         font-family="Arial, sans-serif"
-        font-size="12"
+        font-size="8"
         :fill="textColor"
         text-anchor="middle"
         font-weight="bold"
@@ -121,7 +121,7 @@ const cssVariables = computed(() => ({
   "--loader-text": props.textColor,
 }));
 
-const textY = computed(() => 80 + 12 + 4); // 2r + fontSize + gap
+const textY = computed(() => 80 + 8); // 2r + fontSize + gap
 </script>
 
 <style scoped>

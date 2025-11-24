@@ -1,6 +1,5 @@
 <!-- 这是首页页面 - 已优化首次加载性能 -->
 <template>
-
   <!-- https://uy.wzznft.com/i/2025/10/25/gxxx4j.jpeg -->
   <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->
@@ -43,9 +42,17 @@
         <div class="reflect-container">Wear Freedom ， shine your beauty</div>
       </div>
     </div>
-    <div v-for="i in 5" :key="i">
-      <div class="flex">
-        <kk-goods v-for="i in 6" :key="i" />
+
+    <!-- 商品列表 -->
+    <div v-for="i in modeRow" :key="i" ref="allRows">
+      <!-- 商品列表行 -->
+      <div class="flex relative">
+        <kk-goods
+          v-for="goodsItem in goodsList"
+          :key="goodsItem.id"
+          :loading="loadingGoods"
+          :goods="goodsItem"
+        />
       </div>
     </div>
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
@@ -71,8 +78,8 @@ interface Banner {
 // 直接导入图片，确保路径被正确处理
 const banner1 = "banner1_zbk4tg"; //"/img/banners/banner1.webp";
 const banner2 = "banner2_xpc88k"; //"/img/banners/banner2.webp";
-const banner3 = "banner3_cekakw"; //"/img/banners/banner3.webp";
-const banner4 = "banner4_guxg75"; // "/img/banners/banner4.webp";
+const banner3 = "banner3_fxo6xk"; //"/img/banners/banner3.webp";
+const banner4 = "banner4_o3l0jf"; // "/img/banners/banner4.webp";
 const banner5 = "写真杂志1_g0ogwr"; //"/img/banners/写真杂志1.webp";
 
 const banners: Banner[] = [
@@ -97,8 +104,116 @@ const banners: Banner[] = [
     image: banner4,
   },
 ];
+interface Goods {
+  id: number;
+  title: string;
+  price: number;
+  image: string;
+}
+const goodsList = ref<Goods[]>([
+  {
+    id: 1,
+    title: "商品1韩系秋冬穿搭学院风休闲套装",
+    price: 98.0,
+    image: "good_1_w3mjkm",
+  },
+  {
+    id: 2,
+    title: "商品2韩系秋冬穿搭学院风休闲套装",
+    price: 225.91,
+    image: "good_2_cv4di0",
+  },
+  {
+    id: 3,
+    title: "商品3miu 里 miu 气穿搭学院风针织连衣裙",
+    price: 289.9,
+    image: "good_3_cqjcwz",
+  },
+  {
+    id: 4,
+    title: "商品4冬季韩系穿搭大衣的裙子 2025 新款连衣裙秋冬装搭配",
+    price: 356.9,
+    image: "good_4_rocd6k",
+  },
+  {
+    id: 5,
+    title: "商品5独特漂亮清纯系松弛感早秋韩系一整套 ootd 穿搭减龄连衣裙两件套",
+    price: 229.9,
+    image: "good_5_dgxgdo",
+  },
+]);
 
-onMounted(async () => {});
+const loadingGoods = ref<boolean>(true);
+// 商品列表行数
+const modeRow = ref<number>(5);
+// 商品列表元素引用
+const allRows = ref<HTMLElement[]>([]);
+// 商品列表最后一行元素引用
+let observer: IntersectionObserver | null = null;
+const { $message } = useNuxtApp();
+let curObservedEl: HTMLElement | null = null; // 当前正在监听的节点
+
+/* 创建 observer，只监听最后一个元素 */
+function createObserver() {
+  if (!process.client) return;
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          console.log("✨ 商品行进入视口", entry.target);
+          $message.success("商品最后一行进入视口");
+          // 触发加载动画
+          loadingGoods.value = true;
+          loadMore(); // 触发加载下一批
+          $message.info("加载更多");
+
+          setTimeout(() => {
+            loadingGoods.value = false;
+            $message.success("加载完成");
+          }, 1500);
+        }
+      });
+    },
+    { threshold: 1 }
+  );
+}
+
+/* 卸载当前监听 */
+function unobserveLast() {
+  if (curObservedEl && observer) {
+    observer.unobserve(curObservedEl);
+    curObservedEl = null;
+  }
+}
+
+/* 追加 5 行并重新监听最后一行 */
+async function loadMore() {
+  unobserveLast(); // 1. 取消旧节点
+  modeRow.value += 5; // 2. 数据层 +5
+  await nextTick(); // 3. 等 DOM 更新
+  observeLast(); // 4. 监听新的 lastRow
+}
+
+/* 监听当前最后一行 */
+function observeLast() {
+  if (!observer) createObserver();
+  const last = allRows.value[allRows.value.length - 1];
+  if (last) {
+    curObservedEl = last;
+    observer!.observe(last);
+  }
+}
+
+onMounted(() => {
+  observeLast(); // 首次监听
+  loadingGoods.value = false;
+});
+
+onUnmounted(() => {
+  unobserveLast();
+  observer?.disconnect();
+  console.log("IntersectionObserver 已清理");
+});
 </script>
 
 <style scoped>

@@ -37,12 +37,7 @@
 
         <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
         <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
-          <NuxtPage
-            :keepalive="{
-              max: 10, // 最多缓存 10 个页面实例
-              exclude: [''], // 不排除任何页面（可添加页面路由名称来排除特定页面）
-            }"
-          ></NuxtPage>
+          <NuxtPage :keepalive="true"></NuxtPage>
         </div>
       </div>
 

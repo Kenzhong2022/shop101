@@ -7,12 +7,14 @@ const input = ref("");
 const msgList = ref([]);
 
 // 连接状态监听
-function onConnect() {
+function onConnect(message) {
   isConnected.value = true;
+  console.log("连接成功:", message);
 }
 
 function onDisconnect(message) {
   isConnected.value = false;
+  console.log("服务器断开连接:", message);
   msgList.value.push({ from: "服务器", body: message });
 }
 

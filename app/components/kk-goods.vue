@@ -2,7 +2,7 @@
 <template>
   <div
     :shadow="shadowMode"
-    class="flex-1 text-4 min-w-200px aspect-ratio-3/4 b-solid b-1 b-#ccc p-5"
+    class="text-4 min-w-200px aspect-ratio-3/4 rounded-12px overflow-auto"
     :class="{ 'shadow-lg': shadowMode === 'always' }"
     @mouseenter="shadowMode = 'always'"
     @mouseleave="shadowMode = 'never'"

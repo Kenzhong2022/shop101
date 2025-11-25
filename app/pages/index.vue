@@ -43,15 +43,16 @@
     </div>
 
     <!-- 商品列表 -->
-    <div v-for="i in modeRow" :key="i" ref="allRows">
-      <!-- 商品列表行 -->
-      <div class="flex relative">
-        <kk-goods
-          v-for="goodsItem in goodsList"
-          :key="goodsItem.id"
-          :loading="loadingGoods"
-          :goods="goodsItem"
-        />
+    <!-- 商品列表行 -->
+    <div class="flex flex-wrap gap-12px px-20px">
+      <div
+        v-for="goodsItem in goodsList"
+        :key="goodsItem.id"
+        ref="allRows"
+        class="w-300px"
+      >
+        <!-- 一排五个 gap25 -->
+        <kk-goods :goods="goodsItem" :loading="loadingGoods" />
       </div>
     </div>
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
@@ -103,44 +104,8 @@ const banners: Banner[] = [
     image: banner4,
   },
 ];
-interface Goods {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-}
-const goodsList = ref<Goods[]>([
-  {
-    id: 1,
-    title: "商品1韩系秋冬穿搭学院风休闲套装",
-    price: 98.0,
-    image: "good_1_w3mjkm",
-  },
-  {
-    id: 2,
-    title: "商品2韩系秋冬穿搭学院风休闲套装",
-    price: 225.91,
-    image: "good_2_cv4di0",
-  },
-  {
-    id: 3,
-    title: "商品3miu 里 miu 气穿搭学院风针织连衣裙",
-    price: 289.9,
-    image: "good_3_cqjcwz",
-  },
-  {
-    id: 4,
-    title: "商品4冬季韩系穿搭大衣的裙子 2025 新款连衣裙秋冬装搭配",
-    price: 356.9,
-    image: "good_4_rocd6k",
-  },
-  {
-    id: 5,
-    title: "商品5独特漂亮清纯系松弛感早秋韩系一整套 ootd 穿搭减龄连衣裙两件套",
-    price: 229.9,
-    image: "good_5_dgxgdo",
-  },
-]);
+import type { Goods } from "~~/server/api/goods/list.post";
+const goodsList = ref<Goods[]>();
 
 const loadingGoods = ref<boolean>(true);
 // 商品列表行数
@@ -154,22 +119,12 @@ let curObservedEl: HTMLElement | null = null; // 当前正在监听的节点
 
 /* 创建 observer，只监听最后一个元素 */
 function createObserver() {
-  if (!process.client) return;
+  if (observer) return;
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          console.log("✨ 商品行进入视口", entry.target);
-          $message.success("商品最后一行进入视口");
-          // 触发加载动画
-          loadingGoods.value = true;
-          loadMore(); // 触发加载下一批
-          $message.info("加载更多");
-
-          setTimeout(() => {
-            loadingGoods.value = false;
-            $message.success("加载完成");
-          }, 1500);
+          loadMore();
         }
       });
     },
@@ -177,9 +132,26 @@ function createObserver() {
   );
 }
 
+const getGoodsList = async () => {
+  await apiGoodsList({
+    page: 2,
+    page_size: 5,
+  })
+    .then((res) => {
+      console.log(res.data.list);
+      goodsList.value = [...goodsList.value!, ...res.data.list];
+      console.log(goodsList.value);
+    })
+    .finally(() => {
+      loadingGoods.value = false;
+      $message.success("加载完成");
+    });
+};
+
 /* 卸载当前监听 */
 function unobserveLast() {
   if (curObservedEl && observer) {
+    console.log("取消监听:", curObservedEl);
     observer.unobserve(curObservedEl);
     curObservedEl = null;
   }
@@ -187,26 +159,36 @@ function unobserveLast() {
 
 /* 追加 5 行并重新监听最后一行 */
 async function loadMore() {
-  unobserveLast(); // 1. 取消旧节点
-  modeRow.value += 5; // 2. 数据层 +5
-  await nextTick(); // 3. 等 DOM 更新
-  observeLast(); // 4. 监听新的 lastRow
+  await getGoodsList(); // 1. 先加载数据
+  unobserveLast(); // 3. 取消旧监听
+  observeLast(); // 4. 监听新最后一项
 }
 
 /* 监听当前最后一行 */
 function observeLast() {
-  if (!observer) createObserver();
-  const last = allRows.value[allRows.value.length - 1];
-  if (last) {
-    curObservedEl = last;
-    observer!.observe(last);
+  if (!goodsList.value?.length) return;
+  const lastEl = allRows.value[goodsList.value.length - 1];
+  if (lastEl && observer) {
+    console.log("监听:", lastEl);
+    curObservedEl = lastEl;
+    observer.observe(curObservedEl);
   }
 }
+import { apiGoodsList } from "~/api/goods";
+import { nextTick } from "vue";
+onMounted(async () => {
+  //测试调用api
+  await apiGoodsList({
+    page: 1,
+    page_size: 5,
+  }).then((res) => {
+    console.log(res.data.list);
+    goodsList.value = res.data.list;
+  });
+  createObserver();
 
-const carousel = ref<HTMLDivElement>();
-onMounted(() => {
-  console.log(123, carousel.value);
   observeLast(); // 首次监听
+
   loadingGoods.value = false;
 });
 

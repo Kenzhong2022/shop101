@@ -1,53 +1,58 @@
 <template>
-  <div class="w-full overflow-hidden setBgc">
+  <div class="w-full overflow-hidden mx-auto">
     <div
-      class="flex flex-col min-h-screen w-100% max-w-[1600px] mx-auto bg-#fff shadow-md relative"
+      class="flex flex-col min-h-screen mx-auto w-100% max-w-[1600px] bg-#fff shadow-md relative"
     >
-      <LazyKkColorPicker @change="handleColorChange" />
-      <!-- 这是头部通用组件 -->
-      <!-- 传递信息给子组件 -->
-      <AppHeader
-        @sendRoute="handleChangeByRoute"
-        class="bg-white max-w-[1200px] shadow-sm h-65px"
-        :msg="msg"
-      />
-      <!-- 吸顶搜索 -->
-      <LazyStickyTop class="w-100% max-w-1600px mx-auto" v-if="showStickyTop" />
-      <!-- 好友列表入口 -->
-      <div
-        class="friend-tab flex flex-col items-center h-20%"
-        @click="
-          () => {
-            isDrawerOpen = true;
-          }
-        "
-      >
-        <div>好友列表</div>
-        <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
-      </div>
-
-      <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
-      <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
-        <!-- 侧边栏：通过状态控制是否显示 -->
-        <NuxtLayout
-          v-if="showMenu"
-          name="menu"
-          class="bg-red max-w-[200px] min-w-[200px]"
-        ></NuxtLayout>
-
-        <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
-        <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
-          <NuxtPage :keepalive="true"></NuxtPage>
+      <div class="p-4">
+        <LazyKkColorPicker @change="handleColorChange" />
+        <!-- 这是头部通用组件 -->
+        <!-- 传递信息给子组件 -->
+        <AppHeader
+          @sendRoute="handleChangeByRoute"
+          class="bg-white max-w-[1200px] shadow-sm h-65px"
+          :msg="msg"
+        />
+        <!-- 吸顶搜索 -->
+        <LazyStickyTop
+          class="w-80% max-w-1600px mx-auto"
+          v-if="showStickyTop"
+        />
+        <!-- 好友列表入口 -->
+        <div
+          class="friend-tab flex flex-col items-center h-20%"
+          @click="
+            () => {
+              isDrawerOpen = true;
+            }
+          "
+        >
+          <div>好友列表</div>
+          <!-- <i class="iconfont icon-right-arrow text-24px"></i> -->
         </div>
-      </div>
 
-      <!-- 好友列表 -->
-      <LazyKkFdList
-        :drawer="isDrawerOpen"
-        @update:drawer="(newValue: boolean) => (isDrawerOpen = newValue)"
-      ></LazyKkFdList>
-      <!-- 这是底部通用组件 -->
-      <AppFooter />
+        <!-- 嵌套内容布局 - 将页面内容传递给 content 布局 -->
+        <div class="flex gap-10 mx-auto w-100% max-w-[1600px]">
+          <!-- 侧边栏：通过状态控制是否显示 -->
+          <NuxtLayout
+            v-if="showMenu"
+            name="menu"
+            class="bg-red max-w-[200px] min-w-[200px]"
+          ></NuxtLayout>
+
+          <!-- 插槽：当使用default布局时 这个地方页面的内容 -->
+          <div class="flex-1 bg-white rounded-lg shadow-sm w-100%">
+            <NuxtPage :keepalive="true"></NuxtPage>
+          </div>
+        </div>
+
+        <!-- 好友列表 -->
+        <LazyKkFdList
+          :drawer="isDrawerOpen"
+          @update:drawer="(newValue: boolean) => (isDrawerOpen = newValue)"
+        ></LazyKkFdList>
+        <!-- 这是底部通用组件 -->
+        <AppFooter />
+      </div>
     </div>
   </div>
 </template>

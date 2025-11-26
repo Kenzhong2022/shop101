@@ -44,13 +44,8 @@
 
     <!-- 商品列表 -->
     <!-- 商品列表行 -->
-    <div class="flex flex-wrap gap-12px px-20px">
-      <div
-        v-for="goodsItem in goodsList"
-        :key="goodsItem.id"
-        ref="allRows"
-        class="w-300px"
-      >
+    <div class="flex flex-wrap px-20px">
+      <div v-for="goodsItem in goodsList" :key="goodsItem.id" ref="allRows">
         <!-- 一排五个 gap25 -->
         <kk-goods :goods="goodsItem" :loading="loadingGoods" />
       </div>
@@ -159,6 +154,7 @@ function unobserveLast() {
 
 /* 追加 5 行并重新监听最后一行 */
 async function loadMore() {
+  $message.info("加载更多...");
   await getGoodsList(); // 1. 先加载数据
   unobserveLast(); // 3. 取消旧监听
   observeLast(); // 4. 监听新最后一项
@@ -175,7 +171,6 @@ function observeLast() {
   }
 }
 import { apiGoodsList } from "~/api/goods";
-import { nextTick } from "vue";
 onMounted(async () => {
   //测试调用api
   await apiGoodsList({

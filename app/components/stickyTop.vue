@@ -59,7 +59,6 @@ onUnmounted(() => {
     height: 10vh;
     background-color: white;
     padding: 8px 0;
-    animation: slideDown 0.3s ease-in-out;
   }
 }
 

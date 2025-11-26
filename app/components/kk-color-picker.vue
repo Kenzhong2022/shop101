@@ -5,7 +5,7 @@
       <div
         ref="colorPickerRef"
         v-if="visible"
-        class="flex flex-col items-start gap-24px p-24px border border-solid border-#fff rounded-8px bg-#fff fixed top-50px left-12px z-9999 shadow-lg max-w-80%"
+        class="flex flex-col items-start gap-24px p-24px border border-solid border-#fff rounded-8px bg-#fff fixed top-100px left-12px z-9999 shadow-lg max-w-80%"
       >
         <!-- 只剩最大色环 -->
         <div
@@ -47,7 +47,7 @@
         <div class="text-black">亮度：{{ lightness }}%</div>
 
         <!-- 当前主题色 -->
-        <div class="controls flex flex-row items-center gap-12px">
+        <div class="controls flex flex-row items-center">
           <div class="info flex items-center gap-8px">
             <div
               class="swatch w-50px h-50px rounded-4px border border-gray-300"
@@ -69,11 +69,11 @@
     <!-- 主题色展示按钮 -->
     <div
       ref="themeTab"
-      class="theme-tab flex flex-col items-center"
+      class="theme-tab flex flex-col items-center cursor-pointer"
       :class="{ mirror: isMirror }"
       @click="toggleColorPicker"
     >
-      <div :class="{ mirror: isMirror }">主题色展示</div>
+      <div :class="{ mirror: isMirror }">设置主题色</div>
     </div>
   </div>
 </template>
@@ -282,7 +282,7 @@ const applyColor = async () => {
 
 .theme-tab {
   position: fixed;
-  top: 50px;
+  top: 100px;
   left: 0px;
   writing-mode: vertical-rl; /* 文字从上到下 */
   white-space: nowrap; /* 不换行 */

@@ -2,8 +2,8 @@
 <template>
   <div
     :shadow="shadowMode"
-    class="text-4 min-w-200px aspect-ratio-3/4 rounded-12px overflow-auto"
     :class="{ 'shadow-lg': shadowMode === 'always' }"
+    class="p-2 box-border goodsItem"
     @mouseenter="shadowMode = 'always'"
     @mouseleave="shadowMode = 'never'"
   >
@@ -45,6 +45,28 @@ onMounted(async () => {});
 </script>
 
 <style scoped lang="scss">
+.goodsItem {
+  --w: 300px;
+  width: var(--w);
+  transition: transform 0.3s ease; /* 平滑过渡效果 */
+  transform-origin: center center;
+  cursor: pointer; /* 鼠标悬停样式 */
+  position: relative;
+}
+.goodsItem:hover {
+  transform: translateY(-10px) scale(1.05); /* 向上浮起10px并轻微放大 */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* 添加阴影增强浮起效果 */
+  z-index: 1; /* 提高层级确保在最上层显示 */
+}
+
+/* 移动端优化 */
+@media (hover: none) {
+  .goodsItem:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 .el-card {
   margin-bottom: 20px;
 }

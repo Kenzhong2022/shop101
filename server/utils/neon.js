@@ -54,6 +54,7 @@ export default getNeon;
     console.log("\n======================================");
   } catch (e) {
     console.error("\n❌ 数据库连接失败！");
+    console.alert("数据库连接失败，请检查环境变量配置是否正确。");
     //数据库信息
     console.error("数据库URL:", NUXT_NEON_DATABASE_URL);
     console.error("错误信息:", e.message);

@@ -115,7 +115,16 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {},
       },
-
+      minify: "terser", // 显式指定用 terser
+      terserOptions: {
+        compress: {
+          drop_console: true, // 去掉 console.*
+          drop_debugger: true, // 去掉 debugger
+        },
+        format: {
+          comments: false, // 去掉注释
+        },
+      },
       plugins: [
         (await import("rollup-plugin-visualizer")).default({
           open: true,

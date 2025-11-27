@@ -39,11 +39,13 @@ const props = defineProps({
   },
   width: {
     type: Number,
-    default: 400,
+    default: 300,
+    required: true,
   },
   height: {
     type: Number,
     default: 400,
+    required: true,
   },
   alt: {
     type: String,
@@ -63,7 +65,7 @@ const props = defineProps({
   },
   crop: {
     type: String,
-    default: "",
+    default: "auto_pad",
   },
 });
 const isLoading = ref(true);

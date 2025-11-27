@@ -29,7 +29,6 @@
         />
       </el-carousel-item>
     </el-carousel>
-
     <!-- 广告 -->
     <div class="relative w-100%" :style="{ aspectRatio: '18/2' }">
       <div
@@ -171,6 +170,7 @@ function observeLast() {
   }
 }
 import { apiGoodsList } from "~/api/goods";
+import { image } from "@cloudinary/url-gen/qualifiers/source";
 onMounted(async () => {
   //测试调用api
   await apiGoodsList({

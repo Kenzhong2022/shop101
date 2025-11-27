@@ -4,13 +4,9 @@
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-    <!-- <img src="/KKShopLogo.svg" /> -->
-    <el-image
-      :lazy="true"
-      class="flex-3"
-      src="/KKShopLogo.svg"
-      style="height: 100%; aspect-ratio: 1 / 1"
-    />
+    <div>
+      <img src="/KKShopLogo.svg" alt="" class="h-100px aspect-1/1" />
+    </div>
     <kk-search class="flex-1" />
   </div>
 </template>

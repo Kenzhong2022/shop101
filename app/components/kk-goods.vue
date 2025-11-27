@@ -9,12 +9,12 @@
   >
     <div class="flex-4 overflow-auto" ref="imgRef">
       <!-- 加载动画 -->
-      <kk-svg-loader-fast v-if="loading" :width="200" :height="300" />
+      <kk-svg-loader-fast v-if="loading" :width="300" :height="300" />
       <kk-cld-image v-else :src="goods.image" alt="商品图片" />
     </div>
-    <div>商品顶部标题：{{ goods.title }}</div>
-    <div>商品内容:价格信息，交易数量，发货地</div>
-    <div>商品底部信息：店铺名</div>
+    <div>{{ goods.goods_name }}</div>
+    <div>商品内容:{{ goods.price }}元{{ goods.sales }}</div>
+    <div>店铺名: {{ goods.shop_name }}</div>
   </div>
 </template>
 

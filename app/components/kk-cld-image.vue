@@ -2,11 +2,7 @@
 https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
 <template>
   <!-- CldImage 组件 -->
-  <div
-    ref="wrapper"
-    class="relative"
-    :style="{ width: `${width}`, height: `${height}` }"
-  >
+  <div ref="wrapper" class="relative">
     <!-- 客户端渲染 -->
     <client-only>
       <CldImage
@@ -17,7 +13,8 @@ https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
         :priority="priority"
         :quality="quality"
         :gravity="gravity"
-        :crop="crop"
+        crop="auto_pad"
+        loading="lazy"
       />
     </client-only>
     <!-- 加载器 -->
@@ -75,15 +72,9 @@ const emits = defineEmits(["load", "error"]);
 const prefix = "https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762/";
 // 拼接完整的图片 url
 const fullSrc = computed(() => prefix + props.src);
-const wrapper = ref<HTMLDivElement>();
 onMounted(() => {
   if (props.src) {
     isLoading.value = false;
-  }
-
-  const parent = wrapper.value!.parentElement;
-  if (parent) {
-    console.log("父元素宽高：", parent.offsetWidth, parent.offsetHeight);
   }
 });
 </script>

@@ -4,10 +4,10 @@
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-    <div>
+    <!-- <div class="absolute left-0">
       <img src="/KKShopLogo.svg" alt="" class="h-100px aspect-1/1" />
-    </div>
-    <kk-search class="flex-1" />
+    </div> -->
+    <kk-search class="flex-1 max-w-800px p-4" />
   </div>
 </template>
 
@@ -43,9 +43,9 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .sticky-top-container {
-  width: 100%;
   transition: all 0.3s ease;
   z-index: 100;
+  width: 100%;
 
   &.is-sticky {
     position: fixed;
@@ -54,7 +54,6 @@ onUnmounted(() => {
     right: 0;
     height: 10vh;
     background-color: white;
-    padding: 8px 0;
   }
 }
 

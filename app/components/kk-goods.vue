@@ -7,10 +7,16 @@
     @mouseenter="shadowMode = 'always'"
     @mouseleave="shadowMode = 'never'"
   >
-    <div class="flex-4 overflow-auto" ref="imgRef">
+    <div class="overflow-auto" ref="imgRef">
       <!-- 加载动画 -->
-      <kk-svg-loader-fast v-if="loading" :width="300" :height="300" />
-      <kk-cld-image v-else :src="goods.image" alt="商品图片" />
+      <kk-svg-loader-fast v-if="loading" :width="300" />
+      <kk-cld-image
+        v-else
+        :src="goods.image"
+        alt="商品图片"
+        :width="300"
+        :aspectRatio="300 / 500"
+      />
     </div>
     <div>{{ goods.goods_name }}</div>
     <div>商品内容:{{ goods.price }}元{{ goods.sales }}</div>
@@ -19,7 +25,6 @@
 </template>
 
 <script setup lang="ts">
-import { useElementSize } from "@vueuse/core";
 const props = defineProps({
   title: {
     type: String,
@@ -40,21 +45,21 @@ const props = defineProps({
 });
 
 const shadowMode = ref<"never" | "always" | "hover">("never");
-
-onMounted(async () => {});
+const imgRef = ref<HTMLDivElement>();
 </script>
 
 <style scoped lang="scss">
 .goodsItem {
   --w: 300px;
   width: var(--w);
+  height: 520px;
   transition: transform 0.3s ease; /* 平滑过渡效果 */
   transform-origin: center center;
   cursor: pointer; /* 鼠标悬停样式 */
   position: relative;
 }
 .goodsItem:hover {
-  transform: translateY(-10px) scale(1.05); /* 向上浮起10px并轻微放大 */
+  transform: translateY(-8px) scale(1.05); /* 向上浮起10px并轻微放大 */
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* 添加阴影增强浮起效果 */
   z-index: 1; /* 提高层级确保在最上层显示 */
 }

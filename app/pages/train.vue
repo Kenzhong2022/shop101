@@ -2,6 +2,23 @@
 <template>
   <div class="train-container">
     <h1>训练场</h1>
+    <div>
+      <h2>右键菜单示例</h2>
+      <!-- 最简单的右键菜单使用案例 -->
+      <ContextMenu
+        class="b-solid w-500px h-500px"
+        :menuItems="[
+          { label: '测试菜单1' },
+          { label: '测试菜单2' },
+          { label: '测试菜单3' },
+        ]"
+      >
+        <div class="bg-red w-full h-full text-white text-center">
+          在这个区域内右键点击试试看!
+        </div>
+      </ContextMenu>
+    </div>
+
     <el-card>
       <LazyKkImage
         :src="
@@ -111,6 +128,8 @@
     </el-card>
   </div>
 </template>
+
+<script setup></script>
 
 <style scoped>
 .train-container {

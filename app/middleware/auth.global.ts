@@ -60,22 +60,28 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
 
   // 示例：记录页面访问时间
   const visitTime = new Date().toLocaleString("zh-CN");
-  console.log(`⏰ 访问时间: ${visitTime}`);
+  // console.log(`⏰ 访问时间: ${visitTime}`);
 
   // 示例：检查路由是否需要特殊处理
   if (to.meta?.pageInfo?.requiresAuth) {
-    console.log("🔒 该页面需要认证");
+    // console.log("🔒 该页面需要认证");
     // 获取cookie中的token
     const token = useCookie("auth-token").value;
     // 保存to的路径，用于登录后跳转回原页面
     const redirectPath = to.fullPath;
-    console.log("🔄 保存跳转路径:", redirectPath);
+    // console.log("🔄 保存跳转路径:", redirectPath);
     // 1.检查token是否存在
     if (!token) {
-      console.log("token为空，重定向到登录页");
+      // console.log("token为空，重定向到登录页");
       return navigateTo("/login/myLogin");
     }
     //  2.检查token是否过期
+    const isExpired = checkTokenExpiration();
+    console.log("token是否过期：??", !isExpired);
+    if (!isExpired) {
+      // console.log("token过期，重定向到登录页");
+      return navigateTo("/login/myLogin");
+    }
   }
 
   if (to.meta?.pageInfo?.requiresAdmin) {

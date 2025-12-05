@@ -93,6 +93,51 @@ const extractTargetUrl = (fullUrl) => {
   // 匹配成功则返回捕获的目标url，失败返回空字符串
   return matchResult?.[1] || "";
 };
+
+/**
+ * 复制函数
+ * @param {*} target 目标元素或字符串
+ * @returns {Promise<void>}
+ */
+const handleCopy = async (target) => {
+  try {
+    // 自动解包：可能是 ref 对象，也可能是裸字符串/DOM
+    const el = target?.value ?? target;
+    const { $message } = useNuxtApp();
+    // 取纯文本
+    const copyText =
+      typeof el === "string" ? el : el?.innerText ?? el?.textContent ?? "";
+
+    if (!copyText) {
+      $message.warning("暂无可复制内容");
+      return;
+    }
+
+    console.log("复制内容：", copyText);
+    await navigator.clipboard.writeText(copyText);
+    $message.success("复制成功！");
+  } catch (err) {
+    console.error("复制失败：", err);
+    $message.error("复制失败，请手动复制");
+  }
+};
+
+/**
+ * @description 检查token是否过期 false 表示已过期 true 表示未过期
+ * @returns {boolean}
+ */
+const checkTokenExpiration = () => {
+  const token = useCookie("auth-token").value;
+  if (!token) {
+    return false;
+  }
+  // 解析token，检查过期时间 ：【uid.过期时间戳.个人信息】1.1764868961926.460fc711d0d5a5d18cbbf587f51270e47c0f0cd67d98f467bd331d3dabf60632
+  const exp = Number(token.split(".")[1]);
+  console.log("过期时间：", formatTime(exp));
+  console.log("当前时间：", formatTime(Date.now()));
+
+  return Date.now() < exp; // 当前时间 小于 过期时间 表示未过期 返回true， 否则返回false 表示已过期
+};
+
 // 导出（支持直接导出函数，更方便调用）
-export default formatTime;
-export { extractTargetUrl };
+export { extractTargetUrl, handleCopy, checkTokenExpiration, formatTime };

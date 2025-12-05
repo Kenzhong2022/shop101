@@ -5,7 +5,7 @@ import { blur } from "@cloudinary/url-gen/actions/effect";
 import { quality } from "@cloudinary/url-gen/actions/delivery";
 import { faces } from "@cloudinary/url-gen/qualifiers/region";
 
-const tempUrl = ref("banner4_guxg75");
+const tempUrl = ref("");
 const loading = ref(false);
 
 // 调试：监听 tempUrl 变化

@@ -84,10 +84,15 @@
       </template>
       <template #default>
         <!-- 聊天室双方聊天内容 -->
-        <div class="bg-[#ccc] p-10px">
-          <el-scrollbar height="500px" ref="scrollbarRef">
+        <div class="bg-#191919 p-10px" ref="chatRecordRef">
+          <el-scrollbar
+            height="500px"
+            ref="scrollbarRef"
+            @scroll="handleScroll"
+          >
+            <!-- 一行聊天记录：头像 + 消息气泡 -->
             <div
-              v-for="record in chatRecords"
+              v-for="(record, index) in chatRecords"
               :key="record.seq"
               class="flex items-center mb-10px min-h-100px"
               :class="
@@ -107,16 +112,28 @@
               </div>
 
               <!-- 消息气泡 -->
-              <div
+              <ContextMenu
                 class="mx-10px px-12px py-6px rounded-8px h-100% max-w-60% break-words"
                 :class="
                   record.sender_id == curFd.id
-                    ? 'bg-white text-black'
-                    : 'bg-green-500 text-white'
+                    ? 'bg-#2e2e2e text-#fff'
+                    : 'bg-#3eb575 text-black'
                 "
+                :menuItems="[
+                  { label: '复制' },
+                  { label: '删除' },
+                  { label: '撤回' },
+                ]"
+                :index="index"
+                ref="contextMenuRef"
+                @select="(item, target) => handleSelect(item, target, index)"
               >
-                {{ record.body }}
-              </div>
+                <template #body>
+                  <div>
+                    {{ record.body }}
+                  </div>
+                </template>
+              </ContextMenu>
             </div>
           </el-scrollbar>
         </div>
@@ -141,10 +158,14 @@
 // 组合式 API 代码
 import { ref, onMounted } from "#imports";
 import { ChatRecords } from "~/api/Friends-api";
-import formatTime from "~/composables/tools";
+import { formatTime } from "~/composables/tools";
 import { useUser, getCurrentUser } from "~/composables/useUser";
+import { closeAll } from "~/composables/useContextMenu";
 const userState = useUser(); // 关键：加括号调用
-
+// 处理滚动事件
+const handleScroll = () => {
+  closeAll();
+};
 // 调试：监听用户状态变化
 watchEffect(() => {
   console.log("[kk-fd-List] 用户状态变化:", {
@@ -176,7 +197,7 @@ const props = defineProps({
     description: "是否显示好友列表抽屉",
   },
 });
-import { useMediaQuery, useElementSize } from "@vueuse/core";
+import { useElementSize } from "@vueuse/core";
 
 // 参数2 就是 SSR 时的默认值
 const isMobile = ref(false);
@@ -209,6 +230,26 @@ const allowResize = computed(() => {
   return curDrawerWidth.value >= 380;
 });
 const scrollbarRef = ref(null);
+const chatRecordRef = ref(null);
+const contextMenuRef = ref(null);
+
+// 监听聊天记录区域的右键点击事件
+watch(chatRecordRef, (newVal) => {
+  if (newVal) {
+    newVal.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      closeAll();
+    });
+  }
+});
+
+const handleSelect = async (item, tarRef, index) => {
+  console.log("点击了", item, tarRef, index);
+  if (item.label === "复制") {
+    await handleCopy(tarRef);
+  }
+};
+
 const setWidth = () => {
   console.log("设置抽屉宽度");
   drawerWidth.value = mql.matches ? "100%" : "30%";
@@ -216,7 +257,7 @@ const setWidth = () => {
 let mql = null;
 onMounted(() => {
   mql = window.matchMedia("(max-width: 768px)");
-  console.log("mql", mql);
+  // console.log("mql", mql);
   isMobile.value = mql.matches;
   setWidth(); // 第一次
   mql.addEventListener("change", setWidth); // 窗口大小变化也更新
@@ -374,6 +415,7 @@ const handleCloseChatRoomDialog = () => {
 function onDisconnect() {
   isConnected.value = false;
   transport.value = "N/A";
+  console.log("连接已断开");
 }
 
 /* 监听服务端广播 */
@@ -395,6 +437,10 @@ function onHello(greeting) {
 // 绑定事件 （连接成功、断开、自定义事件）
 socket.on("connect", onConnect);
 socket.on("disconnect", onDisconnect);
+socket.on("before_disconnect", (reason) => {
+  console.log("【客户端】收到服务器断开通知:", reason);
+  alert("服务器断开连接，原因：" + reason);
+});
 socket.on("chat", onChat);
 socket.on("hello", onHello); // 监听服务器问候事件
 
@@ -407,6 +453,11 @@ onBeforeUnmount(() => {
   socket.off("connect", onConnect);
   // 解绑断开事件
   socket.off("disconnect", onDisconnect);
+  // 解绑服务器断开通知事件
+  socket.off("before_disconnect", (reason) => {
+    console.log("【客户端】收到服务器断开通知:", reason);
+    alert("服务器断开连接，原因：" + reason);
+  });
   // 解绑自定义事件
   socket.off("chat", onChat);
   // 解绑服务端时间事件

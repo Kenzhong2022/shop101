@@ -2,6 +2,18 @@
 <template>
   <div class="train-container">
     <h1>训练场</h1>
+
+    <!-- 菜单组件 -->
+    <el-card>
+      <el-menu>
+        <kk-menu :menuItems="menuList" />
+      </el-menu>
+    </el-card>
+
+    <!-- 上传图片组件 -->
+    <el-card>
+      <kk-upload-orig />
+    </el-card>
     <div>
       <h2>右键菜单示例</h2>
       <!-- 最简单的右键菜单使用案例 -->
@@ -12,10 +24,28 @@
           { label: '测试菜单2' },
           { label: '测试菜单3' },
         ]"
+        ref="contextMenuRef"
+        @select="handleSelect"
       >
-        <div class="bg-red w-full h-full text-white text-center">
-          在这个区域内右键点击试试看!
-        </div>
+        <template #body>
+          <div class="bg-red w-full h-full text-white text-center">
+            在这个区域内右键点击试试看!
+          </div>
+        </template>
+      </ContextMenu>
+      <ContextMenu
+        class="b-solid w-500px h-500px"
+        :menuItems="[
+          { label: '测试菜单1' },
+          { label: '测试菜单2' },
+          { label: '测试菜单3' },
+        ]"
+      >
+        <template #body>
+          <div class="bg-red w-full h-full text-white text-center">
+            在这个区域内右键点击试试看!123123
+          </div>
+        </template>
       </ContextMenu>
     </div>
 
@@ -129,7 +159,55 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+const contextMenuRef = ref(null);
+const handleSelect = async (item: any) => {
+  console.log(
+    "点击了",
+    item,
+    (await (contextMenuRef.value as any).handleCopy()) || "无"
+  );
+};
+import type { MenuItem } from "@/components/kk-menu.vue";
+
+// 菜单数据（树形结构，index 唯一，无循环引用）
+const menuList = ref<MenuItem[]>([
+  {
+    index: "1",
+    title: "首页",
+  },
+  {
+    index: "2",
+    title: "用户管理",
+    children: [
+      { index: "2-1", title: "用户列表" },
+      {
+        index: "2-2",
+        title: "角色管理",
+        children: [
+          { index: "2-2-1", title: "角色配置" }, // 三级菜单
+          {
+            index: "2-2-2",
+            title: "权限分配",
+            children: [
+              {
+                index: "2-2-2-1",
+                title: "分配角色",
+                children: [{ index: "2-2-2-1-1", title: "分配角色1" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    index: "3",
+    title: "菜单管理",
+    children: [], // 空数组，不会触发递归（终止条件生效）
+  },
+]);
+</script>
 
 <style scoped>
 .train-container {

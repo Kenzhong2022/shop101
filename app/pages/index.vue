@@ -46,7 +46,11 @@
     <div class="flex flex-wrap px-20px">
       <div v-for="goodsItem in goodsList" :key="goodsItem.id" ref="allRows">
         <!-- 一排五个 gap25 -->
-        <kk-goods :goods="goodsItem" :loading="loadingGoods" />
+        <kk-goods
+          :goods="goodsItem"
+          :loading="loadingGoods"
+          @click="handleClick(goodsItem)"
+        />
       </div>
     </div>
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
@@ -126,6 +130,12 @@ function createObserver() {
   );
 }
 
+// 点击商品跳转详情页
+const handleClick = (goodsItem: Goods) => {
+  console.log(goodsItem);
+  // 跳转详情页
+  navigateTo(`/goods/${goodsItem.id}/detail`);
+};
 const getGoodsList = async () => {
   await apiGoodsList({
     page: 2,

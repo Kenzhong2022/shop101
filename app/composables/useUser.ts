@@ -7,6 +7,9 @@ export interface UserState {
   user_id: number;
   token: string;
   expireTime: number;
+  userInfo?: {
+    avatar?: string;
+  };
 }
 
 /** 统一 cookie 配置，防止多实例不一致 */
@@ -27,6 +30,10 @@ export function useUser() {
       user_id: -1,
       token: "",
       expireTime: 0,
+      userInfo: {
+        avatar:
+          "https://res.cloudinary.com/dlji1nmdj/image/upload/v1764851729/1764060353981.png",
+      },
     });
 
     /** 只在客户端初始化一次 */

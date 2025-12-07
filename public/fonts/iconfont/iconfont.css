@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5017615 */
-  src: url('iconfont.woff2?t=1764955569194') format('woff2'),
-       url('iconfont.woff?t=1764955569194') format('woff'),
-       url('iconfont.ttf?t=1764955569194') format('truetype');
+  src: url('iconfont.woff2?t=1765092807761') format('woff2'),
+       url('iconfont.woff?t=1765092807761') format('woff'),
+       url('iconfont.ttf?t=1765092807761') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,70 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-notice:before {
+  content: "\e62b";
+}
+
+.icon-notice1:before {
+  content: "\e616";
+}
+
+.icon-daizhifu:before {
+  content: "\e60c";
+}
+
+.icon-zhifubaozhifu:before {
+  content: "\e634";
+}
+
+.icon-alipay:before {
+  content: "\e618";
+}
+
+.icon-zhifu:before {
+  content: "\e6be";
+}
+
+.icon-chat:before {
+  content: "\e69d";
+}
+
+.icon-cart1:before {
+  content: "\e602";
+}
+
+.icon-kefu:before {
+  content: "\e658";
+}
+
+.icon-kefu1:before {
+  content: "\e625";
+}
+
+.icon-voucher:before {
+  content: "\e657";
+}
+
+.icon-lishijilu_o:before {
+  content: "\eb7b";
+}
+
+.icon-collection:before {
+  content: "\e69e";
+}
+
+.icon-voucher1:before {
+  content: "\e6e9";
+}
+
+.icon-setting:before {
+  content: "\e659";
+}
+
+.icon-setting-copy:before {
+  content: "\eb7d";
 }
 
 .icon-icon_519:before {
@@ -27,6 +91,10 @@
 
 .icon-yingyong:before {
   content: "\e600";
+}
+
+.icon-yonghu-copy:before {
+  content: "\eb7c";
 }
 
 .icon-yonghu:before {

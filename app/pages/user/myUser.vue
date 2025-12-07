@@ -9,12 +9,20 @@
         <!-- 个人头像 -->
         <div>
           <el-avatar
-            :src="'https://res.cloudinary.com/dlji1nmdj/image/upload/v1764851729/1764060353981.png'"
+            :src="userState.userInfo?.avatar"
             :size="100"
             class="my-avatar relative"
             @mouseenter="() => (isHovered = true)"
             @mouseleave="() => (isHovered = false)"
             :class="{ 'my-avatar-hover': isHovered }"
+            @click="() => {(fileInput as HTMLInputElement).click()}"
+          />
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="onSelect"
           />
         </div>
         <div class="text-center">KK个人中心</div>
@@ -59,30 +67,33 @@ definePageMeta({
 
 import { useUser } from "~/composables/useUser";
 const userState = useUser(); // 关键：加括号调用
-import { formatTime } from "~/composables/tools";
 import type { MenuItem } from "~/components/kk-menu.vue";
-import { registerRuntimeCompiler } from "vue";
 const menuList: MenuItem[] = [
   // 个人信息 订单记录 收藏夹 账号设置 退出登录
   {
     title: "个人信息",
     index: "/user/myUser",
+    icon: "icon-yonghu-copy",
   },
   {
     title: "订单记录",
     index: "/user/myOrder",
+    icon: "icon-lishijilu_o",
   },
   {
     title: "收藏夹",
     index: "/user/myCollect",
+    icon: "icon-collection",
   },
   {
     title: "账号设置",
     index: "/user/mySetting",
+    icon: "icon-setting-copy",
   },
   {
     title: "退出登录",
     index: "/login/myLogin",
+    icon: "logout",
   },
 ];
 
@@ -111,10 +122,25 @@ function handleTokenExpire() {
   // 跳转到登录页面
   navigateTo("/login/myLogin");
 }
-
+const fileInput = ref<HTMLInputElement>();
 const handleSelect = (index: string) => {
   console.log(index);
 };
+interface CloudinaryUpload {
+  file: Ref<File | null>;
+  previewUrl: Ref<string>;
+  resultUrl: Ref<string>;
+  uploading: Ref<boolean>;
+  selectFile: (file: File | null) => void;
+  upload: () => Promise<void>;
+}
+const { file, previewUrl, resultUrl, uploading, selectFile, upload } =
+  useCloudinary(true) as CloudinaryUpload;
+// 处理文件选择 - 自动上传
+async function onSelect(e: any) {
+  const res = selectFile(e.target.files?.[0]);
+  console.log("previewUrl:", res);
+}
 </script>
 
 <style lang="scss" scoped>
@@ -133,7 +159,6 @@ const handleSelect = (index: string) => {
 .menu-contaniner {
   :deep(.el-menu-item) {
     margin: 10px !important;
-    // border: 1px solid red;
     border-radius: 12px;
   }
 }

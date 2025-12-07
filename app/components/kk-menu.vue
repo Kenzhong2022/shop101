@@ -6,6 +6,12 @@
       v-if="!item.children || item.children.length === 0"
       :index="item.index"
     >
+      <!-- 根据导航项名称使用对应的阿里图标 -->
+      <i
+        :class="['iconfont', item.icon, 'color-main']"
+        class="mr-2"
+        style="font-size: 24px"
+      ></i>
       {{ item.title }}
     </el-menu-item>
 
@@ -19,15 +25,14 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from "vue";
-
 // 定义菜单数据类型（确保数据格式正确）
 export interface MenuItem {
   index: string; // 唯一标识（必须字符串，如 "1"、"1-1"）
   title: string; // 菜单名称
   children?: MenuItem[]; // 子菜单（可选）
   disabled?: boolean; // 可选：是否禁用
-  path?: string; // 可选：路由路径
+  path?: string; // 可选：路由路径（如果有）
+  icon?: string; // 可选：图标名称（如果有）
 }
 
 // 接收父组件传递的菜单数据

@@ -1,7 +1,7 @@
 <template>
-  <!-- 右键菜单 -->
-  <div class="" ref="contextMenuRef">
-    <div ref="bodySlotRef">
+  <!-- 右键菜单组件 -->
+  <div ref="contextMenuRef">
+    <div ref="bodySlotRef" class="h-100% w-100%">
       <slot name="body">
         <!-- 应该出现菜单的位置 -->
       </slot>
@@ -28,8 +28,9 @@
           class="flex flex-col hover:bg-primary hover:text-white cursor-pointer p-2 rounded-md"
           v-for="(item, index) in menuItems"
           :key="index"
+          @click="handleSelect(item)"
         >
-          <div @click="handleSelect(item)">{{ item.label }}</div>
+          <div>{{ item.label }}</div>
         </div>
       </div>
     </teleport>
@@ -61,7 +62,7 @@ const handleTTurnOffLastActiveMenu = () => {
 };
 
 const handleSelect = (item) => {
-  console.log("点击了", item, contextMenuRef.value);
+  console.log("点击了菜单组件触发", item, contextMenuRef.value);
   emit("select", item, contextMenuRef.value);
   hideMenu();
 };

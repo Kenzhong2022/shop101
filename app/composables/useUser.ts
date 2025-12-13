@@ -23,6 +23,11 @@ const cookieOptions = {
 // 全局共享的用户状态实例
 let globalUserState: Ref<UserState> | null = null;
 
+/**
+ * 获取用户状态实例
+ * @returns 用户状态响应式对象
+ * @description 用于获取全局用户状态实例，确保在应用中一致使用
+ */
 export function useUser() {
   // 如果全局实例不存在，创建它
   if (!globalUserState) {

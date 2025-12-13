@@ -18,7 +18,7 @@ export function checkToken(token: string): number | ErrorResponse {
   if (!uid || !exp || !sig) throw new Error("格式不对");
 
   if (Date.now() > Number(exp))
-    return { code: 401, message: "已过期" } as ErrorResponse;
+    throw { code: 401, message: "登录信息已过期" } as ErrorResponse;
 
   // 验证签名
   const expect = crypto

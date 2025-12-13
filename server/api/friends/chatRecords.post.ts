@@ -24,7 +24,7 @@ export interface ChatRecords {
 export interface ChatRecordsResponse {
   success: boolean;
   message: string;
-  list: ChatRecords[]; // 好友聊天记录列表
+  list?: ChatRecords[]; // 好友聊天记录列表
 }
 
 export interface ChatRecordsRequest {
@@ -44,7 +44,7 @@ export default defineEventHandler(
       console.error("❌ 未提供有效的认证Token");
       throw createError({
         statusCode: 401,
-        statusMessage: "未提供有效的认证Token",
+        message: "未提供有效的认证Token",
       });
     }
 
@@ -52,21 +52,14 @@ export default defineEventHandler(
     let userId: number;
 
     try {
-      userId = checkToken(token); // 验证Token并获取用户ID
+      userId = checkToken(token) as number; // 验证Token并获取用户ID
       console.log("👤 当前用户ID:", userId);
     } catch (error) {
-      // Token验证失败也返回401
-      if (
-        ((error as Error) && (error as Error).message?.includes("Token")) ||
-        (error as Error).message?.includes("token")
-      ) {
-        console.error("❌ Token验证失败:", (error as Error).message);
-        throw createError({
-          statusCode: 401,
-          statusMessage: "Token验证失败，请重新登录",
-        });
-      }
-      throw error; // 其他错误继续抛出
+      throw createError({
+        statusCode: (error as { code: number }).code || 401,
+        message:
+          (error as { message: string }).message || "登录已过期，请重新登录",
+      });
     }
 
     // 获取请求体参数
@@ -80,14 +73,14 @@ export default defineEventHandler(
     if (!friendId) {
       throw createError({
         statusCode: 400,
-        statusMessage: "好友ID不能为空",
+        message: "好友ID不能为空",
       });
     }
 
     if (!count || count <= 0) {
       throw createError({
         statusCode: 400,
-        statusMessage: "拉取数量必须大于0",
+        message: "拉取数量必须大于0",
       });
     }
 

@@ -94,12 +94,15 @@ export default defineNuxtPlugin((nuxtApp) => {
       console.error("[Axios] 响应拦截器错误:", error);
 
       if (error.response) {
-        const { status, data } = error.response;
-
-        switch (status) {
+        const { message, statusCode } = error.response.data;
+        console.log("statusCode:", statusCode, message);
+        switch (statusCode) {
           case 401:
-            const message = data?.message || "登录已过期，请重新登录";
-            console.error(`[Axios] 响应拦截器 - 401未授权: ${message}`);
+            console.error(
+              `[Axios] 响应拦截器 - 401未授权: ${
+                message || "登录已过期，请重新登录"
+              }`
+            );
             const route = useRoute();
             const currentPath = route.fullPath; // 获取当前完整路径（如 /friends?page=2#chat）
             console.log("当前页面URL【编码】:", currentPath);
@@ -135,7 +138,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             break;
 
           case 500:
-            const serverMessage = data?.message || "服务器内部错误，请稍后重试";
+            const serverMessage = message || "服务器内部错误，请稍后重试";
             console.error(
               `[Axios] 响应拦截器 - 500服务器错误: ${serverMessage}`
             );
@@ -146,9 +149,9 @@ export default defineNuxtPlugin((nuxtApp) => {
             break;
 
           default:
-            const defaultMessage = data?.message || `请求失败: ${status}`;
+            const defaultMessage = message || `请求失败: ${statusCode}`;
             console.error(
-              `[Axios] 响应拦截器 - ${status}错误: ${defaultMessage}`
+              `[Axios] 响应拦截器 - ${statusCode}错误: ${defaultMessage}`
             );
 
             if (process.client) {

@@ -7,12 +7,14 @@
       placeholder="Please input"
     >
       <template #prefix>
-        <el-button type="primary" @click="handleSearch">
-          <el-icon class="text-#fff">
-            <Search />
-          </el-icon>
-          搜索
-        </el-button>
+        <div v-debounce:[800]="handleSearch">
+          <el-button type="primary">
+            <el-icon class="text-#fff">
+              <Search />
+            </el-icon>
+            搜索
+          </el-button>
+        </div>
       </template>
     </el-input>
   </div>

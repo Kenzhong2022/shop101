@@ -150,7 +150,7 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         const exp = String(Date.now() + 30 * 60 * 1000); // 30分钟后的时间戳
         const hmacSecretKey = process.env.HMAC_SECRET_KEY || "abc123"; // 获取HMAC密钥
         console.log("🔑【HMAC密钥】:", hmacSecretKey);
-        const token = generateLoginToken(String(user.id), exp, hmacSecretKey);
+        const token = generateLoginToken(Number(user.id), exp, hmacSecretKey);
         console.log("🔐【生成Token】:", token);
 
         // 返回成功响应

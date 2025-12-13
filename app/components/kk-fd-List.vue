@@ -66,7 +66,7 @@
       </template>
     </el-drawer>
 
-    <!-- 聊天弹窗 -->
+    <!-- 聊天室弹窗 -->
     <el-dialog
       class="chat-room-dialog"
       :modal="false"
@@ -90,24 +90,24 @@
             ref="scrollbarRef"
             @scroll="handleScroll"
           >
-            <!-- 一行聊天记录：头像 + 消息气泡 -->
+            <!-- 一行聊天记录：头像 + 消息气泡 + 右键出现菜单 -->
             <div
-              v-for="(record, index) in chatRecords"
-              :key="record.seq"
+              v-for="(msg, index) in chatRecords"
+              :key="msg.seq"
               class="flex items-center mb-10px min-h-100px"
               :class="
-                record.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
+                msg.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
               "
             >
               <!-- 头像（对方蓝色，我红色） -->
               <div
                 class="h-100px rounded-full flex-shrink-0 overflow-hidden aspect-ratio-[1/1]"
                 :class="
-                  record.sender_id == curFd.id ? 'bg-blue-500' : 'bg-red-500'
+                  msg.sender_id == curFd.id ? 'bg-blue-500' : 'bg-red-500'
                 "
               >
                 <!-- 后期替真实头像 -->
-                <!-- <img v-if="false" :src="avatarUrl(record.sender_id)" /> -->
+                <!-- <img v-if="false" :src="avatarUrl(msg.sender_id)" /> -->
                 <el-image v-if="true" src="/icon头像1.webp" />
               </div>
 
@@ -115,7 +115,7 @@
               <ContextMenu
                 class="mx-10px px-12px py-6px rounded-8px h-100% max-w-60% break-words"
                 :class="
-                  record.sender_id == curFd.id
+                  msg.sender_id == curFd.id
                     ? 'bg-#2e2e2e text-#fff'
                     : 'bg-#3eb575 text-black'
                 "
@@ -130,7 +130,7 @@
               >
                 <template #body>
                   <div>
-                    {{ record.body }}
+                    {{ msg.body }}
                   </div>
                 </template>
               </ContextMenu>

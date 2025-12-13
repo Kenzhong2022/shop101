@@ -73,41 +73,34 @@ interface Banner {
   image: string;
 }
 
-// 直接导入图片，确保路径被正确处理
-const banner1 = "banner1_zbk4tg"; //"/img/banners/banner1.webp";
-const banner2 = "banner2_xpc88k"; //"/img/banners/banner2.webp";
-const banner3 = "banner3_fxo6xk"; //"/img/banners/banner3.webp";
-const banner4 = "banner4_o3l0jf"; // "/img/banners/banner4.webp";
 const banner5 = "写真杂志1_g0ogwr"; //"/img/banners/写真杂志1.webp";
 
 const banners: Banner[] = [
   {
     id: 1,
     title: "banner1",
-    image: banner1,
+    image: "banner1_zbk4tg",
   },
   {
     id: 2,
     title: "banner2",
-    image: banner2,
+    image: "banner2_xpc88k",
   },
   {
     id: 3,
     title: "banner3",
-    image: banner3,
+    image: "banner3_fxo6xk",
   },
   {
     id: 4,
     title: "banner4",
-    image: banner4,
+    image: "banner4_o3l0jf",
   },
 ];
 import type { Goods } from "~~/server/api/goods/list.post";
 const goodsList = ref<Goods[]>();
 
 const loadingGoods = ref<boolean>(true);
-// 商品列表行数
-const modeRow = ref<number>(5);
 // 商品列表元素引用
 const allRows = ref<HTMLElement[]>([]);
 // 商品列表最后一行元素引用

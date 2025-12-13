@@ -15,8 +15,8 @@
         :src="goods.image"
         alt="商品图片"
         :width="300"
-        :height="500"
-        :aspectRatio="300 / 500"
+        :height="400"
+        :aspectRatio="300 / 400"
       />
     </div>
     <div>{{ goods.goods_name }}</div>

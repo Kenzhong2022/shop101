@@ -139,5 +139,19 @@ const checkTokenExpiration = () => {
   return Date.now() < exp; // 当前时间 小于 过期时间 表示未过期 返回true， 否则返回false 表示已过期
 };
 
+const useDebounce = (fn, delay = 500) => {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
+
 // 导出（支持直接导出函数，更方便调用）
-export { extractTargetUrl, handleCopy, checkTokenExpiration, formatTime };
+export {
+  extractTargetUrl,
+  handleCopy,
+  checkTokenExpiration,
+  formatTime,
+  useDebounce,
+};

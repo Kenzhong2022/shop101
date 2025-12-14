@@ -13,69 +13,81 @@
       <!-- 聊天室顶部：和谁聊天 -->
       <template #header>
         <header class="text-center text-2xl font-bold">
-          正在和{{ curFd.username }}对话,当前登录用户id为:{{ userState.user_id
-          }}{{ loading ? "加载中..." : "" }}
+          <i>正在和{{ curFd.username }}对话</i>,
+          <i> 当前登录用户id为:{{ userState.user_id }} </i>
+
+          <i>{{ loading ? "加载中..." : "" }}</i>
+          <i>总的高度{{ totalHeight }}</i>
+          <i>切片起始坐标{{ startIndex }}</i>
+          <i>切片结束坐标{{ endIndex }}</i>
         </header>
       </template>
       <!-- 聊天室内容区域：聊天记录 -->
       <template #default>
         <!-- 聊天室双方聊天内容 -->
-        <div class="bg-#191919 p-10px" ref="chatRecordRef">
-          <el-scrollbar
-            height="500px"
-            ref="scrollbarRef"
+        <div class="bg-[#191919] p-[10px]" ref="chatRecordRef">
+          <div
             @scroll="handleScroll"
+            ref="scrollbarRef"
+            class="overflow-auto max-h-500px relative"
           >
+            <div :style="{ height: totalHeight + 'px' }"></div>
+            <!-- 可视区域内容 -->
             <!-- 一行聊天记录：头像 + 消息气泡 + 右键出现菜单 -->
             <div
-              v-for="(msg, index) in list"
-              :key="msg.seq"
-              class="flex items-start mb-10px min-h-50px"
-              :class="
-                msg.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
-              "
+              class="absolute top-0 left-0 w-full list"
+              :style="{
+                top: `${startIndex * ITEM_H}px`,
+              }"
             >
-              <!-- 头像（对方蓝色，我红色） -->
               <div
-                class="h-50px rounded-lg flex-shrink-0 overflow-hidden aspect-ratio-[1/1]"
+                v-for="(msg, index) in visibleList"
+                :key="msg.seq"
+                class="flex items-start mb-[10px] min-h-[50px] bg-pink"
                 :class="
-                  msg.sender_id == curFd.id ? 'bg-blue-500' : 'bg-red-500'
+                  msg.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
                 "
               >
-                <!-- 后期替真实头像 -->
-                <!-- <img v-if="false" :src="avatarUrl(msg.sender_id)" /> -->
-                <el-image v-if="true" src="/icon头像1.webp" />
-              </div>
+                <!-- 头像（对方蓝色，我红色） -->
+                <div
+                  class="h-[50px] rounded-lg flex-shrink-0 overflow-hidden aspect-ratio-[1/1]"
+                  :class="
+                    msg.sender_id == curFd.id ? 'bg-blue-500' : 'bg-red-500'
+                  "
+                >
+                  <el-image src="/icon头像1.webp" />
+                </div>
 
-              <!-- 消息气泡 -->
-              <ContextMenu
-                class="mx-10px p-12px rounded-8px h-100% line-height-[1.4] font-bold max-w-60% break-words"
-                :class="
-                  msg.sender_id == curFd.id
-                    ? 'bg-#2e2e2e text-#fff'
-                    : 'bg-#3eb575 text-black'
-                "
-                :menuItems="[
-                  { label: '复制' },
-                  { label: '删除' },
-                  { label: '撤回' },
-                ]"
-                :index="index"
-                ref="contextMenuRef"
-                @select="(item, target) => handleSelect(item, target, index)"
-              >
-                <template #body>
-                  {{ msg.body }}
-                </template>
-              </ContextMenu>
+                <!-- 消息气泡 -->
+                <ContextMenu
+                  class="mx-[10px] p-[12px] rounded-[8px] h-100% line-height-[1.4] font-bold max-w-[60%] break-words"
+                  :class="
+                    msg.sender_id == curFd.id
+                      ? 'bg-[#2e2e2e] text-[#fff]'
+                      : 'bg-[#3eb575] text-black'
+                  "
+                  :menuItems="[
+                    { label: '复制' },
+                    { label: '删除' },
+                    { label: '撤回' },
+                  ]"
+                  :index="index"
+                  ref="contextMenuRef"
+                  @select="(item, target) => handleSelect(item, target, index)"
+                >
+                  <template #body>
+                    {{ msg.seq }}
+                  </template>
+                </ContextMenu>
+              </div>
             </div>
-          </el-scrollbar>
+          </div>
         </div>
       </template>
       <!-- 聊天室底部: 输入框 + 发送按钮 -->
       <template #footer>
         <!-- 用户输入部分 -->
-        <div class="flex flex-row gap-2px">
+        <div class="flex flex-row gap-2">
           <!-- 输入框点击enter 发送消息 -->
           <el-input
             v-model="inputMessage"
@@ -90,47 +102,24 @@
 </template>
 
 <script setup>
-/************* 虚拟列表 start *************/
-const ITEM_H = 100; // css 里写的 min-h-100px
-const VIEWPORT_H = 500; // el-scrollbar 高度
-const BUFFER = 3; // 上下缓冲行数
-
-const scrollTop = ref(0); // 当前滚动位置
-const totalHeight = ref(0); // 总占位高度
-const visibleRange = ref({ start: 0, end: 0, offsetY: 0 }); // 可见范围{开始索引，结束索引，偏移量}
-/************* 虚拟列表 end *************/
-
-/* 可视区域切片 */
-const visibleList = computed(() => {
-  const total = list.value.length;
-  if (!total) return [];
-
-  // 计算起始索引
-  let start = Math.floor(scrollTop.value / ITEM_H) - BUFFER;
-  start = Math.max(0, start);
-
-  // 结束索引
-  let end = start + Math.ceil(VIEWPORT_H / ITEM_H) + BUFFER * 2;
-  end = Math.min(total - 1, end);
-
-  // 切片
-  const slice = [];
-  for (let i = start; i <= end; i++) {
-    slice.push({ ...list.value[i], $index: i }); // 把真实索引带上
-  }
-  return slice;
-});
-
+import { ref, computed, watch, nextTick } from "vue";
 import { formatTime } from "~/composables/tools";
-import { useUser, getCurrentUser } from "~/composables/useUser";
+import { useUser } from "~/composables/useUser";
 import { closeAll } from "~/composables/useContextMenu";
+import { ElMessage, ElMessage as $message } from "element-plus";
+
 const userState = useUser();
 const contextMenuRef = ref(null);
 
+//  props 定义
 const props = defineProps({
   curFd: {
     type: Object,
     default: () => ({}),
+  },
+  curRoomID: {
+    type: Number,
+    default: 0,
   },
   isMobile: {
     type: Boolean,
@@ -149,165 +138,124 @@ const props = defineProps({
 // 触发对应的更新事件（update:+props名）
 const emit = defineEmits(["update:visible"]);
 
-const dialogVisible = ref();
+// 弹窗显示状态
+const dialogVisible = ref(false);
 const loading = ref(false);
-const list = ref([]);
-// 同步父组件 chatRecords 到子组件 list
+const list = ref([]); // 聊天记录列表（响应式）
+const scrollbarRef = ref(null); // 滚动容器引用
+
+// 同步父组件 chatRecords 到子组件 list（避免直接修改props）
 watch(
   () => props.chatRecords,
   (newVal) => {
-    loading.value = false;
-    list.value = newVal;
-  }
-);
-// 同步父组件 visible 到子组件 dialogVisible
-watch(
-  () => props.visible,
-  (newVal) => {
-    console.log("visible", newVal);
-    dialogVisible.value = newVal;
-    loading.value = true;
-    socket.connect();
+    if (Array.isArray(newVal)) {
+      loading.value = false;
+      list.value = newVal; // 深拷贝，避免响应式污染
+      // 初始加载后滚动到底部
+    }
   },
   { immediate: true }
 );
 
-/**
- * 处理滚动事件，关闭所有上下文菜单
- * @param scrollTop 滚动事件参数，包含滚动Top值
- */
-const handleScroll = ({ scrollTop }) => {
-  closeAll(); // 关闭所有上下文菜单
-};
+// 同步父组件 visible 到子组件 dialogVisible
+watch(
+  () => props.visible,
+  (newVal) => {
+    console.log("弹窗显示状态变更：", newVal);
+    dialogVisible.value = newVal;
+    if (newVal) {
+      loading.value = true;
+      socket.connect();
+      nextTick(() => scrollToBottom());
+    } else {
+      // 关闭弹窗时停止加载
+      loading.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 const chatRecordRef = ref(null);
-
 /**
  * 监听聊天记录区域的右键点击事件
- * @description 当用户在聊天记录区域右键点击时，关闭所有上下文菜单
+ * 关闭所有上下文菜单，阻止默认右键菜单
  */
-watch(chatRecordRef, (newVal) => {
-  if (newVal) {
-    newVal.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      closeAll();
-    });
-  }
-});
+watch(
+  chatRecordRef,
+  (newVal) => {
+    if (newVal) {
+      newVal.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        closeAll();
+      });
+    }
+  },
+  { once: true }
+); // 只绑定一次，避免重复绑定
 
 /**
- * @description 处理上下文菜单点击事件
- * @param item 点击的上下文菜单项
- * @param tarRef 点击的目标元素引用
- * @description 右键点击聊天记录项时，根据点击类型执行相应操作（复制消息、删除消息等）
+ * 处理上下文菜单点击事件
  */
 const handleSelect = (item, tarRef, index) => {
-  console.log("点击了", item, tarRef);
+  console.log("点击了菜单：", item, tarRef);
   if (item.label === "复制") {
     handleCopy(tarRef);
   }
 };
 
+// 复制消息
+const handleCopy = (tarRef) => {
+  const text = tarRef?.$el?.textContent?.trim();
+  if (text) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        ElMessage.success("复制成功");
+      })
+      .catch(() => {
+        ElMessage.error("复制失败");
+      });
+  }
+};
+
+// Socket 相关逻辑
 import { socket } from "./socket"; // 引入 socket 实例
-// 状态管理
 const isConnected = ref(socket.connected);
-// 传输方式
 const transport = ref(
   socket.connected ? socket.io.engine.transport.name : "N/A"
 );
 
-// 定义用户输入消息
-const inputMessage = ref("");
-// 定义方法：handleSendMessage
-const handleSendMessage = () => {
-  console.log("发送消息", inputMessage.value);
-  const msg = inputMessage.value;
-  // 校验用户输入
-  if (!msg.trim()) {
-    const { $message } = useNuxtApp();
-    $message.warning("请输入消息");
-    return;
-  }
-  if (!list?.value[0]) {
-    const { $message } = useNuxtApp();
-    $message.warning("请先选择好友");
-    return;
-  }
-  console.log("last_read_seq", list?.value[0].seq);
-  // 构建参数
-  const payload = {
-    roomId: Number(list?.value[0]?.room_id) || -1,
-    sender_id: Number(userState.value.user_id) || -1,
-    msg_type: 1,
-    body: msg,
-    // 格式化时间戳
-    update_at: formatTime(new Date(), {
-      format: "dateTime",
-      dateSeparator: "-",
-      timeSeparator: ":",
-    }),
-    last_read_seq: list.value[list.value.length - 1].seq || -1,
-  };
-  ElMessage({
-    message: `发送成功:${payload.body}用户id是：${payload.sender_id}`,
-    type: "success",
-  });
-  console.log("发送消息到服务器，服务器根据数据插入数据库", payload);
-  // emit 事件（发送消息到服务端）
-  socket.emit("chat", payload);
-  // 清空输入框
-  inputMessage.value = "";
-};
-
-/**
- * 连接成功回调
- * @description 连接成功后，设置连接状态为 true，记录传输方式，打印连接成功日志，监听传输方式切换（如polling升级为websocket），加入房间
- */
+// 连接成功回调
 function onConnect() {
   isConnected.value = true;
   transport.value = socket.io.engine.transport.name;
-  console.log("连接成功");
-  // 监听传输方式切换（如polling升级为websocket）
+  console.log("Socket 连接成功，传输方式：", transport.value);
+  // 监听传输方式切换
   socket.io.engine.on("upgrade", (rawTransport) => {
     transport.value = rawTransport.name;
   });
-  // 加入房间
-  socket.emit("join", 1);
+  // 加入房间（使用 curFd.id 作为房间标识，更合理）
+  if (props.curFd?.id) {
+    socket.emit("join", props.curFd.id);
+  }
 }
-
-/**
- * @description 关闭聊天弹窗，断开连接
- */
-const handleCloseChatRoomDialog = () => {
-  // 断开连接
-  socket.disconnect();
-  // 触发更新事件，关闭弹窗
-  emit("update:visible", false);
-};
 
 // 断开连接回调
 function onDisconnect() {
   isConnected.value = false;
   transport.value = "N/A";
-  console.log("连接已断开");
+  console.log("Socket 连接已断开");
 }
 
 /**
- * @param payload 服务端广播消息
- * @description 监听服务端广播，将消息添加到聊天记录列表
+ * 处理服务端广播的聊天消息
+ * 关键优化：避免新增消息触发无限滚动和切片循环
  */
 function onChat(payload) {
-  console.log("【客户端】收到服务端广播【已经插入到数据库】，", payload);
-  // push 到聊天记录列表
-  list.value = [...list.value, payload];
-}
-
-/**
- * @param payload 服务端时间消息
- * @description 监听服务端时间事件，打印服务端时间
- */
-function onServerTime({ msg, time }) {
-  console.log(`[${time}] ${msg}`);
+  console.log("【客户端】收到服务端广播：", payload);
+  if (!payload || !payload.seq) return;
+  list.value.push(payload);
+  console.log("list.value", list.value.length);
 }
 
 // 监听服务器问候事件
@@ -315,34 +263,140 @@ function onHello(greeting) {
   console.log("【客户端】收到服务器问候:", greeting);
 }
 
-// 绑定事件 （连接成功、断开、自定义事件）
+// 监听服务端时间事件
+function onServerTime({ msg, time }) {
+  console.log(`[${time}] ${msg}`);
+}
+const onBeforeDisconnect = (reason) => {
+  console.log("【客户端】收到服务器断开通知:", reason);
+  ElMessage.warning(`服务器断开连接：${reason}`);
+};
+// 绑定 Socket 事件（组件挂载时绑定，卸载时解绑）
 socket.on("connect", onConnect);
 socket.on("disconnect", onDisconnect);
-socket.on("before_disconnect", (reason) => {
-  console.log("【客户端】收到服务器断开通知:", reason);
-  alert("服务器断开连接，原因：" + reason);
-});
+socket.on("before_disconnect", onBeforeDisconnect);
 socket.on("chat", onChat);
-socket.on("hello", onHello); // 监听服务器问候事件
-socket.on("serverTime", onServerTime); // 监听服务端时间事件
+socket.on("hello", onHello);
+socket.on("serverTime", onServerTime);
 
-/* 组件卸载时统一解绑, 避免内存泄漏 */
-onBeforeUnmount(() => {
-  console.log("[ws] 组件卸载时解绑事件");
-  // 解绑事件
-  socket.off("connect", onConnect);
-  // 解绑断开事件
-  socket.off("disconnect", onDisconnect);
-  // 解绑服务器断开通知事件
-  socket.off("before_disconnect", (reason) => {
-    console.log("【客户端】收到服务器断开通知:", reason);
-    alert("服务器断开连接，原因：" + reason);
+let isUnmounted = false;
+
+/**
+ * 关闭聊天弹窗，断开连接
+ */
+const handleCloseChatRoomDialog = () => {
+  socket.disconnect();
+  emit("update:visible", false);
+  inputMessage.value = ""; // 清空输入框
+};
+
+// 输入框相关
+const inputMessage = ref("");
+/**
+ * 发送消息
+ */
+const handleSendMessage = () => {
+  const msg = inputMessage.value.trim();
+  // 校验
+  if (!msg) {
+    $message.warning("请输入消息");
+    return;
+  }
+  if (!props.curFd?.id) {
+    $message.warning("请先选择好友");
+    return;
+  }
+  if (list.value.length === 0) {
+    $message.warning("暂无聊天记录，无法发送消息");
+    return;
+  }
+
+  // 构建消息体
+  const payload = {
+    roomId: Number(props.curRoomID) || -1,
+    sender_id: Number(userState.value.user_id) || -1,
+    msg_type: 1,
+    body: msg,
+    update_at: formatTime(new Date(), {
+      format: "dateTime",
+      dateSeparator: "-",
+      timeSeparator: ":",
+    }),
+    last_read_seq: list.value[list.value.length - 1].seq || -1,
+  };
+  console.log("payload", payload);
+  // 发送消息
+  socket.emit("chat", payload);
+  ElMessage.success(`发送成功：${msg}`);
+
+  // 清空输入框
+  inputMessage.value = "";
+
+  // 发送方自动滚动到底部
+  scrollToBottom();
+};
+
+/************* 虚拟列表核心逻辑（优化后） *************/
+const ITEM_H = 60; // 行高
+const VIEWPORT_H = 500; // 可视区高度
+const VISIBLE_COUNT = Math.ceil(VIEWPORT_H / ITEM_H); //可见数量: 可视区高度 / 行高 当可视窗口为 500 行高为 60 可见数量为 9
+const scrollTop = ref(0); // 当前滚动位置
+const totalHeight = computed(() => list.value.length * ITEM_H); // 总占位高度（关键！保证滚动条正常）
+/* 只保留一个“起始索引”做响应式，scrollTop 本身不要响应式 */
+const startIndex = ref(0);
+const endIndex = computed(() =>
+  Math.min(startIndex.value + VISIBLE_COUNT, list.value.length)
+);
+/* 计算属性：只依赖 startIndex，不会死循环 */
+const visibleList = computed(() => {
+  console.log("重新渲染");
+  return list.value.slice(startIndex.value, endIndex.value);
+});
+/**
+ * 处理滚动事件
+ */
+/* 滚动事件：只更新起始索引，不动 scrollTop */
+const handleScroll = () => {
+  if (!scrollbarRef.value) return;
+  const st = scrollbarRef.value.scrollTop; // 读，不写
+  startIndex.value = Math.floor(st / ITEM_H); // 只改这个
+  console.log("startIndex.value", startIndex.value);
+  closeAll();
+};
+
+/**
+ * 滚动到底部（核心逻辑：scrollTop = 总内容高度 - 可视区高度）
+ */
+/* 滚动到底部：直接操作 DOM，不改响应式数据 */
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (scrollbarRef.value) {
+      scrollbarRef.value.scrollTop = totalHeight.value - VIEWPORT_H;
+    }
   });
-  // 解绑自定义事件
+};
+
+onUnmounted(() => {
+  socket.off("connect", onConnect);
+  socket.off("disconnect", onDisconnect);
+  socket.off("before_disconnect", onBeforeDisconnect);
   socket.off("chat", onChat);
-  // 解绑服务端时间事件
-  socket.off("serverTime", onServerTime);
-  // 解绑问候事件
   socket.off("hello", onHello);
+  socket.off("serverTime", onServerTime);
+  console.log("【客户端】组件卸载，已移除所有 Socket 事件");
 });
 </script>
+
+<style scoped>
+/* 确保消息项高度稳定（避免渲染偏差） */
+.min-h-\[50px\] {
+  min-height: 50px !important;
+  box-sizing: border-box;
+}
+/* 修复头像显示 */
+.el-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>

@@ -70,6 +70,7 @@
     <kk-fd-chatRoom
       ref="chatRoomRef"
       :curFd="curFd"
+      :curRoomID="curRoomID"
       :isMobile="isMobile"
       :visible="chatRoomDialogVisible"
       @update:visible="handleCloseChatRoom"
@@ -146,7 +147,6 @@ const allowResize = computed(() => {
   console.log("curDrawerWidth.value", curDrawerWidth.value);
   return curDrawerWidth.value >= 380;
 });
-const scrollbarRef = ref(null);
 
 const setWidth = () => {
   console.log("设置抽屉宽度");
@@ -202,6 +202,8 @@ const chatRecords = ref([]);
 
 // 定义当前点击的好友
 const curFd = ref(null);
+// 定义当前聊天房间ID
+const curRoomID = ref(null);
 
 // 定义聊天弹窗状态
 const chatRoomDialogVisible = ref(false);
@@ -220,6 +222,11 @@ const handleClickFd = (fd) => {
   ChatRecords(params).then((res) => {
     console.log("获取好友聊天记录结果", res.list);
     chatRecords.value = res.list || [];
+    try {
+      curRoomID.value = chatRecords.value[0].room_id;
+    } catch (error) {
+      console.log("error", error);
+    }
     //打开聊天弹窗
     chatRoomDialogVisible.value = true;
   });

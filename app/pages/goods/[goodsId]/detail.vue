@@ -1,14 +1,6 @@
 /** * 商品详情页 */
 <template>
   <!-- 规格选择器模板 -->
-  <div class="detail-container flex justify-start relative">
-    <div class="w-full h-1200px bg-red"></div>
-    <div
-      class="flex-1 h-100vh w-200px bg-green overflow-auto absolute top-0 right-0"
-    >
-      <div v-for="i in 120" class="h-120px">{{ i }}</div>
-    </div>
-  </div>
   <div>
     <div v-for="group in specGroups" :key="group.specType" class="spec-row">
       <span>{{ group.specType }}：</span>
@@ -35,7 +27,13 @@ const skuData = ref<SkuListResponse["data"]>();
 const selectedSpec = reactive<Record<string, string>>({});
 
 /* --------------------  计算属性  -------------------- */
-/** 用来渲染按钮的规格组（会动态更新 isAvailable） */
+/**
+ * 规格组：类型数组 存对象
+ * 对象中有两个key specType和specValues
+ * key => specType：规格类型 比如【颜色】【尺码】
+ * key => specValues：规格值数组对象 比如[{value：红色，isAvailable：false}，{value：绿色，isAvailable：false}，{value：黄色，isAvailable：false}]
+ * isAvailable：是否可选
+ */
 const specGroups = computed(() => skuData.value?.specGroups || []);
 /** 扁平的库存 SKU 列表 */
 const skuList = computed(() => skuData.value?.skuList || []);
@@ -67,40 +65,45 @@ function handleSelect(specType: string, specValue: string) {
     );
     return;
   }
-  // 否则重新计算
+  // 刷新按钮可否点击状态
   refreshAvailability();
 }
 
 /* ----------  库存联动核心  ---------- */
+/**
+ * 刷新按钮可否点击状态
+ */
 function refreshAvailability() {
+  // 遍历规格组
   specGroups.value?.forEach((group) => {
-    // 当前规格key：比如【颜色】
-    // forEach遍历颜色的值数组 [{红色，isAvailable：false}，{绿色，isAvailable：false}，{黄色，isAvailable：false}]
+    /**
+     * 遍历当前规格值数组，根据选中的规格判断是否可选
+     */
     group.specValues.forEach((specValue) => {
-      // 若选中的对象中 用当前的key 找到对应的值 和 当前的的值一致 直接改 isAvailable
+      //当前规格组的规格是否选中 同一个key 判断是否值相同 相同则可选
       if (selectedSpec[group.specType] === specValue.value) {
         specValue.isAvailable = true;
-        // console.log("【refreshAvailability】已选中，永远可点:", specValue);
         return;
       }
-      // 若是未选中的比如黄色，那么查看 加入到临时对象中。
+
       let keyValueObj = { [group.specType]: specValue.value };
-      // console.log("【refreshAvailability】keyValueObj:", keyValueObj);
-      // console.log("selectedSpec:", {
-      //   ...selectedSpec,
-      // });
+      // 合并当前选中的规格和当前遍历的规格值对象 同一个key 后续添加的值会覆盖前面选择的规格
       keyValueObj = { ...selectedSpec, ...keyValueObj };
+      console.log("Object.entries(keyValueObj):", keyValueObj);
       console.log("Object.entries(keyValueObj):", Object.entries(keyValueObj));
+      // 当前遍历的规格值对象是否可选 只要有一个符合条件的sku 那么当前规格值可选
       specValue.isAvailable = skuList.value.some((sku) => {
-        if (
-          Object.entries(keyValueObj).every(([t, val]) => {
-            return sku.spec_json[t] === val; // 每个规格项都要匹配 才能证明有这个款的商品
-          })
-        ) {
-          return sku.stock > 0;
-        }
+        // 把对象转数组 方便遍历 Object.entries(keyValueObj) 二维数组 每个元素是一个数组 数组第一个元素是key 第二个元素是value
+        const keyValueArr = Object.entries(keyValueObj);
+        const flag = keyValueArr.every(([t, val]) => {
+          if (!sku.spec_json[t]) return false; // 如果当前sku 没有这个规格项 那么直接返回false
+          if (sku.stock <= 0) return false; // 如果当前sku 库存小于等于0 那么直接返回false
+          return sku.spec_json[t] === val; // 每个规格项都要匹配 才能证明有这个款的商品
+        });
+        return flag;
       });
     });
+
     console.log("=".repeat(30));
   });
 }

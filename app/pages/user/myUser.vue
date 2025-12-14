@@ -95,6 +95,37 @@ const menuList: MenuItem[] = [
     index: "/login/myLogin",
     icon: "logout",
   },
+  {
+    title: "测试菜单1",
+    index: "/user/test1",
+    icon: "icon-test",
+    children: [
+      {
+        title: "测试菜单1-1",
+        index: "/user/test1-1",
+        icon: "icon-test",
+        children: [
+          {
+            title: "测试菜单1-1-1",
+            index: "/user/test1-1-1",
+            icon: "icon-test",
+            children: [
+              {
+                title: "测试菜单1-1-1-1",
+                index: "/user/test1-1-1-1",
+                icon: "icon-test",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "测试菜单1-2",
+        index: "/user/test1-2",
+        icon: "icon-test",
+      },
+    ],
+  },
 ];
 
 // 头像是否悬停状态
@@ -160,6 +191,15 @@ async function onSelect(e: any) {
   :deep(.el-menu-item) {
     margin: 10px !important;
     border-radius: 12px;
+    box-sizing: border-box;
+  }
+  :deep(.el-menu-item.is-active) {
+    background-color: var(--el-color-primary-light-9) !important;
+  }
+  :deep(.el-sub-menu__title) {
+    margin: 10px !important;
+    border-radius: 12px;
+    box-sizing: border-box;
   }
 }
 

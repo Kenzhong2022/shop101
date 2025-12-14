@@ -7,6 +7,7 @@ export default defineNuxtPlugin(() => {
         import("../assets/style/element/index.scss");
         // 图标字体
         import("../public/fonts/iconfont/iconfont.css");
+        import("vue-virtual-scroller/dist/vue-virtual-scroller.css");
       },
       { timeout: 1500 }
     );

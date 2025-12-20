@@ -72,8 +72,7 @@
       :curFd="curFd"
       :curRoomID="curRoomID"
       :isMobile="isMobile"
-      :visible="chatRoomDialogVisible"
-      @update:visible="handleCloseChatRoom"
+      @close="handleCloseChatRoom"
       :chatRecords="chatRecords"
     />
   </div>
@@ -81,32 +80,19 @@
 
 <script setup>
 import { ChatRecords } from "~/api/Friends-api";
-import { formatTime } from "~/composables/tools";
-import { useUser, getCurrentUser } from "~/composables/useUser";
-import { closeAll } from "~/composables/useContextMenu";
+import { useUser } from "~/composables/useUser";
 const userState = useUser();
+const chatRoomRef = ref(null);
 /**
  * @description 关闭聊天弹窗，断开连接
  */
-const handleCloseChatRoom = (val) => {
-  chatRoomDialogVisible.value = val;
-  console.log("关闭聊天弹窗", chatRoomDialogVisible.value);
-};
-// 调试：监听用户状态变化
-watchEffect(() => {
-  console.log("[kk-fd-List] 用户状态变化:", {
-    user_id: userState.value.user_id,
-    token: userState.value.token,
-  });
-});
-
-// 调试：获取当前用户信息
-onMounted(() => {
-  console.log("[kk-fd-List] 组件挂载时用户信息:", getCurrentUser());
-});
+function handleCloseChatRoom() {
+  chatRoomRef.value.close();
+}
 
 // 引入搜索好友接口
 import { searchFriends } from "~/api/Friends-api";
+import { useElementSize } from "@vueuse/core";
 
 //父组件传递的抽屉状态
 const props = defineProps({
@@ -115,7 +101,6 @@ const props = defineProps({
     description: "是否显示好友列表抽屉",
   },
 });
-import { useElementSize } from "@vueuse/core";
 
 // 参数2 就是 SSR 时的默认值
 const isMobile = ref(false);
@@ -205,8 +190,6 @@ const curFd = ref(null);
 // 定义当前聊天房间ID
 const curRoomID = ref(null);
 
-// 定义聊天弹窗状态
-const chatRoomDialogVisible = ref(false);
 /**
  * 点击好友，打开聊天弹窗，拉取聊天记录，连接到服务器
  * @param fd 点击的好友
@@ -215,20 +198,13 @@ const chatRoomDialogVisible = ref(false);
 const handleClickFd = (fd) => {
   // 记录当前点击的好友
   curFd.value = fd;
-  const params = {
-    friendId: fd.id,
-  };
   // 调用获取好友聊天记录接口
-  ChatRecords(params).then((res) => {
-    console.log("获取好友聊天记录结果", res.list);
+  ChatRecords({
+    friendId: fd.id,
+  }).then((res) => {
     chatRecords.value = res.list || [];
-    try {
-      curRoomID.value = chatRecords.value[0].room_id;
-    } catch (error) {
-      console.log("error", error);
-    }
-    //打开聊天弹窗
-    chatRoomDialogVisible.value = true;
+    curRoomID.value = Number(chatRecords.value[0].room_id);
+    chatRoomRef.value.open();
   });
 };
 

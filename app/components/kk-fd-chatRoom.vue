@@ -13,7 +13,8 @@
       <!-- 聊天室顶部：和谁聊天 -->
       <template #header>
         <header class="text-center text-2xl font-bold">
-          <i>正在和{{ curFd.username }}对话</i>,
+          <i>正在和{{ curFd.username }}对话|房间id:{{ curRoomID }}</i
+          >,
           <i> 当前登录用户id为:{{ userState.user_id }} </i>
 
           <i>{{ loading ? "加载中..." : "" }}</i>
@@ -33,20 +34,22 @@
           >
             <div :style="{ height: totalHeight + 'px' }"></div>
             <!-- 可视区域内容 -->
-            <!-- 一行聊天记录：头像 + 消息气泡 + 右键出现菜单 -->
             <div
               class="absolute top-0 left-0 w-full list"
               :style="{
-                top: `${startIndex * ITEM_H}px`,
+                top: `${offsetTop}px`,
               }"
             >
+              <!-- 一行聊天记录：头像 + 消息气泡 + 右键出现菜单 -->
               <div
                 v-for="(msg, index) in visibleList"
                 :key="msg.seq"
+                :data-key="msg.seq"
                 class="flex items-start mb-[10px] min-h-[50px] bg-pink"
                 :class="
                   msg.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
                 "
+                :ref="(el) => registerMsgRef(msg.seq, el)"
               >
                 <!-- 头像（对方蓝色，我红色） -->
                 <div
@@ -76,9 +79,14 @@
                   @select="(item, target) => handleSelect(item, target, index)"
                 >
                   <template #body>
-                    {{ msg.seq }}
+                    {{ msg.body }}
                   </template>
                 </ContextMenu>
+
+                <div
+                  v-if="msg.status === 'pending'"
+                  class="bg-blue h-10px w-10px"
+                ></div>
               </div>
             </div>
           </div>
@@ -100,32 +108,25 @@
     </el-dialog>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, watch, nextTick } from "vue";
 import { formatTime } from "~/composables/tools";
 import { useUser } from "~/composables/useUser";
 import { closeAll } from "~/composables/useContextMenu";
-import { ElMessage, ElMessage as $message } from "element-plus";
-
 const userState = useUser();
 const contextMenuRef = ref(null);
-
+const { $message } = useNuxtApp();
 //  props 定义
 const props = defineProps({
   curFd: {
     type: Object,
-    default: () => ({}),
+    required: true,
   },
   curRoomID: {
     type: Number,
-    default: 0,
+    required: true,
   },
   isMobile: {
-    type: Boolean,
-    default: false,
-  },
-  visible: {
     type: Boolean,
     default: false,
   },
@@ -135,51 +136,39 @@ const props = defineProps({
   },
 });
 
-// 触发对应的更新事件（update:+props名）
-const emit = defineEmits(["update:visible"]);
-
 // 弹窗显示状态
 const dialogVisible = ref(false);
 const loading = ref(false);
 const list = ref([]); // 聊天记录列表（响应式）
 const scrollbarRef = ref(null); // 滚动容器引用
 
-// 同步父组件 chatRecords 到子组件 list（避免直接修改props）
 watch(
   () => props.chatRecords,
-  (newVal) => {
-    if (Array.isArray(newVal)) {
+  (newList) => {
+    if (Array.isArray(newList)) {
       loading.value = false;
-      list.value = newVal; // 深拷贝，避免响应式污染
-      // 初始加载后滚动到底部
+      list.value = newList; // 深拷贝，避免响应式污染
     }
   },
   { immediate: true }
 );
-
-// 同步父组件 visible 到子组件 dialogVisible
-watch(
-  () => props.visible,
-  (newVal) => {
-    console.log("弹窗显示状态变更：", newVal);
-    dialogVisible.value = newVal;
-    if (newVal) {
-      loading.value = true;
-      socket.connect();
-      nextTick(() => scrollToBottom());
-    } else {
-      // 关闭弹窗时停止加载
-      loading.value = false;
-    }
-  },
-  { immediate: true }
-);
-
-const chatRecordRef = ref(null);
+const offsetTop = ref(0);
+// 定义消息引用数组
+const msgHeightMap = new Map();
 /**
- * 监听聊天记录区域的右键点击事件
- * 关闭所有上下文菜单，阻止默认右键菜单
+ * 注册消息引用
+ * @param {string} seq - 消息序列
+ * @param {Element} el - 消息元素引用
  */
+function registerMsgRef(seq, el) {
+  if (!seq || !el) return;
+  nextTick(() => {
+    // console.log("registerMsgRef", seq, el.clientHeight);
+    const MT = 10; // 消息气泡的外边框
+    msgHeightMap.set(seq, el?.clientHeight + MT);
+  });
+}
+const chatRecordRef = ref(null);
 watch(
   chatRecordRef,
   (newVal) => {
@@ -234,9 +223,9 @@ function onConnect() {
   socket.io.engine.on("upgrade", (rawTransport) => {
     transport.value = rawTransport.name;
   });
-  // 加入房间（使用 curFd.id 作为房间标识，更合理）
-  if (props.curFd?.id) {
-    socket.emit("join", props.curFd.id);
+  // 加入房间
+  if (props.curRoomID) {
+    socket.emit("join", Number(props.curRoomID));
   }
 }
 
@@ -253,11 +242,20 @@ function onDisconnect() {
  */
 function onChat(payload) {
   console.log("【客户端】收到服务端广播：", payload);
-  if (!payload || !payload.seq) return;
-  list.value.push(payload);
-  console.log("list.value", list.value.length);
+  if (payload.seq !== list.value[list.value.length - 1].seq) {
+    list.value.push(payload);
+  } else {
+    // console.log("重复消息，忽略");
+    list.value[list.value.length - 1] = payload;
+  }
+  scrollToBottom();
 }
-
+const myRooms = new Set();
+const onJoined = (room) => {
+  myRooms.add(room);
+  console.log("我当前在", [...myRooms]);
+};
+socket.on("joined", onJoined);
 // 监听服务器问候事件
 function onHello(greeting) {
   console.log("【客户端】收到服务器问候:", greeting);
@@ -279,14 +277,11 @@ socket.on("chat", onChat);
 socket.on("hello", onHello);
 socket.on("serverTime", onServerTime);
 
-let isUnmounted = false;
-
 /**
  * 关闭聊天弹窗，断开连接
  */
 const handleCloseChatRoomDialog = () => {
   socket.disconnect();
-  emit("update:visible", false);
   inputMessage.value = ""; // 清空输入框
 };
 
@@ -302,19 +297,11 @@ const handleSendMessage = () => {
     $message.warning("请输入消息");
     return;
   }
-  if (!props.curFd?.id) {
-    $message.warning("请先选择好友");
-    return;
-  }
-  if (list.value.length === 0) {
-    $message.warning("暂无聊天记录，无法发送消息");
-    return;
-  }
 
   // 构建消息体
   const payload = {
-    roomId: Number(props.curRoomID) || -1,
-    sender_id: Number(userState.value.user_id) || -1,
+    roomId: Number(props.curRoomID),
+    sender_id: Number(userState.value.user_id),
     msg_type: 1,
     body: msg,
     update_at: formatTime(new Date(), {
@@ -322,34 +309,49 @@ const handleSendMessage = () => {
       dateSeparator: "-",
       timeSeparator: ":",
     }),
-    last_read_seq: list.value[list.value.length - 1].seq || -1,
+    last_read_seq: list.value[list.value.length - 1].seq,
   };
   console.log("payload", payload);
   // 发送消息
   socket.emit("chat", payload);
-  ElMessage.success(`发送成功：${msg}`);
-
+  $message.success(`发送成功：${msg}`);
   // 清空输入框
   inputMessage.value = "";
-
-  // 发送方自动滚动到底部
-  scrollToBottom();
 };
 
 /************* 虚拟列表核心逻辑（优化后） *************/
 const ITEM_H = 60; // 行高
 const VIEWPORT_H = 500; // 可视区高度
 const VISIBLE_COUNT = Math.ceil(VIEWPORT_H / ITEM_H); //可见数量: 可视区高度 / 行高 当可视窗口为 500 行高为 60 可见数量为 9
-const scrollTop = ref(0); // 当前滚动位置
-const totalHeight = computed(() => list.value.length * ITEM_H); // 总占位高度（关键！保证滚动条正常）
+const totalHeight = computed(() => {
+  console.log("list.value.length", list.value.length);
+  return list.value.length * ITEM_H;
+});
+
 /* 只保留一个“起始索引”做响应式，scrollTop 本身不要响应式 */
 const startIndex = ref(0);
+// 调试监听startIndex
+watch(
+  () => startIndex.value,
+  (newIndex) => {
+    console.log("startIndex 变化了", newIndex);
+    // 执行副作用，更新 offsetTop
+    if (msgHeightMap.size > 0) {
+      offsetTop.value = [...msgHeightMap.entries()]
+        .slice(0, newIndex)
+        .reduce((acc, cur) => acc + cur[1], 0);
+
+      console.log("offsetTop.value", offsetTop.value);
+    }
+  }
+);
 const endIndex = computed(() =>
   Math.min(startIndex.value + VISIBLE_COUNT, list.value.length)
 );
+
 /* 计算属性：只依赖 startIndex，不会死循环 */
 const visibleList = computed(() => {
-  console.log("重新渲染");
+  console.log("重新渲染", startIndex.value, endIndex.value);
   return list.value.slice(startIndex.value, endIndex.value);
 });
 /**
@@ -358,10 +360,10 @@ const visibleList = computed(() => {
 /* 滚动事件：只更新起始索引，不动 scrollTop */
 const handleScroll = () => {
   if (!scrollbarRef.value) return;
-  const st = scrollbarRef.value.scrollTop; // 读，不写
-  startIndex.value = Math.floor(st / ITEM_H); // 只改这个
-  console.log("startIndex.value", startIndex.value);
-  closeAll();
+  const st = scrollbarRef.value.scrollTop;
+  console.log("st", st);
+  startIndex.value = Math.floor(st / ITEM_H);
+  closeAll(); // 滚动时清除右键菜单
 };
 
 /**
@@ -369,11 +371,12 @@ const handleScroll = () => {
  */
 /* 滚动到底部：直接操作 DOM，不改响应式数据 */
 const scrollToBottom = () => {
-  nextTick(() => {
-    if (scrollbarRef.value) {
-      scrollbarRef.value.scrollTop = totalHeight.value - VIEWPORT_H;
-    }
-  });
+  if (scrollbarRef.value) {
+    scrollbarRef.value.scrollTo({
+      top: 0,
+      behavior: "smooth", // 重点！这个参数让滚动变丝滑
+    });
+  }
 };
 
 onUnmounted(() => {
@@ -383,8 +386,27 @@ onUnmounted(() => {
   socket.off("chat", onChat);
   socket.off("hello", onHello);
   socket.off("serverTime", onServerTime);
+  socket.off("joined", onJoined);
   console.log("【客户端】组件卸载，已移除所有 Socket 事件");
+  socket.disconnect();
 });
+/**
+ * 打开聊天弹窗
+ */
+function open() {
+  dialogVisible.value = true;
+  socket.connect();
+  nextTick(() => {
+    scrollToBottom();
+  });
+}
+/**
+ * 关闭聊天弹窗
+ */
+function close() {
+  dialogVisible.value = false;
+}
+defineExpose({ open, close });
 </script>
 
 <style scoped>

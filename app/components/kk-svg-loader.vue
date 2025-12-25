@@ -19,7 +19,7 @@
       fill="#ccc": 背景颜色，可改为其他颜色如"#f0f0f0", "rgba(0,0,0,0.1)"
       删除此元素可创建透明背景
     -->
-    <rect width="100%" height="100%" fill="#ccc" />
+    <rect width="100%" height="100%" fill="none" />
 
     <!-- 
       组元素：用于组合多个图形元素

@@ -13,11 +13,6 @@
       <!-- 聊天室顶部：和谁聊天 -->
       <template #header>
         <header class="text-center text-2xl font-bold">
-          <i>正在和{{ curFd.username }}对话|房间id:{{ curRoomID }}</i
-          >,
-          <i> 当前登录用户id为:{{ userState.user_id }} </i>
-
-          <i>{{ loading ? "加载中..." : "" }}</i>
           <i>总的高度{{ totalHeight }}</i>
           <i>切片起始坐标{{ startIndex }}</i>
           <i>切片结束坐标{{ endIndex }}</i>
@@ -45,7 +40,7 @@
                 v-for="(msg, index) in visibleList"
                 :key="msg.seq"
                 :data-key="msg.seq"
-                class="flex items-start mb-[10px] min-h-[50px] bg-pink"
+                class="flex items-start mb-[10px] min-h-[50px]"
                 :class="
                   msg.sender_id == curFd.id ? 'flex-row' : 'flex-row-reverse'
                 "
@@ -82,11 +77,19 @@
                     {{ msg.body }}
                   </template>
                 </ContextMenu>
-
-                <div
-                  v-if="msg.status === 'pending'"
-                  class="bg-blue h-10px w-10px"
-                ></div>
+                <div class="h-50px aspect-[1/1] flex items-start justify-end">
+                  <kk-loading-com
+                    v-if="msg?.status == 'pending'"
+                    width="30px"
+                    backgroundColor="#191919"
+                  />
+                  <div
+                    v-else-if="msg?.status == 'fulfill'"
+                    class="w-[20px] h-[20px] rounded-full bg-red-600 text-white text-center line-height-[20px]"
+                  >
+                    !
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -166,6 +169,7 @@ function registerMsgRef(seq, el) {
     // console.log("registerMsgRef", seq, el.clientHeight);
     const MT = 10; // 消息气泡的外边框
     msgHeightMap.set(seq, el?.clientHeight + MT);
+    console.log([...msgHeightMap.entries()]);
   });
 }
 const chatRecordRef = ref(null);
@@ -248,7 +252,9 @@ function onChat(payload) {
     // console.log("重复消息，忽略");
     list.value[list.value.length - 1] = payload;
   }
-  scrollToBottom();
+  nextTick(() => {
+    scrollToBottom();
+  });
 }
 const myRooms = new Set();
 const onJoined = (room) => {
@@ -324,7 +330,7 @@ const ITEM_H = 60; // 行高
 const VIEWPORT_H = 500; // 可视区高度
 const VISIBLE_COUNT = Math.ceil(VIEWPORT_H / ITEM_H); //可见数量: 可视区高度 / 行高 当可视窗口为 500 行高为 60 可见数量为 9
 const totalHeight = computed(() => {
-  console.log("list.value.length", list.value.length);
+  // 从 0 - 数组长度list 每个元素的高度累加
   return list.value.length * ITEM_H;
 });
 
@@ -340,8 +346,7 @@ watch(
       offsetTop.value = [...msgHeightMap.entries()]
         .slice(0, newIndex)
         .reduce((acc, cur) => acc + cur[1], 0);
-
-      console.log("offsetTop.value", offsetTop.value);
+      offsetTop.value = Math.min(st.value, offsetTop.value);
     }
   }
 );
@@ -354,15 +359,16 @@ const visibleList = computed(() => {
   console.log("重新渲染", startIndex.value, endIndex.value);
   return list.value.slice(startIndex.value, endIndex.value);
 });
+const st = ref(0);
+
 /**
  * 处理滚动事件
  */
 /* 滚动事件：只更新起始索引，不动 scrollTop */
 const handleScroll = () => {
   if (!scrollbarRef.value) return;
-  const st = scrollbarRef.value.scrollTop;
-  console.log("st", st);
-  startIndex.value = Math.floor(st / ITEM_H);
+  st.value = scrollbarRef.value.scrollTop;
+  startIndex.value = Math.floor(st.value / ITEM_H);
   closeAll(); // 滚动时清除右键菜单
 };
 
@@ -372,9 +378,11 @@ const handleScroll = () => {
 /* 滚动到底部：直接操作 DOM，不改响应式数据 */
 const scrollToBottom = () => {
   if (scrollbarRef.value) {
-    scrollbarRef.value.scrollTo({
-      top: 0,
-      behavior: "smooth", // 重点！这个参数让滚动变丝滑
+    nextTick(() => {
+      scrollbarRef.value.scrollTo({
+        top: 9999999,
+        behavior: "smooth", // 重点！这个参数让滚动变丝滑
+      });
     });
   }
 };

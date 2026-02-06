@@ -4,7 +4,7 @@
 -->
 <template>
   <footer class="text-center text-gray-600 bg-primary py-4">
-    <p class="text-white">&copy; 2024 我的 Nuxt 网站</p>
+    <!-- <p class="text-white">&copy; 2024 我的 Nuxt 网站</p> -->
   </footer>
 </template>
 

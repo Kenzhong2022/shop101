@@ -1,7 +1,7 @@
 <template>
   <!-- 右键菜单组件 -->
   <div ref="contextMenuRef">
-    <div ref="bodySlotRef" class="h-100% w-100%">
+    <div class="h-100% w-100%">
       <slot name="body">
         <!-- 应该出现菜单的位置 -->
       </slot>
@@ -37,33 +37,59 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useContextMenu } from "@/composables/useContextMenu";
 const contextMenuRef = ref(null);
-const { isShow, x, y, hideMenu, turnOffLastActiveMenu } =
-  useContextMenu(contextMenuRef);
+interface ContextMenuType {
+  isShow: boolean;
+  x: number;
+  y: number;
+  hideMenu: () => void;
+  turnOffLastActiveMenu: () => void;
+}
+const { isShow, x, y, hideMenu, turnOffLastActiveMenu } = useContextMenu(
+  contextMenuRef
+) as ContextMenuType;
+
+// 菜单项类型
+interface MenuItemType {
+  label: string;
+  onClick: (params: any) => void;
+}
 const props = defineProps({
+  // 传递一个数组 数组对象需要包含label属性作为显示文本，需要有onClick方法作为点击事件
   menuItems: {
-    type: Array,
-    default: () => [{ label: "菜单1" }, { label: "菜单2" }, { label: "菜单3" }],
+    type: Array as PropType<MenuItemType[]>,
+    default: () => [
+      {
+        label: "菜单1",
+        onClick: () => {
+          console.log("点击了菜单1");
+        },
+      },
+    ],
   },
+  // 传递一个索引值，用于指定点击菜单时，需要操作的元素索引
   index: {
     type: Number,
     default: 0,
   },
+  bodyContentRef: {
+    type: Array as PropType<Ref<HTMLElement>[]>,
+    required: true,
+  },
 });
-
-//emit 事件
-const emit = defineEmits(["select"]);
-const bodySlotRef = ref();
 
 const handleTTurnOffLastActiveMenu = () => {
   turnOffLastActiveMenu();
 };
 
-const handleSelect = (item) => {
-  console.log("点击了菜单组件触发", item, contextMenuRef.value);
-  emit("select", item, contextMenuRef.value);
+/**
+ * 处理点击菜单事件 调用菜单项的点击函数
+ * @param item 点击的菜单项
+ */
+const handleSelect = (item: MenuItemType) => {
+  item.onClick(props.bodyContentRef[props.index]);
   hideMenu();
 };
 

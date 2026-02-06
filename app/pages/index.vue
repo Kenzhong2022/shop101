@@ -26,6 +26,8 @@
           :alt="item.title"
           :width="800"
           :height="450"
+          gravity="g_auto"
+          crop="fill"
         />
       </el-carousel-item>
     </el-carousel>
@@ -119,7 +121,7 @@ function createObserver() {
         }
       });
     },
-    { threshold: 1 }
+    { threshold: 1 },
   );
 }
 
@@ -206,9 +208,12 @@ onUnmounted(() => {
   --c: var(--el-color-primary);
   font-weight: 900;
   color: #fff; /* 主色 */
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25),
-    /* 第 1 层 */ 2px 2px 0 rgba(0, 0, 0, 0.2), 3px 3px 0 rgba(0, 0, 0, 0.15),
-    4px 4px 0 rgba(0, 0, 0, 0.1), 5px 5px 8px rgba(0, 0, 0, 0.8); /* 最后一层加模糊[8px]，制造厚度 */
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.25),
+    /* 第 1 层 */ 2px 2px 0 rgba(0, 0, 0, 0.2),
+    3px 3px 0 rgba(0, 0, 0, 0.15),
+    4px 4px 0 rgba(0, 0, 0, 0.1),
+    5px 5px 8px rgba(0, 0, 0, 0.8); /* 最后一层加模糊[8px]，制造厚度 */
 }
 /* 倒影效果（通过伪元素模拟） */
 .reflect-container::after {

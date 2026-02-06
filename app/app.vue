@@ -1,5 +1,5 @@
 <template>
-  <div class="app-bg">
+  <div class="app-bg custom-scrollbar">
     <NuxtLayout>
       <NuxtPage></NuxtPage>
     </NuxtLayout>

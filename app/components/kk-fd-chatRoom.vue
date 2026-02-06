@@ -14,6 +14,7 @@
       <template #header>
         <header class="text-center text-2xl font-bold">
           <i>总的高度{{ totalHeight }}</i>
+          <i>当前偏移{{ offsetTop }}</i>
           <i>切片起始坐标{{ startIndex }}</i>
           <i>切片结束坐标{{ endIndex }}</i>
         </header>
@@ -64,17 +65,13 @@
                       ? 'bg-[#2e2e2e] text-[#fff]'
                       : 'bg-[#3eb575] text-black'
                   "
-                  :menuItems="[
-                    { label: '复制' },
-                    { label: '删除' },
-                    { label: '撤回' },
-                  ]"
+                  :menuItems="menuItems"
                   :index="index"
+                  :bodyContentRef="bodyContentRef"
                   ref="contextMenuRef"
-                  @select="(item, target) => handleSelect(item, target, index)"
                 >
                   <template #body>
-                    {{ msg.body }}
+                    <div ref="bodyContentRef">{{ msg.body }}</div>
                   </template>
                 </ContextMenu>
                 <div class="h-50px aspect-[1/1] flex items-start justify-end">
@@ -118,6 +115,8 @@ import { useUser } from "~/composables/useUser";
 import { closeAll } from "~/composables/useContextMenu";
 const userState = useUser();
 const contextMenuRef = ref(null);
+const bodyContentRef = ref(null); // 右键菜单内容引用
+
 const { $message } = useNuxtApp();
 //  props 定义
 const props = defineProps({
@@ -138,13 +137,27 @@ const props = defineProps({
     default: () => [],
   },
 });
-
+const menuItems = ref([
+  { label: "复制", onClick: handleCopy },
+  {
+    label: "删除",
+    onClick: () => {
+      console.log("点击了删除");
+    },
+  },
+  {
+    label: "撤回",
+    onClick: () => {
+      console.log("点击了撤回");
+    },
+  },
+]);
 // 弹窗显示状态
 const dialogVisible = ref(false);
 const loading = ref(false);
 const list = ref([]); // 聊天记录列表（响应式）
 const scrollbarRef = ref(null); // 滚动容器引用
-
+const RefRef = ref(null); // 右键菜单内容引用
 watch(
   () => props.chatRecords,
   (newList) => {
@@ -166,10 +179,8 @@ const msgHeightMap = new Map();
 function registerMsgRef(seq, el) {
   if (!seq || !el) return;
   nextTick(() => {
-    // console.log("registerMsgRef", seq, el.clientHeight);
     const MT = 10; // 消息气泡的外边框
     msgHeightMap.set(seq, el?.clientHeight + MT);
-    console.log([...msgHeightMap.entries()]);
   });
 }
 const chatRecordRef = ref(null);
@@ -189,16 +200,18 @@ watch(
 /**
  * 处理上下文菜单点击事件
  */
-const handleSelect = (item, tarRef, index) => {
-  console.log("点击了菜单：", item, tarRef);
-  if (item.label === "复制") {
-    handleCopy(tarRef);
-  }
-};
+// const handleSelect = (item, tarRef, index) => {
+//   if (item.label === "复制") {
+//     handleCopy(tarRef);
+//   }
+// };
 
-// 复制消息
-const handleCopy = (tarRef) => {
-  const text = tarRef?.$el?.textContent?.trim();
+/**
+ * @deprecated 复制文字
+ * @param tarRef 要复制的文本元素引用
+ */
+function handleCopy(tarRef) {
+  const text = tarRef?.textContent?.trim();
   if (text) {
     navigator.clipboard
       .writeText(text)
@@ -209,7 +222,7 @@ const handleCopy = (tarRef) => {
         ElMessage.error("复制失败");
       });
   }
-};
+}
 
 // Socket 相关逻辑
 import { socket } from "./socket"; // 引入 socket 实例
@@ -343,6 +356,7 @@ watch(
     console.log("startIndex 变化了", newIndex);
     // 执行副作用，更新 offsetTop
     if (msgHeightMap.size > 0) {
+      // 计算当前索引之前的所有消息高度总和
       offsetTop.value = [...msgHeightMap.entries()]
         .slice(0, newIndex)
         .reduce((acc, cur) => acc + cur[1], 0);
@@ -405,7 +419,7 @@ function open() {
   dialogVisible.value = true;
   socket.connect();
   nextTick(() => {
-    scrollToBottom();
+    // scrollToBottom();
   });
 }
 /**

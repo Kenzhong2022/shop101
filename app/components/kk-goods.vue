@@ -13,10 +13,12 @@
       <kk-cld-image
         v-else
         :src="goods.image"
-        alt="商品图片"
+        :alt="goods.image"
         :width="300"
         :height="400"
         :aspectRatio="300 / 400"
+        gravity="auto"
+        crop="fill"
       />
     </div>
     <div>{{ goods.goods_name }}</div>

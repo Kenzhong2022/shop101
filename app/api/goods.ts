@@ -2,9 +2,9 @@
 //导入数据结构
 import type { ListRequest, ListResponse } from "~~/server/api/goods/list.post";
 import type {
-  SkuListRequest,
-  SkuListResponse,
-} from "~~/server/api/goods/sku.post";
+  GoodsSpecData,
+  ApiResponse,
+} from "~~/server/api/goods/[id]/specs.get";
 // 1. 导入请求工具
 import { useNuxtApp } from "#app";
 // 2. 获取axios实例
@@ -20,11 +20,10 @@ export async function apiGoodsList(params: ListRequest): Promise<ListResponse> {
     .then((res) => res.data);
 }
 
-// 4. 定义商品SKU接口函数
-export async function apiGoodsSku(
-  params: SkuListRequest
-): Promise<SkuListResponse> {
+export async function apiGoodsSpecs(params: {
+  goods_id: number;
+}): Promise<ApiResponse<GoodsSpecData>> {
   return getAxios()
-    .post<SkuListResponse>("/goods/sku", params)
+    .get<ApiResponse<GoodsSpecData>>(`/goods/${params.goods_id}/specs`)
     .then((res) => res.data);
 }

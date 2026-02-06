@@ -2,7 +2,11 @@
 https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
 <template>
   <!-- CldImage 组件 -->
-  <div ref="wrapper" class="relative">
+  <div
+    ref="wrapper"
+    class="kk-cld-image-wrapper relative overflow-hidden"
+    :style="{ width: `${width}px`, height: `${height}px` }"
+  >
     <!-- 客户端渲染 -->
     <client-only>
       <CldImage
@@ -13,9 +17,11 @@ https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
         :priority="priority"
         :quality="quality"
         :gravity="gravity"
-        crop="auto_pad"
+        :crop="crop"
         loading="lazy"
       />
+      <!-- 具名插槽：默认插槽 -->
+      <slot></slot>
     </client-only>
     <!-- 加载器 -->
     <kk-svg-loader-fast
@@ -58,7 +64,7 @@ const props = defineProps({
   },
   gravity: {
     type: String,
-    default: "",
+    default: "auto",
   },
   crop: {
     type: String,

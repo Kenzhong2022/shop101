@@ -26,7 +26,7 @@
           :alt="item.title"
           :width="800"
           :height="450"
-          gravity="g_auto"
+          gravity="auto"
           crop="fill"
         />
       </el-carousel-item>

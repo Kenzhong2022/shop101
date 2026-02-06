@@ -7,7 +7,7 @@
     @mouseenter="shadowMode = 'always'"
     @mouseleave="shadowMode = 'never'"
   >
-    <div class="overflow-auto" ref="imgRef">
+    <div class="overflow-hidden" ref="imgRef">
       <!-- 加载动画 -->
       <kk-svg-loader-fast v-if="loading" :width="300" />
       <kk-cld-image

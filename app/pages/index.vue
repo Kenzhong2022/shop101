@@ -99,6 +99,8 @@ const banners: Banner[] = [
     image: "banner4_o3l0jf",
   },
 ];
+
+import { useProductBehavior } from "~/composables/useProductBehavior";
 import type { Goods } from "~~/server/api/goods/list.post";
 const goodsList = ref<Goods[]>();
 
@@ -127,7 +129,12 @@ function createObserver() {
 
 // 点击商品跳转详情页
 const handleClick = (goodsItem: Goods) => {
-  console.log(goodsItem);
+  // 上报商品点击行为
+  const { track } = useProductBehavior(goodsItem.id, {
+    behaviorType: "click",
+    autoTrack: true,
+    sourcePage: window.location.href,
+  }) as { track: () => void };
   // 跳转详情页
   navigateTo(`/goods/${goodsItem.id}/detail`);
 };

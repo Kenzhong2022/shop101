@@ -1,119 +1,195 @@
 /** * 会员中心页面 * * 功能特点： * - 展示用户个人信息 * - 会员等级和积分系统 *
 - 订单管理 * - 个人设置 * - 会员专属功能 */
-
 <template>
-  <el-card class="user-container" shadow="never">
-    <!-- 左右分区：左区域【菜单】，右区域【菜单内容】 -->
-    <div class="shadow-md min-w-200px py-8px">
-      <div class="flex flex-col items-center justify-center">
-        <!-- 个人头像 -->
-        <div>
-          <el-avatar
-            :src="userState.userInfo?.avatar"
-            :size="100"
-            class="my-avatar relative"
-            @mouseenter="() => (isHovered = true)"
-            @mouseleave="() => (isHovered = false)"
-            :class="{ 'my-avatar-hover': isHovered }"
-            @click="() => {(fileInput as HTMLInputElement).click()}"
-          />
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            class="hidden"
-            @change="onSelect"
-          />
+  <client-only>
+    <div class="user-container">
+      <el-card shadow="never">
+        <template #fallback>
+          <div class="loading">加载中...</div>
+        </template>
+        <div class="shadow-md min-w-200px py-8px">
+          <div class="flex flex-col items-center justify-center">
+            <!-- 个人头像 -->
+            <div>
+              <el-avatar
+                :src="userState.userInfo?.avatar"
+                :size="100"
+                class="my-avatar relative"
+                @mouseenter="() => (isHovered = true)"
+                @mouseleave="() => (isHovered = false)"
+                :class="{ 'my-avatar-hover': isHovered }"
+                @click="
+                  () => {
+                    (fileInput as HTMLInputElement).click();
+                  }
+                "
+              />
+              <input
+                ref="fileInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="onSelect"
+              />
+            </div>
+            <div class="text-center">KK个人中心</div>
+          </div>
+          <!-- 菜单：默认选中第一个 -->
+          <el-menu class="menu-contaniner" :default-active="menuItems[0]?.url">
+            <kk-menu :menu-items="menuItems" />
+          </el-menu>
         </div>
-        <div class="text-center">KK个人中心</div>
-      </div>
-      <!-- 菜单 -->
-      <el-menu
-        class="menu-contaniner"
-        @select="handleSelect"
-        :default-active="menuList[2]?.index || ''"
-      >
-        <kk-menu :menu-items="menuList"> </kk-menu>
-      </el-menu>
+        <div class="flex-1">
+          <el-card class="h-full">
+            <!-- 动态组件切换 -->
+            <transition name="fade-slide" mode="out-in">
+              <component
+                :is="currentComponent"
+                v-if="currentComponent"
+                :key="currentComponent"
+                :data="data"
+              />
+            </transition>
+          </el-card>
+        </div>
+        <!-- <h2>
+        还有
+        <el-countdown
+          :value="expTime"
+          format="HH:mm:ss"
+          :auto-start="true"
+          @finish="handleTokenExpire"
+        />
+        token就会过期
+      </h2> -->
+      </el-card>
     </div>
-    <div class="flex-1">
-      <el-card class="h-full">
-        <h2>
-          还有
-          <el-countdown
-            :value="expTime"
-            format="HH:mm:ss"
-            :auto-start="true"
-            @finish="handleTokenExpire"
-          />
-          token就会过期
-        </h2></el-card
-      >
-    </div>
-  </el-card>
+  </client-only>
 </template>
 
 <script setup lang="ts">
-// 页面元信息配置
-// 这里可以添加更多路由元信息，用于路由守卫判断
-definePageMeta({
-  title: "用户中心",
-  layout: "default",
-  pageInfo: {
-    requiresAuth: true, // 标记需要认证
-    pageType: "user-center", // 页面类型
-  },
-});
-
+import { apiFavoritesProductsList } from "~/api/favorites/products";
 import { useUser } from "~/composables/useUser";
-const userState = useUser(); // 关键：加括号调用
 import type { MenuItem } from "~/components/kk-menu.vue";
-const menuList: MenuItem[] = [
+// ========== 使用 markRaw 包裹异步组件，防止被代理 ==========
+const MyUserInfo = markRaw(
+  defineAsyncComponent(() => import("./myUserInfo.vue")),
+);
+const MyOrder = markRaw(defineAsyncComponent(() => import("./myOrder.vue")));
+const MyCollect = markRaw(
+  defineAsyncComponent(() => import("./myCollect.vue")),
+);
+const MySetting = markRaw(
+  defineAsyncComponent(() => import("./mySetting.vue")),
+);
+const MyHistory = markRaw(
+  defineAsyncComponent(() => import("./myHistory.vue")),
+);
+// ========== 使用 shallowRef 存储当前组件 ==========
+const currentComponent = shallowRef<Component>(MyUserInfo);
+
+// 组件映射表
+const componentMap: Record<string, Component> = {
+  "/user/myUserInfo": MyUserInfo,
+  "/user/myOrder": MyOrder,
+  "/user/myCollect": MyCollect,
+  "/user/mySetting": MySetting,
+  "/user/myHistory": MyHistory,
+};
+
+const data = ref();
+
+const menuItems: MenuItem[] = [
   // 个人信息 订单记录 收藏夹 账号设置 退出登录
   {
     title: "个人信息",
-    index: "/user/myUser",
+    url: "/user/myUserInfo",
     icon: "icon-yonghu-copy",
+    // 点击事件
+    onClick: (item: MenuItem) => {
+      console.log("点击了个人信息", item);
+      currentComponent.value = componentMap[item.url] as Component;
+    },
   },
   {
     title: "订单记录",
-    index: "/user/myOrder",
+    url: "/user/myOrder",
     icon: "icon-lishijilu_o",
+    // 点击事件
+    onClick: (item: MenuItem) => {
+      console.log("点击了订单记录", item);
+      currentComponent.value = componentMap[item.url] as Component;
+    },
   },
   {
     title: "收藏夹",
-    index: "/user/myCollect",
+    url: "/user/myCollect",
     icon: "icon-collection",
+    // 点击事件
+    onClick: async (item: MenuItem) => {
+      console.log("点击了收藏夹", item);
+      // 收藏历史商品列表
+      const { data: res } = await apiFavoritesProductsList({
+        page: 1,
+        page_size: 10,
+      });
+      data.value = res;
+      currentComponent.value = componentMap[item.url] as Component;
+    },
+  },
+  {
+    title: "浏览历史",
+    url: "/user/myHistory",
+    icon: "icon-history",
+    // 点击事件
+    onClick: (item: MenuItem) => {
+      console.log("点击了浏览历史", item);
+      currentComponent.value = componentMap[item.url] as Component;
+    },
   },
   {
     title: "账号设置",
-    index: "/user/mySetting",
+    url: "/user/mySetting",
     icon: "icon-setting-copy",
+    // 点击事件
+    onClick: (item: MenuItem) => {
+      console.log("点击了账号设置", item);
+      currentComponent.value = componentMap[item.url] as Component;
+    },
   },
   {
     title: "退出登录",
-    index: "/login/myLogin",
+    url: "/login/myLogin",
     icon: "logout",
+    // 点击事件
+    onClick: (item: MenuItem) => {
+      console.log("点击了退出登录", item);
+      currentComponent.value = componentMap[item.url] as Component;
+    },
   },
   {
     title: "测试菜单1",
-    index: "/user/test1",
+    url: "/user/test1",
     icon: "icon-test",
     children: [
       {
         title: "测试菜单1-1",
-        index: "/user/test1-1",
+        url: "/user/test1-1",
         icon: "icon-test",
         children: [
           {
             title: "测试菜单1-1-1",
-            index: "/user/test1-1-1",
+            url: "/user/test1-1-1",
             icon: "icon-test",
             children: [
               {
                 title: "测试菜单1-1-1-1",
-                index: "/user/test1-1-1-1",
+                url: "/user/test1-1-1-1",
                 icon: "icon-test",
+                // 点击事件
+                onClick: (item: MenuItem) => {
+                  console.log("点击了测试菜单1-1-1-1");
+                },
               },
             ],
           },
@@ -121,12 +197,17 @@ const menuList: MenuItem[] = [
       },
       {
         title: "测试菜单1-2",
-        index: "/user/test1-2",
+        url: "/user/test1-2",
         icon: "icon-test",
+        // 点击事件
+        onClick: (item: MenuItem) => {
+          console.log("点击了测试菜单1-2");
+        },
       },
     ],
   },
 ];
+const userState = useUser();
 
 // 头像是否悬停状态
 const isHovered = ref(false);
@@ -138,10 +219,13 @@ const expTime = ref<number>(0);
 onMounted(() => {
   expTime.value = userState.value.expireTime;
 });
+// ========== 核心：页面激活时重置状态 ==========
 onActivated(() => {
+  // 检查 token
   const flag = checkTokenExpiration();
   if (!flag) {
     handleTokenExpire();
+    return;
   }
 });
 
@@ -154,8 +238,9 @@ function handleTokenExpire() {
   navigateTo("/login/myLogin");
 }
 const fileInput = ref<HTMLInputElement>();
-const handleSelect = (index: string) => {
-  console.log(index);
+const handleSelect = (url: string) => {
+  console.log("点击了菜单:", url);
+  // 跳转到登录页面
 };
 interface CloudinaryUpload {
   file: Ref<File | null>;
@@ -175,11 +260,6 @@ async function onSelect(e: any) {
 </script>
 
 <style lang="scss" scoped>
-// 可以在这里添加页面特定的样式
-.color-card {
-  @apply p-4 rounded-lg shadow-sm border border-gray-200 bg-white;
-}
-
 .user-container {
   :deep(.el-card__body) {
     display: flex !important;

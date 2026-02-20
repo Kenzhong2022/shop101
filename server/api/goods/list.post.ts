@@ -65,15 +65,22 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
 
     // 3. 一次性执行
     const rows = await mySql`
-        SELECT id, goods_name, image, price, stock, sort, is_show,
+        SELECT id, goods_name, image, price, stock, sort, is_show, average_rating,
         created_at, updated_at, shop_name
         FROM homepage_goods
-        ${mySql.unsafe(whereSql)}         
-        LIMIT  ${body.page_size || 5} OFFSET ${
-      (body.page - 1) * (body.page_size || 5)
-    }`;
+        ${mySql.unsafe(whereSql)}
+        ORDER BY average_rating DESC NULLS LAST  -- 降序，NULL 放最后
+        LIMIT ${body.page_size || 5} OFFSET ${
+          (body.page - 1) * (body.page_size || 5)
+        }`;
 
     console.log("数据库查询结果:", rows);
+    // 4. 处理结果 根据贝叶斯评分
+
+    console.log(
+      "排序后的商品列表:",
+      rows.map((item) => item.average_rating),
+    );
     return {
       code: 200,
       msg: "商品列表获取成功",

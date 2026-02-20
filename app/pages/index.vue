@@ -8,7 +8,6 @@
     <el-carousel
       :interval="150000"
       type="card"
-      width="800px"
       :style="{
         border: '4px solid var(--el-color-primary)',
         aspectRatio: '7/2',
@@ -48,8 +47,9 @@
     <div class="flex flex-wrap px-20px">
       <div v-for="goodsItem in goodsList" :key="goodsItem.id" ref="allRows">
         <!-- 一排五个 gap25 -->
-        <kk-goods
-          :goods="goodsItem"
+        <kk-goods-item
+          :collected-mode="true"
+          :goods-item="goodsItem"
           :loading="loadingGoods"
           @click="handleClick(goodsItem)"
         />

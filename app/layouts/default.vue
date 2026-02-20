@@ -47,9 +47,10 @@
 
         <!-- 好友列表 -->
         <LazyKkFdList
+          v-if="isDrawerOpen"
           :drawer="isDrawerOpen"
           @update:drawer="(newValue: boolean) => (isDrawerOpen = newValue)"
-        ></LazyKkFdList>
+        />
         <!-- 这是底部通用组件 -->
         <AppFooter />
       </div>

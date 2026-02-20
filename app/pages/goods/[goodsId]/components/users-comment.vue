@@ -8,10 +8,14 @@
   >
     <!-- 左边头像 -->
     <div class="p-4px">
-      <el-avatar
+      <kk-cld-image
         :src="item.user.avatar"
-        :size="50"
+        :width="100"
+        :height="100"
+        gravity="auto"
+        crop="fill"
         class="my-avatar relative"
+        :isAvatar="true"
       />
     </div>
 

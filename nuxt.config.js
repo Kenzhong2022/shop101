@@ -45,7 +45,13 @@ export default defineNuxtConfig({
   // 处理304
   nitro: {
     experimental: {
-      websocket: true,
+      websocket: true, // 开启 WebSocket 支持
+      tasks: true, // 开启定时任务支持
+    },
+    // 定时任务配置
+    scheduledTasks: {
+      // 每5分钟执行一次
+      "*/1 * * * *": ["update-bayesian"],
     },
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）

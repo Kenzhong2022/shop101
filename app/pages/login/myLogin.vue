@@ -416,13 +416,13 @@ const handleSubmit = async () => {
             navigateTo(decodeURIComponent(redirect));
             $message.success(
               `登录成功！拥有backUrl参数，${decodeURIComponent(
-                redirect
-              )}将跳转到该页面`
+                redirect,
+              )}将跳转到该页面`,
             );
             return;
           }
           $message.success(
-            "登录成功！固定跳转到用户中心方便查看token的过期时间"
+            "登录成功！固定跳转到用户中心方便查看token的过期时间",
           );
           // 登录成功，跳转到用户中心
           navigateTo("/user/myUser");
@@ -487,7 +487,7 @@ const handleSendCode = async () => {
     } else {
       //开发中直接显性显示后端返回的验证码
       ElMessage.success(
-        `【开发中直接显示验证码】验证码发送成功，验证码为：${res.code}`
+        `【开发中直接显示验证码】验证码发送成功，验证码为：${res.code}`,
       );
       // 发送验证码成功处理
       console.log("发送验证码成功后端返回:", res);
@@ -515,5 +515,11 @@ onMounted(() => {
 <style scoped lang="scss">
 :deep(.el-input__wrapper) {
   padding: 10px;
+}
+
+:deep(.el-card__body) {
+  display: flex !important;
+  gap: 20px;
+  flex-direction: column;
 }
 </style>

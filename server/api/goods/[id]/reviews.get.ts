@@ -48,42 +48,22 @@ export default defineEventHandler(
       }
       const goodsId = Number(rawId);
 
-      const query = getQuery(event);
+      const query = getQuery(event); // 解析查询参数
       const page = Math.max(1, toInt(query.page, 1));
       const pageSize = Math.min(
         CONFIG.MAX_PAGE_SIZE,
         Math.max(1, toInt(query.page_size, CONFIG.DEFAULT_PAGE_SIZE)),
       );
-      const offset = (page - 1) * pageSize;
+      const offset = (page - 1) * pageSize; // 计算偏移量
 
-      // 2. 查询数据（参数化，安全）
-      const [reviews, [{ count }]] = await Promise.all([
-        mySql`
-          SELECT 
-            gr.id, gr.goods_id, gr.sku_id, gr.user_id,
-            gr.rating, gr.content, gr.images, gr.spec_snapshot,
-            gr.likes_count, gr.reply_count, gr.created_at, gr.updated_at,
-            u.username as user_name, u.avatar as user_avatar
-          FROM goods_reviews gr
-          LEFT JOIN users u ON gr.user_id = u.id
-          WHERE gr.goods_id = ${goodsId}
-            AND gr.status = 1 
-            AND gr.is_show = 1
-          ORDER BY ${
-            CONFIG.ALLOWED_SORT[
-              String(query.sort) as keyof typeof CONFIG.ALLOWED_SORT
-            ] ?? CONFIG.ALLOWED_SORT.newest
-          }
-          LIMIT ${pageSize} OFFSET ${offset}
-        `,
-        mySql`
-          SELECT COUNT(*)::int as count
-          FROM goods_reviews
-          WHERE goods_id = ${goodsId}
-            AND status = 1 
-            AND is_show = 1
-        `,
-      ]);
+      // 2. 查询评论 数据
+      const { reviews, count } = await fetchReviews(
+        mySql,
+        goodsId,
+        pageSize,
+        offset,
+        query.sort as keyof typeof CONFIG.ALLOWED_SORT,
+      );
 
       // 3. 查询统计和回复
       const [stats, replies] = await Promise.all([
@@ -91,7 +71,7 @@ export default defineEventHandler(
         reviews.length > 0
           ? fetchReplies(
               mySql,
-              reviews.map((r) => r.id),
+              reviews.map((r) => Number(r.id)),
             )
           : [],
       ]);
@@ -119,6 +99,53 @@ export default defineEventHandler(
     }
   },
 );
+
+/**
+ *  查询评论数据
+ * @param sql 数据库连接对象
+ * @param goodsId 商品ID
+ * @param page 当前页码
+ * @param pageSize 每页评论数
+ * @param offset 偏移量
+ * @param sort 排序字段
+ * @returns 评论数据和总数
+ */
+async function fetchReviews(
+  mySql: any,
+  goodsId: number,
+  pageSize: number,
+  offset: number,
+  sort: keyof typeof CONFIG.ALLOWED_SORT,
+): Promise<{ reviews: GoodsReview[]; count: number }> {
+  const [reviews, [{ count }]] = await Promise.all([
+    mySql`
+          SELECT 
+            gr.id, gr.goods_id, gr.sku_id, gr.user_id,
+            gr.rating, gr.content, gr.images, gr.spec_snapshot,
+            gr.likes_count, gr.reply_count, gr.created_at, gr.updated_at,
+            u.username as user_name, u.avatar as user_avatar
+          FROM goods_reviews gr
+          LEFT JOIN users u ON gr.user_id = u.id
+          WHERE gr.goods_id = ${goodsId}
+            AND gr.status = 1 
+            AND gr.is_show = 1
+          ORDER BY ${
+            CONFIG.ALLOWED_SORT[
+              String(sort) as keyof typeof CONFIG.ALLOWED_SORT
+            ] ?? CONFIG.ALLOWED_SORT.newest
+          }
+          LIMIT ${pageSize} OFFSET ${offset}
+        `,
+    mySql`
+          SELECT COUNT(*)::int as count
+          FROM goods_reviews
+          WHERE goods_id = ${goodsId}
+            AND status = 1 
+            AND is_show = 1
+        `,
+  ]);
+  return { reviews, count };
+}
 
 // 辅助函数（放在文件底部或单独文件）
 function formatReview(r: any, replies: any[]): GoodsReview {
@@ -154,7 +181,16 @@ function parseImages(images: unknown): string[] {
   }
 }
 
-async function fetchStats(sql: any, goodsId: number) {
+/**
+ * 查询商品评价统计
+ * @param sql 数据库查询对象
+ * @param goodsId 商品ID
+ * @returns 商品评价统计信息
+ */
+async function fetchStats(
+  sql: any,
+  goodsId: number,
+): Promise<ReviewListData["stats"]> {
   const [[result], rows] = await Promise.all([
     sql`
       SELECT 
@@ -183,6 +219,12 @@ async function fetchStats(sql: any, goodsId: number) {
   };
 }
 
+/**
+ * 查询商品评价回复
+ * @param sql 数据库查询对象
+ * @param reviewIds 评价ID列表
+ * @returns 商品评价回复列表
+ */
 async function fetchReplies(sql: any, reviewIds: number[]) {
   return sql`
     SELECT review_id, id, content, is_merchant, created_at

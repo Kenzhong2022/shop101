@@ -67,10 +67,10 @@
     </el-drawer>
 
     <!-- 聊天室弹窗 -->
-    <kk-fd-chatRoom
+    <LazyKkFdChatRoom
       ref="chatRoomRef"
-      :curFd="curFd"
-      :curRoomID="curRoomID"
+      :curFd="curFd ?? {}"
+      :curRoomID="curRoomID ?? 0"
       :isMobile="isMobile"
       @close="handleCloseChatRoom"
       :chatRecords="chatRecords"
@@ -123,7 +123,7 @@ watch(
     // el-drawer 渲染后类名 .el-drawer 一定存在 （抽屉打开时）就可以获取到 抽屉根节点
     drawerEl.value = document.querySelector(".el-drawer");
     handleSearch("");
-  }
+  },
 );
 
 // 5. 如果你想根据宽度关闭 resizable
@@ -188,7 +188,7 @@ const chatRecords = ref([]);
 // 定义当前点击的好友
 const curFd = ref(null);
 // 定义当前聊天房间ID
-const curRoomID = ref(null);
+const curRoomID = ref(0);
 
 /**
  * 点击好友，打开聊天弹窗，拉取聊天记录，连接到服务器

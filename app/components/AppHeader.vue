@@ -3,7 +3,8 @@
   <header class="bg-#ffff max-w-full h-65px flex flex-row justify-center">
     <!-- 导航栏容器 -->
     <nav class="w-full flex flex-1">
-      <el-scrollbar class="h-100% flex-1 scrollbar-flex-content">
+      <!-- 父盒子宽度根据子元素宽度自适应 -->
+      <el-scrollbar class="h-100% w-fit">
         <!-- 导航链接 -->
         <NuxtLink
           v-for="item in navList"
@@ -43,17 +44,6 @@
             </el-dropdown>
           </div>
         </NuxtLink>
-        <NuxtLink to="/train">
-          <div
-            class="text-[#333] transition-colors duration-300 flex items-center gap-2px text-[18px]"
-          >
-            <i
-              class="iconfont icon-activity text-28px color-main"
-              style="color: var(--el-color-primary)"
-            ></i>
-            <span class="hover:text-primary">训练场</span>
-          </div>
-        </NuxtLink>
       </el-scrollbar>
     </nav>
   </header>
@@ -89,6 +79,7 @@ const navList = [
   { name: "购物车", path: "/cart/myCart", icon: "icon-cart-empty" },
   { name: "分类", path: "/category", icon: "icon-category" },
   { name: "帮助中心", path: "/help", icon: "icon-remind-fill" },
+  { name: "训练场", path: "/train", icon: "icon-activity" }, // 加到这里
   { name: "登录/注册", path: "/login/myLogin", icon: "", showStickyTop: false },
 ];
 

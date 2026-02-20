@@ -5,7 +5,12 @@ https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
   <div
     ref="wrapper"
     class="kk-cld-image-wrapper relative overflow-hidden"
-    :style="{ width: `${width}px`, height: `${height}px` }"
+    :class="{ 'rounded-full': isAvatar }"
+    :style="{
+      width: `${width}px`,
+      height: `${height}px`,
+      '--img-radius': isAvatar ? '50%' : radius + 'px',
+    }"
   >
     <!-- 客户端渲染 -->
     <client-only>
@@ -70,6 +75,20 @@ const props = defineProps({
     type: String,
     default: "auto_pad",
   },
+  isAvatar: {
+    type: Boolean,
+    default: false,
+  },
+  radius: {
+    type: Number,
+    default: 0,
+    validator: (val: number) => {
+      if (val < 0) {
+        throw new Error("radius 必须大于等于 0 ");
+      }
+      return true;
+    },
+  },
 });
 const isLoading = ref(true);
 // 定义 emits 选项
@@ -84,3 +103,9 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped lang="scss">
+.kk-cld-image-wrapper {
+  border-radius: var(--img-radius);
+}
+</style>

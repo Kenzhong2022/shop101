@@ -121,12 +121,12 @@ const { $message } = useNuxtApp();
 //  props 定义
 const props = defineProps({
   curFd: {
-    type: Object,
-    required: true,
+    type: [Object, null],
+    default: () => {},
   },
   curRoomID: {
-    type: Number,
-    required: true,
+    type: [Number, null],
+    default: 0,
   },
   isMobile: {
     type: Boolean,
@@ -166,7 +166,7 @@ watch(
       list.value = newList; // 深拷贝，避免响应式污染
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 const offsetTop = ref(0);
 // 定义消息引用数组
@@ -194,7 +194,7 @@ watch(
       });
     }
   },
-  { once: true }
+  { once: true },
 ); // 只绑定一次，避免重复绑定
 
 /**
@@ -228,7 +228,7 @@ function handleCopy(tarRef) {
 import { socket } from "./socket"; // 引入 socket 实例
 const isConnected = ref(socket.connected);
 const transport = ref(
-  socket.connected ? socket.io.engine.transport.name : "N/A"
+  socket.connected ? socket.io.engine.transport.name : "N/A",
 );
 
 // 连接成功回调
@@ -241,8 +241,8 @@ function onConnect() {
     transport.value = rawTransport.name;
   });
   // 加入房间
-  if (props.curRoomID) {
-    socket.emit("join", Number(props.curRoomID));
+  if (props?.curRoomID) {
+    socket.emit("join", Number(props?.curRoomID));
   }
 }
 
@@ -362,10 +362,10 @@ watch(
         .reduce((acc, cur) => acc + cur[1], 0);
       offsetTop.value = Math.min(st.value, offsetTop.value);
     }
-  }
+  },
 );
 const endIndex = computed(() =>
-  Math.min(startIndex.value + VISIBLE_COUNT, list.value.length)
+  Math.min(startIndex.value + VISIBLE_COUNT, list.value.length),
 );
 
 /* 计算属性：只依赖 startIndex，不会死循环 */

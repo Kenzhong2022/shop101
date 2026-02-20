@@ -1,12 +1,11 @@
 <template>
-  <!-- 用 <template> 包裹，不产生额外 DOM，保持层级合法 -->
-  <template v-for="item in menuItems" :key="item.index">
-    <!-- 无子菜单（children 不存在 或 为空数组）：渲染普通菜单项 -->
+  <div v-for="item in menuItems" :key="item.url">
+    <!-- 无子菜单 -->
     <el-menu-item
       v-if="!item.children || item.children.length === 0"
-      :index="item.index"
+      :index="item.url"
+      @click="handleClick(item)"
     >
-      <!-- 根据导航项名称使用对应的阿里图标 -->
       <i
         :class="['iconfont', item.icon, 'color-main']"
         class="mr-2"
@@ -15,30 +14,35 @@
       {{ item.title }}
     </el-menu-item>
 
-    <!-- 有子菜单（children 存在且非空）：渲染子菜单 + 递归自身 -->
-    <el-sub-menu v-else :index="item.index">
-      <template #title> {{ item.title }} </template>
-      <!-- 递归调用：传递当前节点的 children 作为子菜单数据 -->
-      <KkMenu :menuItems="item.children" />
+    <!-- 有子菜单 -->
+    <el-sub-menu v-else :index="item.url">
+      <template #title>{{ item.title }}</template>
+      <!-- 递归组件 -->
+      <kk-menu :menu-items="item.children" />
     </el-sub-menu>
-  </template>
+  </div>
 </template>
 
-<script lang="ts" setup>
-// 定义菜单数据类型（确保数据格式正确）
+<script setup lang="ts">
 export interface MenuItem {
-  index: string; // 唯一标识（必须字符串，如 "1"、"1-1"）
-  title: string; // 菜单名称
-  children?: MenuItem[]; // 子菜单（可选）
-  disabled?: boolean; // 可选：是否禁用
-  path?: string; // 可选：路由路径（如果有）
-  icon?: string; // 可选：图标名称（如果有）
+  url: string;
+  title: string;
+  icon?: string;
+  children?: MenuItem[];
+  onClick?: (item: MenuItem) => void;
 }
 
-// 接收父组件传递的菜单数据
-const props = defineProps<{
-  menuItems: MenuItem[]; // 当前层级的菜单数据
+defineProps<{
+  menuItems: MenuItem[];
 }>();
-</script>
 
-<style lang="scss"></style>
+const handleClick = (item: MenuItem) => {
+  // 如果有自定义点击事件则执行，否则执行默认跳转
+  if (typeof item.onClick === "function") {
+    item.onClick(item);
+  } else {
+    // 默认行为：使用 Vue Router 跳转
+    // navigateTo(item.url)
+  }
+};
+</script>

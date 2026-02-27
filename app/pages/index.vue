@@ -45,21 +45,24 @@
     <!-- 商品列表 -->
     <!-- 商品列表行 -->
     <div class="flex flex-wrap px-20px">
-      <div v-for="goodsItem in goodsList" :key="goodsItem.id" ref="allRows">
-        <!-- 一排五个 gap25 -->
-        <kk-goods-item
-          :collected-mode="true"
-          :goods-item="goodsItem"
-          :loading="loadingGoods"
-          @click="handleClick(goodsItem)"
-        />
-      </div>
+      <!-- 一排五个 gap25 -->
+      <kk-goods-item
+        :collected-mode="true"
+        :data="goodsList"
+        :loading="loadingGoods"
+        @loadMore="loadMore"
+        @click="handleClick"
+        @check-change="({ id, checked }) => updateItemChecked(id, checked)"
+      />
     </div>
     <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>
 
 <script setup lang="ts">
+// 引入消息提示组件
+const { $message } = useNuxtApp();
+
 // 页面元数据
 definePageMeta({
   title: "首页",
@@ -103,32 +106,21 @@ const banners: Banner[] = [
 import { useProductBehavior } from "~/composables/useProductBehavior";
 import type { Goods } from "~~/server/api/goods/list.post";
 const goodsList = ref<Goods[]>();
+// 监听goodsList变化并且打印
+watch(
+  goodsList,
+  (newVal) => {
+    console.log(newVal);
+  },
+  {
+    deep: true,
+  },
+);
 
 const loadingGoods = ref<boolean>(true);
-// 商品列表元素引用
-const allRows = ref<HTMLElement[]>([]);
-// 商品列表最后一行元素引用
-let observer: IntersectionObserver | null = null;
-const { $message } = useNuxtApp();
-let curObservedEl: HTMLElement | null = null; // 当前正在监听的节点
-
-/* 创建 observer，只监听最后一个元素 */
-function createObserver() {
-  if (observer) return;
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          loadMore();
-        }
-      });
-    },
-    { threshold: 1 },
-  );
-}
 
 // 点击商品跳转详情页
-const handleClick = (goodsItem: Goods) => {
+function handleClick(goodsItem: Goods) {
   // 上报商品点击行为
   const { track } = useProductBehavior(goodsItem.id, {
     behaviorType: "click",
@@ -137,50 +129,39 @@ const handleClick = (goodsItem: Goods) => {
   }) as { track: () => void };
   // 跳转详情页
   navigateTo(`/goods/${goodsItem.id}/detail`);
-};
-const getGoodsList = async () => {
-  await apiGoodsList({
+}
+// 点击操作按钮处理函数
+function updateItemChecked(id: number, checked: boolean) {
+  const goodsItem = goodsList.value?.find((item) => item.id === id);
+  if (goodsItem) {
+    goodsItem.isChecked = checked;
+  }
+}
+async function getGoodsList() {
+  return apiGoodsList({
     page: 2,
     page_size: 5,
   })
     .then((res) => {
       console.log(res.data.list);
       goodsList.value = [...goodsList.value!, ...res.data.list];
+      goodsList.value.forEach((item) => {
+        item.isChecked = false;
+      });
       console.log(goodsList.value);
     })
     .finally(() => {
       loadingGoods.value = false;
       $message.success("加载完成");
     });
-};
-
-/* 卸载当前监听 */
-function unobserveLast() {
-  if (curObservedEl && observer) {
-    console.log("取消监听:", curObservedEl);
-    observer.unobserve(curObservedEl);
-    curObservedEl = null;
-  }
 }
 
 /* 追加 5 行并重新监听最后一行 */
 async function loadMore() {
   $message.info("加载更多...");
   await getGoodsList(); // 1. 先加载数据
-  unobserveLast(); // 3. 取消旧监听
-  observeLast(); // 4. 监听新最后一项
 }
 
-/* 监听当前最后一行 */
-function observeLast() {
-  if (!goodsList.value?.length) return;
-  const lastEl = allRows.value[goodsList.value.length - 1];
-  if (lastEl && observer) {
-    console.log("监听:", lastEl);
-    curObservedEl = lastEl;
-    observer.observe(curObservedEl);
-  }
-}
 import { apiGoodsList } from "~/api/goods";
 import { image } from "@cloudinary/url-gen/qualifiers/source";
 onMounted(async () => {
@@ -192,16 +173,11 @@ onMounted(async () => {
     console.log(res.data.list);
     goodsList.value = res.data.list;
   });
-  createObserver();
-
-  observeLast(); // 首次监听
 
   loadingGoods.value = false;
 });
 
 onUnmounted(() => {
-  unobserveLast();
-  observer?.disconnect();
   console.log("IntersectionObserver 已清理");
 });
 </script>

@@ -1,6 +1,6 @@
 import { Goods } from "../../goods/list.post";
 // 请求参数 分页 时间区间 key值
-export interface apiFavoritesProductsListRequest {
+export interface apihistoryProductsListRequest {
   searchKey?: string; // 搜索关键词（可选）
   timeStart?: number; // 时间开始（可选）
   timeEnd?: number; // 时间结束（可选）
@@ -8,16 +8,16 @@ export interface apiFavoritesProductsListRequest {
   page_size?: number; // 每页数量（可选）
 }
 
-export interface apiFavoritesProductsListResponseData {
+export interface apihistoryProductsListResponseData {
   total: number; // 总记录数
   GoodsItems: Goods[]; // 商品列表
 }
 
 // 响应数据 分页 时间区间 key值
-export interface apiFavoritesProductsListResponse {
+export interface apihistoryProductsListResponse {
   code: number; // 状态码
   msg: string; // 状态信息
-  data: apiFavoritesProductsListResponseData;
+  data: apihistoryProductsListResponseData;
 }
 
 //====================基础依赖导入=========================
@@ -29,11 +29,9 @@ const mySql = getNeon();
  * TODO: 根据具体业务需求修改函数名称和逻辑
  */
 export default defineEventHandler(
-  async (event): Promise<apiFavoritesProductsListResponse> => {
-    console.log("🔍 API接口被调用 ");
+  async (event): Promise<apihistoryProductsListResponse> => {
     // 1. 获取请求参数
-    const body: apiFavoritesProductsListRequest = await readBody(event);
-    console.log("📋 接收到的请求参数:", body);
+    const body: apihistoryProductsListRequest = await readBody(event);
     const { page = 1, page_size = 10, searchKey, timeStart, timeEnd } = body;
     // 构建查询条件
     const token = getCookie(event, "auth-token");
@@ -69,7 +67,6 @@ FROM (
 ORDER BY 
     sub.created_at DESC;
 `) as Goods[];
-    console.log("查询结果:", result);
 
     return {
       code: 200,

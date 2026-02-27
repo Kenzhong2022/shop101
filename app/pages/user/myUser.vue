@@ -40,37 +40,38 @@
           </el-menu>
         </div>
         <div class="flex-1">
-          <el-card class="h-full">
+          <el-card class="h-full relative">
             <!-- 动态组件切换 -->
             <transition name="fade-slide" mode="out-in">
               <component
                 :is="currentComponent"
                 v-if="currentComponent"
-                :key="currentComponent"
                 :data="data"
+                @refresh="refreshCurrentComponent"
               />
             </transition>
           </el-card>
         </div>
-        <!-- <h2>
-        还有
-        <el-countdown
-          :value="expTime"
-          format="HH:mm:ss"
-          :auto-start="true"
-          @finish="handleTokenExpire"
-        />
-        token就会过期
-      </h2> -->
+        <h2 v-if="currentComponent === MyUserInfo">
+          还有
+          <el-countdown
+            :value="expTime"
+            format="HH:mm:ss"
+            :auto-start="true"
+            @finish="handleTokenExpire"
+          />
+          token就会过期
+        </h2>
       </el-card>
     </div>
   </client-only>
 </template>
 
 <script setup lang="ts">
-import { apiFavoritesProductsList } from "~/api/favorites/products";
+import { apihistoryProductsList } from "~/api/history/products";
 import { useUser } from "~/composables/useUser";
 import type { MenuItem } from "~/components/kk-menu.vue";
+import type { Goods } from "~~/server/api/goods/list.post";
 // ========== 使用 markRaw 包裹异步组件，防止被代理 ==========
 const MyUserInfo = markRaw(
   defineAsyncComponent(() => import("./myUserInfo.vue")),
@@ -96,117 +97,9 @@ const componentMap: Record<string, Component> = {
   "/user/mySetting": MySetting,
   "/user/myHistory": MyHistory,
 };
-
+// 动态组件的数据
 const data = ref();
 
-const menuItems: MenuItem[] = [
-  // 个人信息 订单记录 收藏夹 账号设置 退出登录
-  {
-    title: "个人信息",
-    url: "/user/myUserInfo",
-    icon: "icon-yonghu-copy",
-    // 点击事件
-    onClick: (item: MenuItem) => {
-      console.log("点击了个人信息", item);
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "订单记录",
-    url: "/user/myOrder",
-    icon: "icon-lishijilu_o",
-    // 点击事件
-    onClick: (item: MenuItem) => {
-      console.log("点击了订单记录", item);
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "收藏夹",
-    url: "/user/myCollect",
-    icon: "icon-collection",
-    // 点击事件
-    onClick: async (item: MenuItem) => {
-      console.log("点击了收藏夹", item);
-      // 收藏历史商品列表
-      const { data: res } = await apiFavoritesProductsList({
-        page: 1,
-        page_size: 10,
-      });
-      data.value = res;
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "浏览历史",
-    url: "/user/myHistory",
-    icon: "icon-history",
-    // 点击事件
-    onClick: (item: MenuItem) => {
-      console.log("点击了浏览历史", item);
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "账号设置",
-    url: "/user/mySetting",
-    icon: "icon-setting-copy",
-    // 点击事件
-    onClick: (item: MenuItem) => {
-      console.log("点击了账号设置", item);
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "退出登录",
-    url: "/login/myLogin",
-    icon: "logout",
-    // 点击事件
-    onClick: (item: MenuItem) => {
-      console.log("点击了退出登录", item);
-      currentComponent.value = componentMap[item.url] as Component;
-    },
-  },
-  {
-    title: "测试菜单1",
-    url: "/user/test1",
-    icon: "icon-test",
-    children: [
-      {
-        title: "测试菜单1-1",
-        url: "/user/test1-1",
-        icon: "icon-test",
-        children: [
-          {
-            title: "测试菜单1-1-1",
-            url: "/user/test1-1-1",
-            icon: "icon-test",
-            children: [
-              {
-                title: "测试菜单1-1-1-1",
-                url: "/user/test1-1-1-1",
-                icon: "icon-test",
-                // 点击事件
-                onClick: (item: MenuItem) => {
-                  console.log("点击了测试菜单1-1-1-1");
-                },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        title: "测试菜单1-2",
-        url: "/user/test1-2",
-        icon: "icon-test",
-        // 点击事件
-        onClick: (item: MenuItem) => {
-          console.log("点击了测试菜单1-2");
-        },
-      },
-    ],
-  },
-];
 const userState = useUser();
 
 // 头像是否悬停状态
@@ -256,6 +149,128 @@ const { file, previewUrl, resultUrl, uploading, selectFile, upload } =
 async function onSelect(e: any) {
   const res = selectFile(e.target.files?.[0]);
   console.log("previewUrl:", res);
+}
+
+// ========== 1. 定义各组件的数据获取函数 ==========
+
+// 历史记录
+async function getHistoryList() {
+  const { data: res } = await apihistoryProductsList({
+    page: 1,
+    page_size: 10,
+  });
+  data.value = res.GoodsItems.reduce(
+    (prev, curItem) => {
+      const date = curItem.created_at_fmt.split(" ")[0];
+      if (!prev[date]) prev[date] = [];
+      prev[date].push({ ...curItem, isChecked: false });
+      return prev;
+    },
+    {} as Record<string, Goods[]>,
+  );
+}
+
+// // 收藏列表（假设你有这个API）
+// async function getCollectList() {
+//   const { data: res } = await apiCollectProductsList({
+//     page: 1,
+//     page_size: 10,
+//   });
+//   data.value = res.items; // 根据实际API调整
+// }
+
+// // 订单列表（假设你有这个API）
+// async function getOrderList() {
+//   const { data: res } = await apiOrderList({ page: 1, page_size: 10 });
+//   data.value = res.orders; // 根据实际API调整
+// }
+
+// ========== 2. 组件配置表：每个组件绑定自己的数据和刷新函数 ==========
+
+interface ComponentConfig {
+  component: Component;
+  fetchData: () => Promise<void>;
+  title: string;
+  icon: string;
+}
+
+const componentConfigMap: Record<string, ComponentConfig> = {
+  "/user/myUserInfo": {
+    component: MyUserInfo,
+    fetchData: async () => {
+      /* 个人信息可能不需要刷新 */
+    },
+    title: "个人信息",
+    icon: "icon-yonghu-copy",
+  },
+  "/user/myOrder": {
+    component: MyOrder,
+    fetchData: async () => {
+      /* 暂时没有 */
+    },
+    title: "订单记录",
+    icon: "icon-dingdan",
+  },
+  "/user/myCollect": {
+    component: MyCollect,
+    fetchData: async () => {
+      /* 暂时没有 */
+    },
+    title: "收藏夹",
+    icon: "icon-collection",
+  },
+  "/user/myHistory": {
+    component: MyHistory,
+    fetchData: getHistoryList,
+    title: "浏览历史",
+    icon: "icon-lishijilu_o",
+  },
+  "/user/mySetting": {
+    component: MySetting,
+    fetchData: async () => {
+      /* 设置页可能不需要 */
+    },
+    title: "账号设置",
+    icon: "icon-setting-copy",
+  },
+};
+// 自动生成菜单项的工厂函数
+function createMenuItem(url: keyof typeof componentConfigMap): MenuItem {
+  const config = componentConfigMap[url];
+  if (!config) {
+    throw new Error(`未找到对应的配置: ${url}`);
+  }
+  return {
+    title: config.title,
+    url,
+    icon: config.icon, // 你的图标映射
+    // 点击菜单时，切换组件并刷新数据
+    onClick: async (item: MenuItem) => {
+      currentComponent.value = config.component;
+      currentRefreshFn.value = config.fetchData;
+      await config.fetchData();
+    },
+  };
+}
+
+// 然后菜单定义变得超简单
+const menuItems: MenuItem[] = [
+  createMenuItem("/user/myUserInfo"),
+  createMenuItem("/user/myOrder"),
+  createMenuItem("/user/myCollect"),
+  createMenuItem("/user/myHistory"),
+  createMenuItem("/user/mySetting"),
+  // ...
+];
+// ========== 3. 统一的刷新函数（根据当前组件动态调用） ==========
+
+const currentRefreshFn = ref<(() => Promise<void>) | null>(null);
+
+// 统一的刷新入口
+async function refreshCurrentComponent() {
+  if (currentRefreshFn.value) {
+    await currentRefreshFn.value();
+  }
 }
 </script>
 

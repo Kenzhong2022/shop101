@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     if (!body || typeof body !== "object") {
       throw createError({
         statusCode: 400,
-        statusMessage: "请求体不能为空",
+        message: "请求体不能为空",
       });
     }
 
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     if (!goodsId) {
       throw createError({
         statusCode: 400,
-        statusMessage: "商品ID不能为空",
+        message: "商品ID不能为空",
       });
     }
 
@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: "内部服务器错误",
+      message: "内部服务器错误",
     });
   }
 });

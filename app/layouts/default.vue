@@ -3,10 +3,8 @@
     <div
       class="flex flex-col min-h-screen mx-auto w-100% max-w-[1600px] bg-#fff shadow-md relative"
     >
-      <div class="p-4">
+      <div class="index-container">
         <LazyKkColorPicker @change="handleColorChange" />
-        <!-- 这是头部通用组件 -->
-        <!-- 传递信息给子组件 -->
         <AppHeader
           @sendRoute="handleChangeByRoute"
           class="bg-white max-w-[1200px] shadow-sm h-65px"
@@ -76,7 +74,7 @@ interface routeItem {
 const msg = "hello world";
 const showMenu = ref(false);
 const showStickyTop = ref(true);
-// 接收来自子组件的路由信息
+// 接收来自子组件的路由信息 切换tabs<= 未来修改命名
 function handleChangeByRoute(route: routeItem) {
   console.log("顶部导航改变了：", route);
   // console.log("route.path", route.path, route.path == "/category");
@@ -112,9 +110,11 @@ function handleColorChange(newHsl: string) {
 }
 
 onMounted(() => {
-  console.log("当前路由", route);
   showMenu.value = getFirstRouteLevel(route.path) === "/category";
-  console.log(route.path, showMenu.value, showStickyTop.value);
+  const layoutOpts = route.meta.layoutOptions as
+    | { stickyTop?: boolean }
+    | undefined;
+  showStickyTop.value = layoutOpts?.stickyTop ?? true;
 });
 </script>
 

@@ -65,7 +65,7 @@ export default defineEventHandler(
         console.log("【错误】商品ID无效:", goodsId);
         throw createError({
           statusCode: 400,
-          statusMessage: "Invalid goods ID",
+          message: "Invalid goods ID",
         });
       }
 
@@ -102,7 +102,7 @@ export default defineEventHandler(
         console.log("【错误】商品不存在, id:", id);
         throw createError({
           statusCode: 404,
-          statusMessage: "Goods not found",
+          message: "Goods not found",
         });
       }
 
@@ -223,7 +223,7 @@ export default defineEventHandler(
           "【已处理错误】statusCode:",
           error.statusCode,
           "message:",
-          error.statusMessage,
+          error.message,
         );
         throw error;
       }
@@ -232,7 +232,7 @@ export default defineEventHandler(
       console.error("【错误详情】", error.stack);
       throw createError({
         statusCode: 500,
-        statusMessage: "Internal server error",
+        message: "Internal server error",
       });
     }
   },

@@ -21,7 +21,27 @@
  * const response = await $axios.get('/user/profile')
  */
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import type { ApiErrorData } from "~/types/api-error";
+import { ERROR_MAP } from "~/types/api-error";
+
+/**
+ * 处理未授权错误（401）
+ */
+function handleUnauthorized(message?: string) {
+  const route = useRoute();
+  const redirect = encodeURIComponent(route.fullPath);
+
+  ElMessage.error(message || ERROR_MAP[401]);
+  navigateTo(`/login/myLogin?redirect=${redirect}`);
+}
+
+/**
+ * 显示错误消息（仅客户端）
+ */
+function showError(message: string) {
+  if (process.client) ElMessage.error(message);
+}
 
 export default defineNuxtPlugin((nuxtApp) => {
   // 创建axios实例
@@ -41,12 +61,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         const token = useCookie("auth-token").value;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
-          // console.log(
-          //   `[Axios] 请求拦截器 - 添加Authorization头: Bearer ${token.substring(
-          //     0,
-          //     10
-          //   )}...`
-          // );
         } else {
           console.log("[Axios] 请求拦截器 - 未找到token");
         }
@@ -55,18 +69,15 @@ export default defineNuxtPlugin((nuxtApp) => {
       // 添加请求时间戳
       config.headers["X-Request-Time"] = new Date().toISOString();
 
-      // console.log(
-      //   `[Axios] 请求拦截器 - ${config.method?.toUpperCase()} ${config.url}`
-      // );
       return config;
     },
     (error) => {
       console.error("[Axios] 请求拦截器错误:", error);
       return Promise.reject(error);
-    }
+    },
   );
 
-  // 响应拦截器
+  // 响应拦截器：统一错误处理
   axiosInstance.interceptors.response.use(
     (response) => {
       // console.log(
@@ -90,88 +101,52 @@ export default defineNuxtPlugin((nuxtApp) => {
 
       return response;
     },
-    (error) => {
-      console.error("[Axios] 响应拦截器错误:", error);
+    // 错误处理：统一封装
+    (error: AxiosError<ApiErrorData>) => {
+      console.error("[Axios] 响应错误:", error);
 
+      // 分支1: 服务器返回错误响应
       if (error.response) {
-        const { message, statusCode } = error.response.data;
-        console.log("statusCode:", statusCode, message);
-        switch (statusCode) {
+        const httpStatus = error.response.status;
+        const { message, statusCode } = error.response.data || {};
+
+        // 优先使用业务状态码，其次 HTTP 状态码
+        const code = statusCode || httpStatus;
+        const msg = message || ERROR_MAP[code] || `请求失败: ${code}`;
+
+        console.error(`[Axios] ${code}: ${msg}`);
+
+        // 统一错误处理
+        switch (code) {
           case 401:
-            console.error(
-              `[Axios] 响应拦截器 - 401未授权: ${
-                message || "登录已过期，请重新登录"
-              }`
-            );
-            const route = useRoute();
-            const currentPath = route.fullPath; // 获取当前完整路径（如 /friends?page=2#chat）
-            console.log("当前页面URL【编码】:", currentPath);
-            if (process.client) {
-              ElMessage.error(message);
-              console.log(
-                "当前页面URL【编码】:",
-                encodeURIComponent(currentPath)
-              );
-              console.log(
-                "当前页面URL【解码】:",
-                decodeURIComponent(encodeURIComponent(currentPath))
-              );
-              // 跳转到登录页并携带当前页面URL作为重定向参数
-              navigateTo(
-                "/login/myLogin?redirect=" + encodeURIComponent(currentPath)
-              );
-            }
+            handleUnauthorized(message); // ✅ 使用提取的函数
             break;
-
           case 403:
-            console.error("[Axios] 响应拦截器 - 403 forbidden");
-            if (process.client) {
-              ElMessage.error("没有权限访问该资源");
-            }
+            showError(msg);
             break;
-
           case 404:
-            console.error("[Axios] 响应拦截器 - 404 not found");
-            if (process.client) {
-              ElMessage.error("请求的资源不存在");
-            }
+            showError(msg);
             break;
-
           case 500:
-            const serverMessage = message || "服务器内部错误，请稍后重试";
-            console.error(
-              `[Axios] 响应拦截器 - 500服务器错误: ${serverMessage}`
-            );
-
-            if (process.client) {
-              ElMessage.error(serverMessage);
-            }
+            showError(msg);
             break;
-
           default:
-            const defaultMessage = message || `请求失败: ${statusCode}`;
-            console.error(
-              `[Axios] 响应拦截器 - ${statusCode}错误: ${defaultMessage}`
-            );
-
-            if (process.client) {
-              ElMessage.error(defaultMessage);
-            }
+            showError(msg);
         }
-      } else if (error.request) {
-        console.error("[Axios] 响应拦截器 - 网络错误:", error.message);
-        if (process.client) {
-          ElMessage.error("网络连接失败，请检查网络设置");
-        }
-      } else {
-        console.error("[Axios] 响应拦截器 - 请求配置错误:", error.message);
-        if (process.client) {
-          ElMessage.error("请求配置错误");
-        }
+      }
+      // 分支2: 网络错误（无响应）
+      else if (error.request) {
+        console.error("[Axios] 网络错误:", error.message);
+        showError("网络连接失败，请检查网络设置");
+      }
+      // 分支3: 配置/代码错误
+      else {
+        console.error("[Axios] 配置错误:", error.message);
+        showError("请求配置错误");
       }
 
       return Promise.reject(error);
-    }
+    },
   );
 
   // 将axios实例添加到Nuxt应用中 ， 可以在任何组件中通过useNuxtApp().$axios 访问

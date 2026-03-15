@@ -28,6 +28,7 @@
       </div>
       <!-- 操作按钮 -->
       <el-checkbox
+        v-if="!collectedMode"
         :model-value="goodsItem.isChecked"
         size="large"
         class="checked_btn"

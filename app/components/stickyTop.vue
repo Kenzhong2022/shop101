@@ -1,11 +1,10 @@
 <template>
   <div
-    class="sticky-top-container max-h-100px h-10vh py-16px flex justify-around items-center"
+    class="sticky-top-container max-h-100px h-fit py-8px flex justify-around items-center"
     ref="containerRef"
     :class="{ 'is-sticky': isSticky }"
   >
-
-    <kk-search class="flex-1 max-w-800px p-4" />
+    <kk-search class="flex-1 max-w-800px" />
   </div>
 </template>
 
@@ -21,7 +20,7 @@ const offsetTop = ref(0);
 const handleScroll = () => {
   if (containerRef.value) {
     const scrollPosition = window.scrollY;
-    isSticky.value = scrollPosition >= offsetTop.value; // 当滚动位置超过或等于偏移量时吸顶
+    isSticky.value = scrollPosition >= offsetTop.value; // 页面向下滚动的距离 大于 & 等于 搜索框在页面中的位置 + 搜索框自身高度的一半60/2
   }
 };
 
@@ -50,7 +49,6 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     right: 0;
-    height: 10vh;
     background-color: white;
   }
 }

@@ -72,28 +72,44 @@ export default defineNuxtPlugin(() => {
    * 提供常用的消息类型快捷调用
    */
   const messageShortcuts = {
-    // 警告提示 - 用于提醒用户注意
+    /**
+     * 警告提示 - 用于提醒用户注意
+     * @param {string} msg - 警告消息内容
+     * @returns {Object} ElMessage 实例
+     */
     warning: (msg) =>
       singleElMessage({
         message: msg,
         type: "warning",
       }),
 
-    // 成功提示 - 用于显示操作成功
+    /**
+     * 成功提示 - 用于显示操作成功
+     * @param {string} msg - 成功消息内容
+     * @returns {Object} ElMessage 实例
+     */
     success: (msg) =>
       singleElMessage({
         message: msg,
         type: "success",
       }),
 
-    // 错误提示 - 用于显示操作失败
+    /**
+     * 错误提示 - 用于显示操作失败
+     * @param {string} msg - 错误消息内容
+     * @returns {Object} ElMessage 实例
+     */
     error: (msg) =>
       singleElMessage({
         message: msg,
         type: "error",
       }),
 
-    // 普通信息提示 - 用于显示一般消息
+    /**
+     * 普通信息提示 - 用于显示一般消息
+     * @param {string} msg - 普通消息内容
+     * @returns {Object} ElMessage 实例
+     */
     info: (msg) =>
       singleElMessage({
         message: msg,

@@ -8,13 +8,13 @@ function setThemeColor(baseColor) {
     // 基础色
     document.documentElement.style.setProperty(
       "--el-color-primary",
-      base.toHexString()
+      base.toHexString(),
     );
-    // 边框颜色
-    document.documentElement.style.setProperty(
-      "--el-border-color",
-      base.toHexString()
-    );
+    // // 边框颜色
+    // document.documentElement.style.setProperty(
+    //   "--el-border-color",
+    //   base.toHexString()
+    // );
 
     // 生成 light-n 变量（n=3,5,7,8,9）
     [3, 5, 7, 8, 9].forEach((n) => {
@@ -24,7 +24,7 @@ function setThemeColor(baseColor) {
 
       document.documentElement.style.setProperty(
         `--el-color-primary-light-${n}`,
-        lightColor.toRgbString()
+        lightColor.toRgbString(),
       );
     });
   }

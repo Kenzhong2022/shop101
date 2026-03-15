@@ -37,7 +37,7 @@ export default defineEventHandler(
       ) {
         throw createError({
           statusCode: 400,
-          statusMessage: "商品ID数组不能为空",
+          message: "商品ID数组不能为空",
         });
       }
 
@@ -48,7 +48,7 @@ export default defineEventHandler(
       if (!userId) {
         throw createError({
           statusCode: 401,
-          statusMessage: "用户未登录",
+          message: "用户未登录",
         });
       }
 
@@ -74,7 +74,7 @@ export default defineEventHandler(
       // 返回错误响应
       throw createError({
         statusCode: 500,
-        statusMessage: "删除历史记录失败",
+        message: "删除历史记录失败",
       });
     }
   },

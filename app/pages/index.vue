@@ -106,16 +106,6 @@ const banners: Banner[] = [
 import { useProductBehavior } from "~/composables/useProductBehavior";
 import type { Goods } from "~~/server/api/goods/list.post";
 const goodsList = ref<Goods[]>();
-// 监听goodsList变化并且打印
-watch(
-  goodsList,
-  (newVal) => {
-    console.log(newVal);
-  },
-  {
-    deep: true,
-  },
-);
 
 const loadingGoods = ref<boolean>(true);
 

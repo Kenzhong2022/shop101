@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   // 第一步：获取前端传来的登录数据
   const { email } = await readBody<SendCodeBody>(event);
   // 第二步：参数验证
-  if (!email) throw createError({ statusCode: 400, statusMessage: "邮箱必填" });
+  if (!email) throw createError({ statusCode: 400, message: "邮箱必填" });
   // 验证邮箱格式
   if (
     /**
@@ -27,16 +27,16 @@ export default defineEventHandler(async (event) => {
      * - 顶级域名：必须是 2 到 6 个字母 必须有一个点号
      */
     !/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(
-      email
+      email,
     )
   ) {
-    throw createError({ statusCode: 400, statusMessage: "邮箱格式错误" });
+    throw createError({ statusCode: 400, message: "邮箱格式错误" });
   }
   // 第三步：查询数据库验证用户是否已注册
   //   const [userRows] =
   //     await mySql`SELECT id FROM user WHERE email = ${email} LIMIT 1`;
   //   if (Array.isArray(userRows) && userRows.length > 0) {
-  //     throw createError({ statusCode: 400, statusMessage: "邮箱已注册" });
+  //     throw createError({ statusCode: 400, message: "邮箱已注册" });
   //   }
   // 第四步：发送验证码邮件
   const code = nanoid(6); // 6 位随机串
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
   await sendQQMail(
     email, // 收件人邮箱
     "注册验证码给你发来了，牛不牛？快点注册！！！", // 邮件标题
-    `您的验证码是：<b style="color:#ff6600">${code}</b>，5 分钟内有效。` // 邮件内容
+    `您的验证码是：<b style="color:#ff6600">${code}</b>，5 分钟内有效。`, // 邮件内容
   );
 
   return {

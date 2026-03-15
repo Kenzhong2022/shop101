@@ -43,7 +43,7 @@ export default defineEventHandler(
       if (!rawId || isNaN(Number(rawId))) {
         throw createError({
           statusCode: 400,
-          statusMessage: "Invalid goods ID",
+          message: "Invalid goods ID",
         });
       }
       const goodsId = Number(rawId);
@@ -94,7 +94,7 @@ export default defineEventHandler(
       console.error("Review list error:", error);
       throw createError({
         statusCode: 500,
-        statusMessage: "Failed to fetch reviews",
+        message: "Failed to fetch reviews",
       });
     }
   },

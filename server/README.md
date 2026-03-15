@@ -78,7 +78,7 @@ export default defineEventHandler(async (event): Promise<ResponseData> => {
     console.error("API错误:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: "服务器内部错误",
+      message: "服务器内部错误",
     });
   }
 });
@@ -107,7 +107,7 @@ setCookie(event, "name", "value", { httpOnly: true });
 // 抛出错误（会自动返回对应的HTTP状态码）
 throw createError({
   statusCode: 400, // HTTP状态码
-  statusMessage: "错误信息",
+  message: "错误信息",
 });
 ```
 
@@ -156,7 +156,7 @@ const authHeader = getHeader(event, "authorization");
        const data = await fetchData();
        return data;
      } catch (error) {
-       throw createError({ statusCode: 500, statusMessage: "获取数据失败" });
+       throw createError({ statusCode: 500, message: "获取数据失败" });
      }
    });
    ```
@@ -164,7 +164,6 @@ const authHeader = getHeader(event, "authorization");
 ### ⚠️ 需要特别注意的事情
 
 1. **文件命名要严格遵循规则**
-
    - `login.get.ts` 只能处理 GET 请求
    - `login.post.ts` 只能处理 POST 请求
    - 如果写错了方法名，API 不会生效
@@ -184,7 +183,7 @@ const authHeader = getHeader(event, "authorization");
      console.error('API错误:', error);
      throw createError({
        statusCode: 500,
-       statusMessage: '服务器内部错误'
+       message: '服务器内部错误'
      });
    }
    ```
@@ -232,7 +231,7 @@ const authHeader = getHeader(event, "authorization");
 {
   url: '/api/login',
   statusCode: 401,
-  statusMessage: '邮箱或密码错误',
+  message: '邮箱或密码错误',
   message: '邮箱或密码错误',
   stack: '<错误堆栈>'
 }
@@ -245,7 +244,7 @@ const authHeader = getHeader(event, "authorization");
 if (!email || !password) {
   throw createError({
     statusCode: 400,
-    statusMessage: "邮箱和密码不能为空",
+    message: "邮箱和密码不能为空",
   });
 }
 ```
@@ -276,12 +275,10 @@ return {
 ## 🚀 调试技巧
 
 1. **查看控制台输出**
-
    - 服务器日志会显示在终端中
    - 使用 `console.log()` 进行调试
 
 2. **测试 API**
-
    - 使用 Postman 或 curl 测试
    - 访问 `/api/你的接口路径`
 

@@ -21,7 +21,7 @@ export default getNeon;
     console.log("🔍 正在验证数据库连接...");
     console.log(
       "📊 数据库URL:",
-      NUXT_NEON_DATABASE_URL.replace(/:(.*)@/, ":***@")
+      NUXT_NEON_DATABASE_URL.replace(/:(.*)@/, ":***@"),
     ); // 脱敏显示连接信息
 
     const [{ version }] = await sql`SELECT version()`;
@@ -44,7 +44,7 @@ export default getNeon;
         console.log(
           `  ${index + 1}. 表名：${table.table_name}（类型：${
             table.table_type
-          }）`
+          }）`,
         );
       });
     } else {
@@ -54,7 +54,7 @@ export default getNeon;
     console.log("\n======================================");
   } catch (e) {
     console.error("\n❌ 数据库连接失败！");
-    console.alert("数据库连接失败，请检查环境变量配置是否正确。");
+    console.error("数据库连接失败，请检查环境变量配置是否正确。");
     //数据库信息
     console.error("数据库URL:", NUXT_NEON_DATABASE_URL);
     console.error("错误信息:", e.message);

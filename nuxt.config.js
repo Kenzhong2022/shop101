@@ -96,8 +96,12 @@ export default defineNuxtConfig({
     "@unocss/nuxt",
     "@nuxt/image",
     "@nuxtjs/cloudinary",
+    "@pinia/nuxt", // 注册 Pinia 模块
   ],
-
+  // 可选：配置 Pinia
+  pinia: {
+    storesDirs: ["./stores/**"], // 自动导入 stores 目录
+  },
   // 图片优化模块配置
   image: {
     // 基础配置，使用默认 provider
@@ -188,6 +192,14 @@ export default defineNuxtConfig({
           },
         },
       },
+    },
+    server: {
+      allowedHosts: [
+        "firstly-pipier-jensen.ngrok-free.dev", // 替换成你的实际 ngrok 域名
+        // 如果需要允许多个域名，继续添加
+        // 或者开发期间直接允许所有 host（谨慎）：
+        // true
+      ],
     },
   },
 

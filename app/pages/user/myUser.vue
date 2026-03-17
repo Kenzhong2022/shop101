@@ -3,66 +3,61 @@
 <template>
   <client-only>
     <div class="user-container">
-      <el-card shadow="never">
-        <template #fallback>
-          <div class="loading">加载中...</div>
-        </template>
-        <div class="shadow-md min-w-200px py-8px">
-          <div class="flex flex-col items-center justify-center">
-            <!-- 个人头像 -->
-            <div>
-              <el-avatar
-                :src="userState.userInfo?.avatar"
-                :size="100"
-                class="my-avatar relative"
-                @mouseenter="() => (isHovered = true)"
-                @mouseleave="() => (isHovered = false)"
-                :class="{ 'my-avatar-hover': isHovered }"
-                @click="
-                  () => {
-                    (fileInput as HTMLInputElement).click();
-                  }
-                "
-              />
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="onSelect"
-              />
-            </div>
-            <div class="text-center">KK个人中心</div>
+      <div class="shadow-md min-w-200px py-8px">
+        <div class="flex flex-col items-center justify-center">
+          <!-- 个人头像 -->
+          <div>
+            <el-avatar
+              :src="userState.userInfo?.avatar"
+              :size="100"
+              class="my-avatar relative"
+              @mouseenter="() => (isHovered = true)"
+              @mouseleave="() => (isHovered = false)"
+              :class="{ 'my-avatar-hover': isHovered }"
+              @click="
+                () => {
+                  (fileInput as HTMLInputElement).click();
+                }
+              "
+            />
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="onSelect"
+            />
           </div>
-          <!-- 菜单：默认选中第一个 -->
-          <el-menu class="menu-contaniner" :default-active="menuItems[0]?.url">
-            <kk-menu :menu-items="menuItems" />
-          </el-menu>
+          <div class="text-center">KK个人中心</div>
         </div>
-        <div class="flex-1">
-          <el-card class="h-full relative">
-            <!-- 动态组件切换 -->
-            <transition name="fade-slide" mode="out-in">
-              <component
-                :is="currentComponent"
-                v-if="currentComponent"
-                :data="data"
-                @refresh="refreshCurrentComponent"
-              />
-            </transition>
-          </el-card>
-        </div>
-        <h2 v-if="currentComponent === MyUserInfo">
-          还有
-          <el-countdown
-            :value="expTime"
-            format="HH:mm:ss"
-            :auto-start="true"
-            @finish="handleTokenExpire"
-          />
-          token就会过期
-        </h2>
-      </el-card>
+        <!-- 菜单：默认选中第一个 -->
+        <el-menu class="menu-contaniner" :default-active="currentMenu">
+          <kk-menu :menu-items="menuItems" />
+        </el-menu>
+      </div>
+      <div class="flex-1">
+        <el-card class="h-full relative">
+          <!-- 动态组件切换 -->
+          <transition name="fade-slide" mode="out-in">
+            <component
+              :is="currentComponent"
+              v-if="currentComponent"
+              :data="data"
+              @refresh="refreshCurrentComponent"
+            />
+          </transition>
+        </el-card>
+      </div>
+      <h2 v-if="currentComponent === MyUserInfo">
+        还有
+        <el-countdown
+          :value="expTime"
+          format="HH:mm:ss"
+          :auto-start="true"
+          @finish="handleTokenExpire"
+        />
+        token就会过期
+      </h2>
     </div>
   </client-only>
 </template>
@@ -78,7 +73,7 @@ const MyUserInfo = markRaw(
 );
 const MyOrder = markRaw(defineAsyncComponent(() => import("./myOrder.vue")));
 const MyCollect = markRaw(
-  defineAsyncComponent(() => import("./myCollect.vue")),
+  defineAsyncComponent(() => import("./myFavorites.vue")),
 );
 const MySetting = markRaw(
   defineAsyncComponent(() => import("./mySetting.vue")),
@@ -88,7 +83,8 @@ const MyHistory = markRaw(
 );
 // ========== 使用 shallowRef 存储当前组件 ==========
 const currentComponent = shallowRef<Component>(MyUserInfo);
-
+// 当前选中的菜单
+const currentMenu = ref<string>("/user/myUserInfo");
 // 组件映射表
 const componentMap: Record<string, Component> = {
   "/user/myUserInfo": MyUserInfo,
@@ -97,6 +93,8 @@ const componentMap: Record<string, Component> = {
   "/user/mySetting": MySetting,
   "/user/myHistory": MyHistory,
 };
+const route = useRoute();
+const router = useRouter();
 // 动态组件的数据
 const data = ref();
 
@@ -111,9 +109,11 @@ const expTime = ref<number>(0);
 // 页面加载完成后的操作
 onMounted(() => {
   expTime.value = userState.value.expireTime;
+  updateComponentByTab((route.query.tab as string) || "myUserInfo"); // 默认个人信息
 });
 // ========== 核心：页面激活时重置状态 ==========
 onActivated(() => {
+  updateComponentByTab((route.query.tab as string) || "myUserInfo"); // 默认个人信息
   // 检查 token
   const flag = checkTokenExpiration();
   if (!flag) {
@@ -121,6 +121,16 @@ onActivated(() => {
     return;
   }
 });
+// 根据 tab 参数获取对应的组件和刷新函数
+function updateComponentByTab(tab: string) {
+  const config = componentConfigMap[`/user/${tab}`]; // 注意 key 格式要与配置一致
+  if (config) {
+    currentComponent.value = config.component;
+    currentRefreshFn.value = config.fetchData;
+    config.fetchData(); // 加载数据
+    currentMenu.value = `/user/${tab}`;
+  }
+}
 
 // 处理token过期
 function handleTokenExpire() {
@@ -276,10 +286,8 @@ async function refreshCurrentComponent() {
 
 <style lang="scss" scoped>
 .user-container {
-  :deep(.el-card__body) {
-    display: flex !important;
-    gap: 20px;
-  }
+  display: flex !important;
+  gap: 20px;
 }
 
 .menu-contaniner {

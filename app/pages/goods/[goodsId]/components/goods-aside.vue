@@ -149,6 +149,7 @@ import type {
   SkuInfo,
 } from "~~/server/api/goods/[id]/specs.get.ts";
 
+const emit = defineEmits(["update:currentSku", "update:skuCode"]); // 2. 定义 emit
 // ==========================================
 // 数据初始化
 // ==========================================
@@ -169,17 +170,16 @@ const specKeys = computed(() => props.specList.map((spec) => spec.code));
 /** 维度数量 */
 const dimensionCount = computed(() => props.specList.length);
 
-/** 库存映射表：将 specs数组 转为 "val1|val2|val3" 作为Key */
-const inventoryMap = computed(() => {
+/** 库存映射表：sku.specs_hash 作为Key 找到对应的商品SKU信息 */
+const findGoodsBySpecsHash = computed(() => {
   const map = new Map<string, SkuInfo>();
   props.skuList.forEach((sku) => {
-    const key = sku.specs.join("|");
-    map.set(key, sku);
+    map.set(sku.specs_hash, sku);
   });
   return map;
 });
 
-/** 反向查找：规格值ID -> 显示名（用于展示当前选中项） */
+/** 反向查找：规格值ID -> 显示名（用于展示当前选中项）可以通过color:red 来获取红色的显示名 */
 const valueNameMap = computed(() => {
   const map = new Map<string, string>();
   props.specList.forEach((spec) => {
@@ -211,21 +211,35 @@ const currentSkuKey = computed(() => {
   return specKeys.value.map((key) => selected[key]).join("|");
 });
 
-/** 当前选中的SKU信息 */
-const currentSku = computed<SkuInfo | null>(() => {
-  if (!isComplete.value) return null;
-  return inventoryMap.value.get(currentSkuKey.value) ?? null;
-});
-
-/** 当前选中的SKU展示名称（如 "中国红 / L / 纯棉"） */
+/** 当前选中的SKU展示名称（如 "中国红 / L / 纯棉"）*/
 const currentSkuDisplayName = computed(() => {
-  if (!currentSku.value) return "";
-  return currentSku.value.specs
-    .map((valId, index) => {
-      const dimId = specKeys.value[index];
-      return valueNameMap.value.get(`${dimId}:${valId}`) || valId;
+  // ❗️不再依赖 currentSku.value，避免循环引用
+  if (!isComplete.value) return "";
+
+  // 直接从 selected 状态和 valueNameMap 计算
+  return specKeys.value
+    .map((dimId) => {
+      const valCode = selected[dimId];
+      console.log("【当前选中的规格值ID】", dimId, valCode);
+      return valueNameMap.value.get(`${dimId}:${valCode}`) || valCode;
     })
     .join(" / ");
+});
+
+/** 当前选中的SKU信息 */
+const currentSku = computed(() => {
+  if (!isComplete.value) return null;
+
+  console.log("【当前选中的SKU Key】", currentSkuKey.value);
+
+  const sku = findGoodsBySpecsHash.value.get(currentSkuKey.value);
+  if (!sku) return null;
+
+  // ✅ 现在可以安全地使用 currentSkuDisplayName.value，因为它是“上游”而非“下游”
+  return {
+    ...sku,
+    sku_value: currentSkuDisplayName.value,
+  };
 });
 
 /** 是否可以购买 */
@@ -251,30 +265,33 @@ function isSelected(dimId: string, valueId: string): boolean {
 }
 
 /**
+ * @param dimId 维度ID（如 "color"）
+ * @param valueId 规格值ID（如 "red"）
  * 【核心算法】判断某个规格值是否应该被禁用
  * 逻辑：假设选中该值，检查是否存在任何SKU满足：
  * 1. 匹配当前所有已选规格（包括假设的这个）
  * 2. 库存 > 0
  */
 function isSpecDisabled(dimId: string, valueId: string): boolean {
+  console.log("【判断是否禁用】", dimId, valueId);
   // 已选中的不禁用（允许点击取消）
   if (isSelected(dimId, valueId)) return false;
   // 构造假设的选中状态
   const assumedSelection = { ...selected, [dimId]: valueId };
   // 检查是否存在有效SKU
   const hasValidSku = props.skuList.some((sku) => {
-    console.log("【检查SKU】", sku.specs);
-    console.log(
-      "【检查specKeys】",
-      props.specList.map((spec) => spec.code),
-    );
     // 检查该SKU是否匹配所有已选（含假设）的规格
     const isMatch = specKeys.value.every((key, index) => {
       const selectedVal = assumedSelection[key]; // 假设选中的规格值
       if (selectedVal === undefined) return true; // 该维度未选，通配：未选择的规格一定可以选，所以返回true
+      console.log(
+        "sku.specs[index],selectedVal",
+        sku.specs[index],
+        selectedVal,
+      );
       return sku.specs[index] === selectedVal;
     });
-
+    console.log("【匹配当前所有已选规格】", isMatch, sku.stock);
     return isMatch && sku.stock > 0;
   });
 
@@ -333,6 +350,14 @@ function addToCart() {
       `库存：${sku.stock}件`,
   );
 }
+
+watchEffect(() => {
+  if (currentSku.value) {
+    console.log("【当前选中的currentSku】", currentSku.value);
+    emit("update:currentSku", currentSku.value);
+    // emit("update:skuCode", sku.code);
+  }
+});
 </script>
 
 <style scoped>

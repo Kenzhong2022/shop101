@@ -3,16 +3,18 @@
   <div
     class="goods-operation-container fixed left-[calc(50%+800px-600px/2-16px-24px)] -translate-x-1/2 w-[600px] bottom-0 z-999 flex justify-start items-center p-24px gap-12px"
   >
-    <div class="flex flex-row flex-1 justify-center items-center text-white">
+    <div
+      class="h-45px flex flex-row flex-1 justify-center items-center text-white hover:cursor-pointer"
+    >
       <div
-        class="flex-1 px-12px py-6px text-center add-cart rounded-l-8px"
+        class="h-full line-height-45px px-12px py-6px text-center add-cart rounded-l-8px iconfont icon-cart1"
         @click="addCart"
-      >
-        加入购物车
-      </div>
+        style="flex: 1 0 0"
+      ></div>
       <div
-        class="flex-[4] px-12px py-6px text-center bg-primary rounded-r-8px"
+        class="h-full line-height-45px px-12px py-6px text-center bg-primary rounded-r-8px"
         @click="buyNow"
+        style="flex: 4 0 0"
       >
         立即购买
       </div>
@@ -28,22 +30,51 @@
 
 <script setup lang="ts">
 import { Star, StarFilled } from "@element-plus/icons-vue";
+import type {
+  CartAddRequest,
+  CartAddResponse,
+} from "~~/server/api/cart/add.post";
+const { $message } = useNuxtApp();
+const cartStore = useCartStore();
+const props = defineProps({
+  goodsId: {
+    type: Number,
+    required: true,
+  },
+  currentSku: {
+    type: Object,
+    required: true,
+  },
+  skuCode: {
+    type: String,
+    required: true,
+  },
+});
 const isCollect = ref(false);
 function toggleCollect() {
   isCollect.value = !isCollect.value;
 }
 
 function addCart() {
+  if (!props.currentSku.sku_code) {
+    $message.warning("请选择商品规格");
+    return;
+  }
+  console.log(props);
   cartStore.addCart({
-    goodsId: Number(goodsId),
-    count: 1,
+    goods_id: props.goodsId,
+    quantity: 1,
+    sku_code: props.currentSku.sku_code,
+    sku_value: props.currentSku.sku_value,
   });
 }
 
 function buyNow() {
   cartStore.addCart({
-    goodsId: Number(goodsId),
-    count: 1,
+    goods_id: props.goodsId,
+    quantity: 1,
+    sku_value: props.currentSku.sku_value,
+    sku_code: props.currentSku.sku_code,
   });
 }
 </script>

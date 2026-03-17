@@ -6,13 +6,19 @@
     <goods-aside
       class="fixed left-[calc(50%+800px-600px/2-16px-24px)] -translate-x-1/2 w-[600px] z-999"
       :style="{
-        top: (scrollY < 65 ? 132 + 65 + 16 - scrollY : 132) + 'px',
+        top: (scrollY < 65 ? 65 - Math.floor(scrollY) : 0) + 'px',
       }"
       :goods-name="goodsName"
       :spec-list="specList"
       :sku-list="skuList"
+      @update:currentSku="(skuObj) => (currentSku = skuObj)"
+      @update:skuCode="(code) => (skuCode = code)"
     />
-    <goods-operation />
+    <goods-operation
+      :goods-id="Number(goodsId)"
+      :currentSku="currentSku"
+      :sku-code="skuCode"
+    />
   </div>
 </template>
 
@@ -30,8 +36,7 @@ import type {
   SkuInfo,
 } from "~~/server/api/goods/[id]/specs.get.ts";
 import { useProductBehavior } from "~/composables/useProductBehavior";
-const { scrollY, scrollX } = useScroll();
-// 从路由http://localhost:3000/goods/3/detail 中获取商品ID
+const { scrollY, scrollX } = useScroll(); // 监听滚动事件 得到y轴距离0 的滚动距离
 const goodsId = useRoute().params.goodsId as string | number;
 // ==========================================
 // 数据初始化
@@ -40,6 +45,9 @@ const specList = ref<SpecDimension[]>([]); // 规格维度列表（从后端获�
 const skuList = ref<SkuInfo[]>([]); // 扁平的库存 SKU 列表（从后端获取）
 const image = ref<string>(""); // 商品图片（从后端获取）
 const goodsName = ref<string>(""); // 商品名称（从后端获取）
+const currentSku = ref<SkuInfo>({} as SkuInfo); // 当前选中的规格名称
+const skuCode = ref<string>(""); // 当前选中的规格编码
+
 let durationInterval: any = null; // 用于清理定时器
 let sessionStartTime: number | null = null; // 当前段开始时间
 let totalDuration = 0; // 累计有效时长（毫秒）

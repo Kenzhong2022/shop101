@@ -6,6 +6,10 @@
  */
 
 import crypto from "node:crypto";
+import type { H3Event } from "h3";
+import { getCookie } from "h3";
+import { createError } from "h3";
+
 const SECRET = process.env.HMAC_SECRET_KEY || "abc123"; // 从环境变量获取密钥，默认值为 "abc123"
 interface ErrorResponse {
   code: number;
@@ -31,6 +35,46 @@ export function checkToken(token: string): number | ErrorResponse {
   return Number(uid); // 返回用户 id
 }
 
+export interface AuthUser {
+  userId: number;
+  token: string;
+  exp: number; // 过期时间戳
+}
+
+/**
+ * 从 H3 Event 中提取并验证用户（Server API 专用）
+ * @throws 401 createError（H3 标准错误）
+ */
+export async function requireAuth(event: H3Event): Promise<AuthUser> {
+  const token = getCookie(event, "auth-token");
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      message: "用户未登录",
+    });
+  }
+
+  try {
+    const userId = checkToken(token); // 调用现有函数
+
+    // 解析 exp 返回（可选，用于刷新 token 判断）
+    const [, exp] = token.split(".");
+
+    return {
+      userId: userId as number,
+      token,
+      exp: Number(exp),
+    };
+  } catch (err: any) {
+    // 统一转换为 H3 createError
+    throw createError({
+      statusCode: err.code || 401,
+      message: err.message || "登录状态无效",
+    });
+  }
+}
+
 /**
  * 生成HMAC签名
  * @param info 要签名的信息
@@ -54,7 +98,7 @@ export function generateSignature(info: string, secretKey: string): string {
 export function verifySignature(
   info: string, // 信息
   key: string, // 签名密钥
-  providedSignature: string // 提供的签名
+  providedSignature: string, // 提供的签名
 ): boolean {
   // 1. 生成预期签名
   const expectedSignature = generateSignature(info, key);
@@ -80,7 +124,7 @@ export function verifySignature(
 export function generateLoginToken(
   uid: number,
   exp: string,
-  secretKey: string
+  secretKey: string,
 ): string {
   const sig = generateSignature(`${uid}.${exp}`, secretKey);
   // 生成登录令牌: 用户ID.过期时间戳.签名

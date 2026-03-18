@@ -20,6 +20,7 @@
         v-for="item in banners"
         :key="item.id"
       >
+        <!-- todo:宽度和高度需要根据当前的页面宽度和高度来计算 -->
         <kk-cld-image
           :src="item.image"
           :alt="item.title"
@@ -27,6 +28,7 @@
           :height="450"
           gravity="auto"
           crop="fill"
+          :priority="true"
         />
       </el-carousel-item>
     </el-carousel>

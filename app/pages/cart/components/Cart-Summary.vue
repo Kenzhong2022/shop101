@@ -58,6 +58,7 @@ const props = defineProps({
   },
 });
 import { useCartStore } from "@/stores/cart";
+import type { OrderCreateResponse } from "~~/server/api/orders/create.post";
 const { $message } = useNuxtApp();
 const router = useRouter();
 const cartStore = useCartStore();
@@ -76,15 +77,25 @@ function handleSettle() {
     return;
   }
   // 创建订单
-  cartStore.createOrder(selectedItems.value).then((res) => {
-    if (res.code === 200) {
-      $message.success("订单创建成功");
-      // 跳转到结算页面
-      router.push({ name: "order" });
-    } else {
-      $message.error(res.msg || "订单创建失败");
-    }
-  });
+  cartStore
+    .createOrder(selectedItems.value)
+    .then((res: OrderCreateResponse) => {
+      if (res.code === 200) {
+        $message.success("订单创建成功");
+        // 利用订单号 为key 存储订单信息到sessionStorage
+        sessionStorage.setItem(
+          res.data.masterOrderNo,
+          JSON.stringify(res.data),
+        );
+        // 跳转到结算页面 并传递订单号
+        router.push({
+          name: "order",
+          query: {
+            orderNo: res.data.masterOrderNo,
+          },
+        });
+      }
+    });
 }
 </script>
 

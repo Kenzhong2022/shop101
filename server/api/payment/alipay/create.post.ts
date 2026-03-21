@@ -1,7 +1,8 @@
 // server/api/payment/alipay/create.post.ts
 import { defineEventHandler, readBody, sendError, createError } from "h3";
 import { AlipaySdk } from "alipay-sdk";
-
+import getNeon from "~~/server/utils/neon";
+const sql = getNeon();
 export default defineEventHandler(async (event) => {
   try {
     // 1️⃣ 获取前端传来的参数
@@ -23,7 +24,11 @@ export default defineEventHandler(async (event) => {
         statusMessage: "订单不存在",
       });
     }
-    if (order.amount !== parseFloat(amount)) {
+    console.log(
+      `✅ 验证订单: ${orderId}, 金额: ${order.amount},amount:${amount}`,
+    );
+
+    if (parseFloat(order.amount) !== parseFloat(amount)) {
       throw createError({
         statusCode: 400,
         statusMessage: "金额不匹配",
@@ -35,7 +40,7 @@ export default defineEventHandler(async (event) => {
         statusMessage: "订单状态异常",
       });
     }
-    console.log(`✅ 验证订单: ${orderId}, 金额: ${amount}`);
+    const goodsImage = "good_7_vb57qo";
 
     // 3️⃣ 初始化支付宝 SDK
     const alipaySdk = new AlipaySdk({
@@ -49,13 +54,22 @@ export default defineEventHandler(async (event) => {
       version: "1.0",
       keyType: "PKCS8", // 重要：Nuxt/Node环境通常需要指定 PKCS8
     });
-
     // 4️⃣ 构建业务参数
     const bizContent = {
       out_trade_no: orderId, // 商户订单号 (用你的订单ID)
-      product_code: "FAST_INSTANT_TRADE_PAY", // 产品码
-      subject: subject || "ChainPay订单", // 订单标题
       total_amount: parseFloat(amount).toFixed(2), // 金额
+      subject: subject || "ChainPay订单", // 订单标题
+      product_code: "FAST_INSTANT_TRADE_PAY", // 产品码
+      goods_detail: [
+        {
+          goods_id: "123456", // 商品ID
+          goods_name: "测试商品", // 商品名称
+          quantity: 1, // 商品数量
+          price: parseFloat(amount).toFixed(2), // 商品单价
+          show_url: `https://res.cloudinary.com/dlji1nmdj/image/upload/c_fill,w_280,h_280,g_auto/f_auto/q_80/v1763887762/${goodsImage}?_a=BBDAAEAE0`, // 商品展示URL
+        },
+      ],
+      // 商品详情
       timeout_express: "30m", // 超时时间
     };
     // 打印环境配置，检查是否正确
@@ -94,16 +108,19 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-// 订单查询函数（临时实现，后续需要替换为真实数据库操作）
+// 订单查询函数
 async function getOrderById(orderId: string) {
-  // TODO: 替换为真实的数据库查询
-  // return await db.orders.findUnique({ where: { id: orderId } });
-
-  // 模拟订单数据（仅用于测试）
-  if (orderId.startsWith("ORDER_")) {
+  const order =
+    await sql`select master_order_no, payment_status, order_status, total_amount from orders_master where master_order_no = ${orderId}`;
+  if (!order) {
+    return null;
+  }
+  const { master_order_no, payment_status, order_status, total_amount } =
+    order[0];
+  if (order_status === 0 && payment_status === 0) {
     return {
-      id: orderId,
-      amount: 0.01, // 测试金额
+      id: master_order_no,
+      amount: total_amount,
       status: "pending",
     };
   }

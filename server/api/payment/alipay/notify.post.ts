@@ -1,7 +1,8 @@
 // server/api/payment/alipay/notify.post.ts
 import { defineEventHandler, readBody, setResponseHeaders } from "h3";
 import { AlipaySdk } from "alipay-sdk";
-
+import getNeon from "~~/server/utils/neon";
+const sql = getNeon();
 export default defineEventHandler(async (event) => {
   // 1️⃣ 【新增】设置响应头，允许支付宝跨域访问 (解决部分 403/ CORS 问题)
   setResponseHeaders(event, {
@@ -61,23 +62,22 @@ export default defineEventHandler(async (event) => {
     // --- 以下保持你原有的优秀逻辑 ---
     const orderNo = body.out_trade_no; // 支付宝订单号
     const tradeStatus = body.trade_status; // 支付宝订单状态
-
+    console.log("orderNo:", orderNo, "tradeStatus:", tradeStatus);
     if (tradeStatus !== "TRADE_SUCCESS" && tradeStatus !== "TRADE_FINISHED") {
       console.log("⏳ 订单状态无需处理:", tradeStatus);
       return "success";
     }
 
     // 模拟数据库查询 (记得替换成真实代码)
-    const order = await getOrderFromDB(orderNo);
+    const order = await getOrderById(orderNo);
     if (!order) {
       console.error("❌ 订单不存在:", orderNo);
       return "fail";
     }
 
     // 5️⃣ 验证金额
-    const notifyAmount = parseFloat(body.total_amount);
-    if (order.amount !== notifyAmount) {
-      console.error("❌ 金额不匹配:", order.amount, "vs", notifyAmount);
+    if (parseFloat(order.amount) !== parseFloat(body.total_amount)) {
+      console.error("❌ 金额不匹配:", order.amount, "vs", body.total_amount);
       return "fail";
     }
 
@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await updateOrderStatus(orderNo, {
-      status: "paid",
+      status: tradeStatus,
       alipayTradeNo: body.trade_no,
       paidAt: new Date(),
       buyerId: body.buyer_id,
@@ -101,16 +101,72 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-// --- 模拟函数 (保持不变) ---
-async function getOrderFromDB(orderNo: string) {
-  // TODO: 替换为真实 DB 查询
-  // 为了测试，这里硬编码允许任何订单号为 "ORDER_..." 的通过
-  if (orderNo.startsWith("ORDER_")) {
-    return { orderNo, amount: 0.01, status: "pending" };
+// 订单查询函数
+async function getOrderById(orderId: string) {
+  const order =
+    await sql`select master_order_no, payment_status, order_status, total_amount from orders_master where master_order_no = ${orderId}`;
+  if (!order) {
+    return null;
+  }
+  const { master_order_no, payment_status, order_status, total_amount } =
+    order[0];
+  if (order_status === 0 && payment_status === 0) {
+    return {
+      id: master_order_no,
+      amount: total_amount,
+      status: "pending",
+    };
   }
   return null;
 }
 
-async function updateOrderStatus(orderNo: string, data: any) {
-  console.log("📝 [DB] 更新订单:", orderNo, data);
+// 订单更新函数
+async function updateOrderStatus(
+  orderId: string,
+  updateData: {
+    status: string;
+    alipayTradeNo: string;
+    paidAt: Date;
+    buyerId: string;
+  },
+) {
+  const { status } = updateData;
+  console.log("status:", status); // TRADE_SUCCESS, TRADE_FINISHED
+  const statusMap = {
+    TRADE_SUCCESS: {
+      payment_status: 1,
+      order_status: 1,
+      item_status: 2, // 1: 待支付 2: 已支付/待发货 3: 已发货 4: 已签收 5: 已取消
+    },
+  } as Record<
+    string,
+    { payment_status: number; order_status: number; item_status: number }
+  >;
+  await sql.transaction([
+    // 1. 更新主订单表
+    sql`
+    update orders_master
+    set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
+    where master_order_no = ${orderId}
+  `,
+
+    // 2. 更新子订单表 (order_shops)
+    sql`
+    update order_shops
+    set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
+    where master_order_no = ${orderId}
+  `,
+
+    // 3. 【新增】更新订单项表 (order_items)
+    // 逻辑：更新那些属于当前主订单下所有子订单的条目
+    sql`
+    update order_items
+    set item_status = ${statusMap[status].item_status}
+    where slave_order_no IN (
+      select slave_order_no from order_shops where master_order_no = ${orderId}
+    )
+  `,
+
+    // 备选方案：如果你的数据库支持 UPDATE ... FROM (PostgreSQL) 或 JOIN (MySQL)，也可以写成连接形式，但上面的 IN 子查询兼容性最好
+  ]);
 }

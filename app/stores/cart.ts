@@ -18,6 +18,7 @@ export interface GoodsItem {
   goods_id: number; // 商品ID（后端返回的是字符串）
   goods_name: string; // 商品名称
   shop_name: string; // 店铺名称
+  shop_id: number; // 店铺ID
   image: string; // 商品图片
   price: string; // 商品价格（后端返回的是字符串）
   quantity: number; // 商品数量

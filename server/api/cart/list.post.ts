@@ -12,6 +12,7 @@ export interface GoodsItem {
   goods_id: number; // 商品ID（后端返回的是字符串）
   goods_name: string; // 商品名称
   shop_name: string; // 店铺名称
+  shop_id: number; // 店铺ID
   image: string; // 商品图片
   price: string; // 商品价格（后端返回的是字符串）
   quantity: number; // 商品数量
@@ -59,15 +60,16 @@ export default defineEventHandler(async (event): Promise<CartListResponse> => {
     console.log("📋 接收到的请求参数:", body);
     const { page = 1, page_size = 10 } = body;
 
-    // 3. 查询购物车数据
+    // 3. 查询购物车数据 goods_id 转换为数字
     const result = await mySql`
         SELECT 
           c.id,
-          c.goods_id,
+          c.goods_id::BIGINT AS goods_id,
           g.goods_name,
           g.shop_name,
+          g.shop_id,
           g.image,
-          g.price,
+          s.price,
           c.quantity,
           s.stock,
           c.sku_code,
@@ -83,7 +85,6 @@ export default defineEventHandler(async (event): Promise<CartListResponse> => {
       `;
 
     console.log("✅ 查询结果:", result);
-
     // 6. 返回响应
     return {
       code: 200,

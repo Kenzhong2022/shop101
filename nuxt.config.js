@@ -50,8 +50,10 @@ export default defineNuxtConfig({
     },
     // 定时任务配置
     scheduledTasks: {
-      // 每5分钟执行一次
+      // 每分钟执行一次
       "*/1 * * * *": ["update-bayesian"],
+      // 每5分钟执行一次（取消过期订单）
+      "*/1 * * * *": ["cancel-expired-orders"],
     },
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
@@ -195,7 +197,7 @@ export default defineNuxtConfig({
     },
     server: {
       allowedHosts: [
-        "firstly-pipier-jensen.ngrok-free.dev", // 替换成你的实际 ngrok 域名
+        "firstly-pipier-jensen.ngrok-free.dev", // 替换成你的实际 ngrok 域名 要在新终端运行 ngrok http 3000生成
         // 如果需要允许多个域名，继续添加
         // 或者开发期间直接允许所有 host（谨慎）：
         // true

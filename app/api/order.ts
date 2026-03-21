@@ -2,8 +2,12 @@
 import { useNuxtApp } from "#app";
 import type {
   CreateOrderRequestDTO,
-  CreateOrderResponseVO,
+  OrderCreateResponse,
 } from "~~/server/api/orders/create.post";
+import type {
+  OrderListRequestDTO,
+  OrderListResponseDTO,
+} from "~~/server/api/orders/list.post";
 // 2. 获取axios实例
 const getAxios = () => {
   const nuxtApp = useNuxtApp();
@@ -15,8 +19,24 @@ const getAxios = () => {
  */
 export async function createOrderApi(
   params: CreateOrderRequestDTO,
-): Promise<CreateOrderResponseVO> {
+): Promise<OrderCreateResponse> {
   return getAxios()
-    .post<CreateOrderResponseVO>("/orders/create", params)
+    .post<OrderCreateResponse>("/orders/create", params)
+    .then((res) => res.data);
+}
+
+/**
+ * @description 获取订单列表
+ * @param params
+ * @param params.page 页码（可选）
+ * @param params.page_size 每页数量（可选）
+ * @param params.itemStatus 订单状态（可选）
+ * @returns 订单列表响应
+ */
+export async function getOrderListApi(
+  params: OrderListRequestDTO,
+): Promise<OrderListResponseDTO> {
+  return getAxios()
+    .post<OrderListResponseDTO>("/orders/list", params)
     .then((res) => res.data);
 }

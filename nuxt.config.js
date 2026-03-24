@@ -218,7 +218,7 @@ export default defineNuxtConfig({
       size: "small",
       zIndex: 3000,
     },
-    // cache: true, // 开启缓存
+    cache: true, // 开启缓存
   },
 
   // 组件自动导入（Nuxt 原生配置，无需与 unplugin 重复）

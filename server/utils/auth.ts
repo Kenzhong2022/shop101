@@ -42,8 +42,7 @@ export interface AuthUser {
 }
 
 /**
- * 从 H3 Event 中提取并验证用户（Server API 专用）
- * @throws 401 createError（H3 标准错误）
+ * @returns {AuthUser} 认证用户信息 包含用户ID、token和过期时间戳
  */
 export async function requireAuth(event: H3Event): Promise<AuthUser> {
   const token = getCookie(event, "auth-token");

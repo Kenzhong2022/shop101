@@ -19,23 +19,29 @@ export interface RouteMeta {
   // 其他原始元数据
   [key: string]: any;
 }
-export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
+
+/**
+ * @description 全局路由守卫中间件
+ * @param to 目标路由元数据
+ * @param from 源路由元数据
+ * @returns {void}
+ */
+export default defineNuxtRouteMiddleware((to: RouteMeta, from: RouteMeta) => {
   // 打印基本的路由跳转信息
-  // console.log("🔄 路由跳转:", {
-  //   from: from.path || "首次访问",
-  //   to: to.path || "未设置路径",
-  //   fullPath: to.fullPath || "未设置完整路径",
-  //   query: to.query || "未设置查询参数",
-  //   params: to.params || "未设置路径参数",
-  //   name: to.name || "未设置名称",
-  //   meta: to.meta || "未设置元数据",
-  // });
+  console.log("🔄 路由跳转:", {
+    from: from.path || "首次访问",
+    to: to.path || "未设置路径",
+    fullPath: to.fullPath || "未设置完整路径",
+    query: to.query || "未设置查询参数",
+    params: to.params || "未设置路径参数",
+    name: to.name || "未设置名称",
+    meta: to.meta || "未设置元数据",
+  });
 
   // 检查是否跳转到会员中心页面
-  const isUserCenter = to.path.includes("/user") || to.path.includes("/myUser");
-
-  if (isUserCenter) {
-    // console.log("🎯 准备进入会员中心");
+  const isAuthRequired = to.meta?.pageInfo?.requiresAuth;
+  if (isAuthRequired) {
+    // console.log("🔒 该页面需要认证");
     // console.log("📍 当前路径:", to.path);
     // console.log("🔍 路由信息:", {
     //   name: to.name,
@@ -64,7 +70,6 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
 
   // 示例：检查路由是否需要特殊处理
   if (to.meta?.pageInfo?.requiresAuth) {
-    // console.log("🔒 该页面需要认证");
     // 获取cookie中的token
     const token = useCookie("auth-token").value;
     // 保存to的路径，用于登录后跳转回原页面
@@ -73,14 +78,14 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from) => {
     // 1.检查token是否存在
     if (!token) {
       // console.log("token为空，重定向到登录页");
-      return navigateTo("/login/myLogin");
+      return navigateTo("/login/myLogin?redirect=" + redirectPath);
     }
     //  2.检查token是否过期
-    const isExpired = checkTokenExpiration();
+    const isExpired = tokenExpried();
     console.log("token是否过期：??", !isExpired);
     if (!isExpired) {
       // console.log("token过期，重定向到登录页");
-      return navigateTo("/login/myLogin");
+      return navigateTo("/login/myLogin?redirect=" + redirectPath);
     }
   }
 

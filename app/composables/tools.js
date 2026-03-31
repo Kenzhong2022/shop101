@@ -18,7 +18,7 @@ const formatTime = (time, options = {}) => {
     timeSeparator = ":",
     dateTimeSeparator = " ",
     defaultValue = `无效参数，格式化失败请检查，time: ${time}，options: ${JSON.stringify(
-      options
+      options,
     )}`,
   } = options;
 
@@ -106,7 +106,7 @@ const handleCopy = async (target) => {
     const { $message } = useNuxtApp();
     // 取纯文本
     const copyText =
-      typeof el === "string" ? el : el?.innerText ?? el?.textContent ?? "";
+      typeof el === "string" ? el : (el?.innerText ?? el?.textContent ?? "");
 
     if (!copyText) {
       $message.warning("暂无可复制内容");
@@ -126,18 +126,16 @@ const handleCopy = async (target) => {
  * @description 检查token是否过期 false 表示已过期 true 表示未过期
  * @returns {boolean}
  */
-const checkTokenExpiration = () => {
+function tokenExpried() {
   const token = useCookie("auth-token").value;
   if (!token) {
+    console.log("token不存在");
     return false;
   }
   // 解析token，检查过期时间 ：【uid.过期时间戳.个人信息】1.1764868961926.460fc711d0d5a5d18cbbf587f51270e47c0f0cd67d98f467bd331d3dabf60632
   const exp = Number(token.split(".")[1]);
-  console.log("过期时间：", formatTime(exp));
-  console.log("当前时间：", formatTime(Date.now()));
-
   return Date.now() < exp; // 当前时间 小于 过期时间 表示未过期 返回true， 否则返回false 表示已过期
-};
+}
 
 const useDebounce = (fn, delay = 500) => {
   let timer = null;
@@ -148,10 +146,4 @@ const useDebounce = (fn, delay = 500) => {
 };
 
 // 导出（支持直接导出函数，更方便调用）
-export {
-  extractTargetUrl,
-  handleCopy,
-  checkTokenExpiration,
-  formatTime,
-  useDebounce,
-};
+export { extractTargetUrl, handleCopy, tokenExpried, formatTime, useDebounce };

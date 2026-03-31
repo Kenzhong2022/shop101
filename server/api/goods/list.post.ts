@@ -1,34 +1,5 @@
-//====================建立数据结构=========================
-export interface ListRequest {
-  shop_name?: string; // 店铺名称
-  category_id?: number; // 分类ID
-  page: number; // 页码
-  page_size: number; // 每页数量
-}
-
-export interface Goods {
-  id: number; // 商品ID
-  goods_name: string; // 商品名称 (对应数据库字段)
-  image: string; // 商品图片
-  price: number; // 商品价格
-  stock: number; // 商品库存
-  sort: number; // 排序字段
-  is_show: number; // 是否显示 (1:显示, 0:隐藏)
-  sales?: number; // 商品销售量 (可选，可能是计算字段)
-  created_at: string; // 创建时间 (对应数据库字段)
-  updated_at: string; // 更新时间 (对应数据库字段)
-  shop_name: string; // 店铺名称
-  category_id?: number; // 分类ID
-  [key: string]: any; // 后续追加字段
-}
-export interface ListResponse {
-  code: number; // 状态码
-  msg: string; // 状态信息
-  data: {
-    total: number; // 总数量
-    list: Goods[]; // 商品列表
-  };
-}
+//====================导入类型=========================
+import type { ListRequest, ListResponse, Goods } from "~~/server/types/goods";
 
 //====================建立数据库连接=========================
 import getNeon from "~~/server/utils/neon";
@@ -46,7 +17,7 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
   body.category_id = body.category_id || 0;
   // 计算偏移量 向后偏移
   const offset = (body.page - 1) * body.page_size;
-  // 1. 真正的“条件片段”数组
+  // 1. 真正的"条件片段"数组
   try {
     const cond = [];
     const values = [];
@@ -98,3 +69,6 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
     } as ListResponse;
   }
 });
+
+// 重新导出类型，供其他服务器端文件使用
+export type { ListRequest, ListResponse, Goods } from "~~/server/types/goods";

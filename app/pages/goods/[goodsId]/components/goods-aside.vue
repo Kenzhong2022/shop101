@@ -147,7 +147,7 @@ import type {
   SpecValue,
   SpecDimension,
   SkuInfo,
-} from "~~/server/api/goods/[id]/specs.get.ts";
+} from "~~/server/types/goods-specs";
 
 const emit = defineEmits(["update:currentSku", "update:skuCode"]); // 2. 定义 emit
 // ==========================================

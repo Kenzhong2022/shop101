@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import type { OrderCreateResponse } from "~~/server/api/orders/create.post";
+import type { OrderCreateResponse } from "~~/server/types/order";
 type OrderData = OrderCreateResponse["data"];
 
 const props = defineProps({

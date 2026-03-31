@@ -34,7 +34,7 @@ import type {
   SpecValue,
   SpecDimension,
   SkuInfo,
-} from "~~/server/api/goods/[id]/specs.get.ts";
+} from "~~/server/types/goods-specs";
 import { useProductBehavior } from "~/composables/useProductBehavior";
 const { scrollY, scrollX } = useScroll(); // 监听滚动事件 得到y轴距离0 的滚动距离
 const goodsId = useRoute().params.goodsId as string | number;
@@ -90,7 +90,7 @@ const { track } = useProductBehavior(goodsId, {
 }) as { track: () => void };
 // 加载商品数据（只在首次执行）
 const loadGoodsData = async () => {
-  const { data } = await apiGoodsSpecs({ goods_id: Number(goodsId) });
+  const { data } = await apiGoodsSpecs(Number(goodsId));
   goodsName.value = data.goods_name;
   image.value = data.image;
   skuList.value = data.skus;

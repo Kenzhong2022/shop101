@@ -1,18 +1,7 @@
-// 删除历史记录商品接口
-
-// 请求参数 - 商品ID数组
-export interface apihistoryProductsDeleteRequest {
-  productIds: number[]; // 要删除的商品ID数组
-}
-
-// 响应数据
-export interface apihistoryProductsDeleteResponse {
-  code: number; // 状态码
-  msg: string; // 状态信息
-  data: {
-    deletedCount: number; // 删除的记录数量
-  };
-}
+import type {
+  apihistoryProductsDeleteRequest,
+  apihistoryProductsDeleteResponse,
+} from "~~/server/types/history-products";
 
 //====================基础依赖导入=========================
 import getNeon from "~~/server/utils/neon";
@@ -79,3 +68,9 @@ export default defineEventHandler(
     }
   },
 );
+
+// 重新导出类型，供其他服务器端文件使用
+export type {
+  apihistoryProductsDeleteRequest,
+  apihistoryProductsDeleteResponse,
+} from "~~/server/types/history-products";

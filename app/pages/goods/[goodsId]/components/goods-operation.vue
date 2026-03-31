@@ -33,7 +33,7 @@ import { Star, StarFilled } from "@element-plus/icons-vue";
 import type {
   CartAddRequest,
   CartAddResponse,
-} from "~~/server/api/cart/add.post";
+} from "~~/server/types/cart";
 const { $message } = useNuxtApp();
 const cartStore = useCartStore();
 const props = defineProps({

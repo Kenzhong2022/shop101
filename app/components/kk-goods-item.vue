@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Goods } from "~~/server/api/goods/list.post";
+import type { Goods } from "~~/server/types/goods";
 
 const props = defineProps({
   title: {

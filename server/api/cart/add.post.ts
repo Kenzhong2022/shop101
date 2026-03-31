@@ -1,26 +1,9 @@
 // 添加到购物车接口
-
-// 请求参数
-export interface CartAddRequest {
-  goods_id: number; // 商品ID
-  quantity?: number; // 数量（可选，默认1）
-  sku_code: string; // 规格 RED-S-COT
-  sku_value: string; // 规格值
-}
-
-// 响应数据
-export interface CartAddResponseData {
-  cart_id: number; // 购物车项ID
-  total_quantity: number; // 购物车总数量
-  added_quantity: number; // 添加的数量
-}
-
-// 响应结构
-export interface CartAddResponse {
-  code: number; // 状态码
-  msg: string; // 状态信息
-  data: CartAddResponseData;
-}
+import type {
+  CartAddRequest,
+  CartAddResponse,
+  CartAddResponseData,
+} from "~~/server/types/cart";
 
 //====================基础依赖导入=========================
 import getNeon from "~~/server/utils/neon";
@@ -129,3 +112,10 @@ export default defineEventHandler(async (event): Promise<CartAddResponse> => {
     });
   }
 });
+
+// 重新导出类型，供其他服务器端文件使用
+export type {
+  CartAddRequest,
+  CartAddResponse,
+  CartAddResponseData,
+} from "~~/server/types/cart";

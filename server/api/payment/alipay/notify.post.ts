@@ -59,7 +59,6 @@ export default defineEventHandler(async (event) => {
     }
     console.log("✅ 签名验证通过");
 
-    // --- 以下保持你原有的优秀逻辑 ---
     const orderNo = body.out_trade_no; // 支付宝订单号
     const tradeStatus = body.trade_status; // 支付宝订单状态
     console.log("orderNo:", orderNo, "tradeStatus:", tradeStatus);
@@ -67,9 +66,15 @@ export default defineEventHandler(async (event) => {
       console.log("⏳ 订单状态无需处理:", tradeStatus);
       return "success";
     }
+    let order = null;
+    if (orderNo.length === 18) {
+      // 子订单号
+      order = await getOrderBySlaveOrderId(orderNo);
+    } else {
+      // 主订单号
+      order = await getOrderByMasterOrderId(orderNo);
+    }
 
-    // 模拟数据库查询 (记得替换成真实代码)
-    const order = await getOrderById(orderNo);
     if (!order) {
       console.error("❌ 订单不存在:", orderNo);
       return "fail";
@@ -86,7 +91,7 @@ export default defineEventHandler(async (event) => {
       return "success";
     }
 
-    await updateOrderStatus(orderNo, {
+    await updateOrderStatusByMasterOrderId(orderNo, {
       status: tradeStatus,
       alipayTradeNo: body.trade_no,
       paidAt: new Date(),
@@ -101,8 +106,12 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-// 订单查询函数
-async function getOrderById(orderId: string) {
+/**
+ * 根据订单号查询订单
+ * @param orderId 订单号
+ * @returns 订单信息
+ */
+async function getOrderByMasterOrderId(orderId: string) {
   const order =
     await sql`select master_order_no, payment_status, order_status, total_amount from orders_master where master_order_no = ${orderId}`;
   if (!order) {
@@ -120,8 +129,30 @@ async function getOrderById(orderId: string) {
   return null;
 }
 
-// 订单更新函数
-async function updateOrderStatus(
+async function getOrderBySlaveOrderId(orderId: string) {
+  const order =
+    await sql`select slave_order_no, payment_status, order_status, total_amount from order_shops where slave_order_no = ${orderId}`;
+  if (!order) {
+    return null;
+  }
+  const { slave_order_no, payment_status, order_status, total_amount } =
+    order[0];
+  if (order_status === 0 && payment_status === 0) {
+    return {
+      id: slave_order_no,
+      amount: total_amount,
+      status: "pending",
+    };
+  }
+  return null;
+}
+
+/**
+ * 更新订单状态
+ * @param orderId 订单号
+ * @param updateData 更新数据
+ */
+async function updateOrderStatusByMasterOrderId(
   orderId: string,
   updateData: {
     status: string;
@@ -142,23 +173,26 @@ async function updateOrderStatus(
     string,
     { payment_status: number; order_status: number; item_status: number }
   >;
-  await sql.transaction([
-    // 1. 更新主订单表
-    sql`
-    update orders_master
-    set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
-    where master_order_no = ${orderId}
-  `,
-
+  const updateQueries = [];
+  if (orderId.length === 18) {
+    updateQueries.push(
+      sql`
+      update orders_master
+      set order_status = ${statusMap[status].order_status}
+      where master_order_no = ${orderId}
+    `,
+    );
+  }
+  updateQueries.push(
     // 2. 更新子订单表 (order_shops)
     sql`
     update order_shops
     set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
     where master_order_no = ${orderId}
   `,
-
-    // 3. 【新增】更新订单项表 (order_items)
-    // 逻辑：更新那些属于当前主订单下所有子订单的条目
+  );
+  updateQueries.push(
+    // 3. 更新子订单的所有商品项 (order_items)
     sql`
     update order_items
     set item_status = ${statusMap[status].item_status}
@@ -166,7 +200,7 @@ async function updateOrderStatus(
       select slave_order_no from order_shops where master_order_no = ${orderId}
     )
   `,
-
-    // 备选方案：如果你的数据库支持 UPDATE ... FROM (PostgreSQL) 或 JOIN (MySQL)，也可以写成连接形式，但上面的 IN 子查询兼容性最好
-  ]);
+  );
+  console.log("updateQueries:", updateQueries);
+  await sql.transaction(updateQueries);
 }

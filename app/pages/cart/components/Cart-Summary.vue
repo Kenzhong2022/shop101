@@ -58,7 +58,7 @@ const props = defineProps({
   },
 });
 import { useCartStore } from "@/stores/cart";
-import type { OrderCreateResponse } from "~~/server/api/orders/create.post";
+import type { OrderCreateResponse } from "~~/server/types/order";
 const { $message } = useNuxtApp();
 const router = useRouter();
 const cartStore = useCartStore();

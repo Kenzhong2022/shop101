@@ -22,6 +22,7 @@
  */
 
 import axios, { AxiosError } from "axios";
+import { useLoadingStore } from "@/stores/loading";
 import type { ApiErrorData } from "~/types/api-error";
 import { ERROR_MAP } from "~/types/api-error";
 
@@ -68,11 +69,15 @@ export default defineNuxtPlugin((nuxtApp) => {
 
       // 添加请求时间戳
       config.headers["X-Request-Time"] = new Date().toISOString();
-
+      const loadingStore = useLoadingStore();
+      loadingStore.startLoading();
       return config;
     },
     (error) => {
       console.error("[Axios] 请求拦截器错误:", error);
+      // 请求发送失败（如网络错误）也要停止 loading
+      const loadingStore = useLoadingStore();
+      loadingStore.stopLoading();
       return Promise.reject(error);
     },
   );
@@ -98,7 +103,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
         return Promise.reject(new Error(`业务处理失败: ${message}`));
       }
-
+      const loadingStore = useLoadingStore();
+      loadingStore.stopLoading();
       return response;
     },
     // 错误处理：统一封装
@@ -144,7 +150,8 @@ export default defineNuxtPlugin((nuxtApp) => {
         console.error("[Axios] 配置错误:", error.message);
         showError("请求配置错误");
       }
-
+      const loadingStore = useLoadingStore();
+      loadingStore.stopLoading();
       return Promise.reject(error);
     },
   );

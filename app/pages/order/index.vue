@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import OrderAside from "./order-aside.vue";
 import OrderActions from "./order-actions.vue";
-import type { OrderCreateResponse } from "~~/server/api/orders/create.post";
+import type { OrderCreateResponse } from "~~/server/types/order";
 type OrderData = OrderCreateResponse["data"];
 
 definePageMeta({ name: "order" });

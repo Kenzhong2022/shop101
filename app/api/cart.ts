@@ -1,10 +1,7 @@
 // 购物车相关接口
 // 导入数据结构 - TODO: 根据实际后端接口定义导入具体类型
 // import type { CartListRequest, CartListResponse } from "~~/server/api/carts/list.post";
-import type {
-  CartAddRequest,
-  CartAddResponse,
-} from "~~/server/api/cart/add.post";
+import type { CartAddRequest, CartAddResponse } from "~~/server/types/cart";
 // import type { CartUpdateRequest, CartUpdateResponse } from "~~/server/api/carts/update.post";
 // import type { CartDeleteRequest, CartDeleteResponse } from "~~/server/api/carts/delete.post";
 

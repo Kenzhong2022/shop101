@@ -6,7 +6,7 @@
       :label="tab.label"
       :name="tab.value"
     >
-      <order-table :orderMap="orderMap" />
+      <order-table :orderMap="orderMap" :isLoading="props.isLoading" />
       <!-- 分页组件（如果需要） -->
     </el-tab-pane>
   </el-tabs>
@@ -19,27 +19,19 @@ import { getOrderListApi } from "~/api/order";
 import type {
   OrderListResponseDTO,
   OrderItem,
-} from "~~/server/api/orders/list.post";
+} from "~~/server/types/order";
 import OrderTable from "./components/order-table.vue";
-// 订单状态枚举（与后端一致）OrderStatus.PENDING_PAYMENT 打印出来为 0
-enum OrderStatus {
-  ALL = 5, // 所有状态
-  PENDING_PAYMENT = 0, // 待支付
-  PENDING_SHIPMENT = 1, // 待发货
-  PENDING_RECEIPT = 2, // 待收货
-  COMPLETED = 3, // 已完成
-  CANCELLED = 4, // 已取消
-}
+import {
+  ORDER_STATUS_LABEL_MAP,
+  OrderStatus,
+} from "~~/server/types/order";
 
-// 状态对应的中文标签
-const ORDER_STATUS_LABEL_MAP: Record<OrderStatus, string> = {
-  [OrderStatus.ALL]: "所有状态",
-  [OrderStatus.PENDING_PAYMENT]: "待支付",
-  [OrderStatus.PENDING_SHIPMENT]: "待发货",
-  [OrderStatus.PENDING_RECEIPT]: "待收货",
-  [OrderStatus.COMPLETED]: "已完成",
-  [OrderStatus.CANCELLED]: "已取消",
-};
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    required: true,
+  },
+});
 
 // 构建 tabs 数据，使用枚举值作为 name（转换为字符串，因为 v-model 绑定的一般是 string/number）
 const tabs = Object.entries(ORDER_STATUS_LABEL_MAP).map(([value, label]) => ({
@@ -51,9 +43,9 @@ const tabs = Object.entries(ORDER_STATUS_LABEL_MAP).map(([value, label]) => ({
 const activeName = ref<OrderStatus>(OrderStatus.ALL);
 
 /**
- * 订单映射对象，key 为订单号，value 为订单项数组 可以通过orderMap[order_shop_id] 来获取对应订单号的所有订单项
+ * 订单映射对象，key 为订单号，value 为订单项数组 可以通过orderMap[order_no] 来获取对应订单号的所有订单项
  */
-const orderMap = ref<Record<number, OrderItem[]>>({});
+const orderMap = ref<Record<string, OrderItem[]>>({});
 
 // 根据状态值获取中文标签（用于表格内显示）
 function getStatusLabel(status: number): string {
@@ -90,6 +82,7 @@ async function fetchOrderList(status: OrderStatus) {
     );
   } catch (error) {
     console.error("获取订单列表失败:", error);
+  } finally {
   }
 }
 

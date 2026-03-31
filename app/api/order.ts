@@ -3,11 +3,10 @@ import { useNuxtApp } from "#app";
 import type {
   CreateOrderRequestDTO,
   OrderCreateResponse,
-} from "~~/server/api/orders/create.post";
-import type {
   OrderListRequestDTO,
   OrderListResponseDTO,
-} from "~~/server/api/orders/list.post";
+} from "~~/server/types/order";
+
 // 2. 获取axios实例
 const getAxios = () => {
   const nuxtApp = useNuxtApp();

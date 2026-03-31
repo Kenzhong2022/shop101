@@ -22,7 +22,11 @@
     </div>
     <div>
       <!-- 浏览历史列表 -->
-      <div v-for="date in Object.keys(data || {})" :key="date">
+      <div
+        v-loading="isLoading"
+        v-for="date in Object.keys(data || {})"
+        :key="date"
+      >
         <div class="text-20px font-bold">
           <span> {{ date }} </span>
           <span>
@@ -60,7 +64,7 @@
 
 <script setup lang="ts">
 import dayjs from "dayjs";
-import type { Goods } from "~~/server/api/goods/list.post";
+import type { Goods } from "~~/server/types/goods";
 import { apihistoryProductsDelete } from "~/api/history/products";
 import KKGoodsItem from "~/components/kk-goods-item.vue";
 // 引入消息提示组件
@@ -70,6 +74,10 @@ const props = defineProps({
   data: {
     type: Object as PropType<Record<string, Goods[]>>,
     default: () => {},
+  },
+  isLoading: {
+    type: Boolean,
+    required: true,
   },
 });
 

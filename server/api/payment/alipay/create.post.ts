@@ -5,7 +5,7 @@ import getNeon from "~~/server/utils/neon";
 const sql = getNeon();
 export default defineEventHandler(async (event) => {
   try {
-    // 1️⃣ 获取前端传来的参数
+    // 主订单号/子订单号、金额、订单标题
     const body = await readBody(event);
     const { orderId, amount, subject } = body;
 
@@ -15,9 +15,15 @@ export default defineEventHandler(async (event) => {
         statusMessage: "订单ID和金额不能为空",
       });
     }
-
-    // 2️⃣ 查询数据库验证订单
-    const order = await getOrderById(orderId);
+    let order = null;
+    // 2️⃣ 查询数据库验证订单是否存在
+    if (orderId.length === 18) {
+      // 子订单号
+      order = await getOrderBySlaveOrderId(orderId);
+    } else {
+      // 主订单号
+      order = await getOrderByMasterOrderId(orderId);
+    }
     if (!order) {
       throw createError({
         statusCode: 404,
@@ -72,9 +78,6 @@ export default defineEventHandler(async (event) => {
       // 商品详情
       timeout_express: "30m", // 超时时间
     };
-    // 打印环境配置，检查是否正确
-    console.log("ALIPAY_RETURN_URL:", process.env.ALIPAY_RETURN_URL);
-    console.log("ALIPAY_NOTIFY_URL:", process.env.ALIPAY_NOTIFY_URL);
     // 5️⃣ 生成支付表单 HTML
     // pageExecute 会返回一段 HTML 代码，前端执行后会自动跳转支付宝
     const formHtml = alipaySdk.pageExecute(
@@ -86,10 +89,6 @@ export default defineEventHandler(async (event) => {
         notifyUrl: process.env.ALIPAY_NOTIFY_URL,
       },
     );
-
-    // 6️⃣ 返回给前端
-    // 方案 A: 直接返回 HTML 字符串，前端用 iframe 或新窗口打开
-    // 方案 B: 返回 URL (如果是手机支付可能需要不同处理)
 
     return {
       success: true,
@@ -108,8 +107,12 @@ export default defineEventHandler(async (event) => {
   }
 });
 
-// 订单查询函数
-async function getOrderById(orderId: string) {
+/**
+ * 根据主订单号查询订单
+ * @param orderId 主订单号
+ * @returns 订单信息
+ */
+async function getOrderByMasterOrderId(orderId: string) {
   const order =
     await sql`select master_order_no, payment_status, order_status, total_amount from orders_master where master_order_no = ${orderId}`;
   if (!order) {
@@ -120,6 +123,29 @@ async function getOrderById(orderId: string) {
   if (order_status === 0 && payment_status === 0) {
     return {
       id: master_order_no,
+      amount: total_amount,
+      status: "pending",
+    };
+  }
+  return null;
+}
+/**
+ * 根据子订单号查询订单
+ * @param orderId 子订单号
+ * @returns 订单信息
+ */
+async function getOrderBySlaveOrderId(orderId: string) {
+  const order =
+    await sql`select slave_order_no, payment_status, order_status, total_amount from order_shops where slave_order_no = ${orderId}`;
+  console.log("子订单号查询", order);
+  if (!order) {
+    return null;
+  }
+  const { slave_order_no, payment_status, order_status, total_amount } =
+    order[0];
+  if (order_status === 0 && payment_status === 0) {
+    return {
+      id: slave_order_no,
       amount: total_amount,
       status: "pending",
     };

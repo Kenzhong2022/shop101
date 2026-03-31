@@ -2,11 +2,9 @@
 import type {
   apihistoryProductsListRequest,
   apihistoryProductsListResponse,
-} from "~~/server/api/history/products/list.post";
-import type {
   apihistoryProductsDeleteRequest,
   apihistoryProductsDeleteResponse,
-} from "~~/server/api/history/products/delete.post";
+} from "~~/server/types/history-products";
 
 // 1. 导入请求工具
 import { useNuxtApp } from "#app";
@@ -30,10 +28,11 @@ export async function apihistoryProductsList(
     .then((res) => res.data);
 }
 
+// 4. 定义收藏历史商品删除接口函数
 /**
- * 删除历史记录商品接口
- * @param params 删除请求参数（商品ID数组）
- * @returns 删除操作响应数据
+ * 收藏历史商品删除接口
+ * @param
+ * @returns 收藏历史商品删除响应数据
  */
 export async function apihistoryProductsDelete(
   params: apihistoryProductsDeleteRequest,

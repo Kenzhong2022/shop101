@@ -36,7 +36,7 @@
         </el-menu>
       </div>
       <div class="flex-1">
-        <el-card class="h-full relative">
+        <el-card class="h-full relative mr-[20px]">
           <!-- 动态组件切换 -->
           <transition name="fade-slide" mode="out-in">
             <component
@@ -44,29 +44,28 @@
               v-if="currentComponent"
               :data="data"
               @refresh="refreshCurrentComponent"
+              :isLoading="loadingStore.isLoading"
             />
           </transition>
         </el-card>
       </div>
-      <h2 v-if="currentComponent === MyUserInfo">
-        还有
-        <el-countdown
-          :value="expTime"
-          format="HH:mm:ss"
-          :auto-start="true"
-          @finish="handleTokenExpire"
-        />
-        token就会过期
-      </h2>
     </div>
   </client-only>
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: "个人中心",
+  pageInfo: {
+    requiresAuth: true,
+    requiresAdmin: false,
+  },
+});
 import { apihistoryProductsList } from "~/api/history/products";
 import { useUser } from "~/composables/useUser";
 import type { MenuItem } from "~/components/kk-menu.vue";
-import type { Goods } from "~~/server/api/goods/list.post";
+import type { Goods } from "~~/server/types/goods";
+import { useLoadingStore } from "@/stores/loading";
 // ========== 使用 markRaw 包裹异步组件，防止被代理 ==========
 const MyUserInfo = markRaw(
   defineAsyncComponent(() => import("./myUserInfo.vue")),
@@ -81,6 +80,9 @@ const MySetting = markRaw(
 const MyHistory = markRaw(
   defineAsyncComponent(() => import("./myHistory.vue")),
 );
+const MyAddress = markRaw(
+  defineAsyncComponent(() => import("./myAddress.vue")),
+);
 // ========== 使用 shallowRef 存储当前组件 ==========
 const currentComponent = shallowRef<Component>(MyUserInfo);
 // 当前选中的菜单
@@ -92,6 +94,7 @@ const componentMap: Record<string, Component> = {
   "/user/myCollect": MyCollect,
   "/user/mySetting": MySetting,
   "/user/myHistory": MyHistory,
+  "/user/myAddress": MyAddress,
 };
 const route = useRoute();
 const router = useRouter();
@@ -108,43 +111,36 @@ const expTime = ref<number>(0);
 
 // 页面加载完成后的操作
 onMounted(() => {
+  console.log("页面加载完成后的操作", route.query.tab);
   expTime.value = userState.value.expireTime;
-  updateComponentByTab((route.query.tab as string) || "myUserInfo"); // 默认个人信息
+  updateComponentByTab((route.query.tab as string) || "/user/myUserInfo"); // 默认个人信息
 });
 // ========== 核心：页面激活时重置状态 ==========
 onActivated(() => {
-  updateComponentByTab((route.query.tab as string) || "myUserInfo"); // 默认个人信息
-  // 检查 token
-  const flag = checkTokenExpiration();
-  if (!flag) {
-    handleTokenExpire();
-    return;
-  }
+  console.log("页面激活时重置状态", route.query.tab);
+  updateComponentByTab((route.query.tab as string) || "/user/myUserInfo"); // 默认个人信息
 });
 // 根据 tab 参数获取对应的组件和刷新函数
-function updateComponentByTab(tab: string) {
-  const config = componentConfigMap[`/user/${tab}`]; // 注意 key 格式要与配置一致
+async function updateComponentByTab(tab: string) {
+  const config = componentConfigMap[`${tab}`]; // 注意 key 格式要与配置一致
+  currentMenu.value = `${tab}`;
   if (config) {
     currentComponent.value = config.component;
     currentRefreshFn.value = config.fetchData;
-    config.fetchData(); // 加载数据
-    currentMenu.value = `/user/${tab}`;
+    try {
+      // isLoading.value = true;
+      await config.fetchData();
+    } catch (error) {
+      console.error("刷新数据失败:", error);
+    } finally {
+      // isLoading.value = false;
+    }
+    currentMenu.value = `${tab}`;
   }
 }
 
-// 处理token过期
-function handleTokenExpire() {
-  console.log("token已过期");
-  // 清除过期的token
-  // localStorage.removeItem("token");
-  // 跳转到登录页面
-  navigateTo("/login/myLogin");
-}
 const fileInput = ref<HTMLInputElement>();
-const handleSelect = (url: string) => {
-  console.log("点击了菜单:", url);
-  // 跳转到登录页面
-};
+
 interface CloudinaryUpload {
   file: Ref<File | null>;
   previewUrl: Ref<string>;
@@ -243,6 +239,14 @@ const componentConfigMap: Record<string, ComponentConfig> = {
     title: "账号设置",
     icon: "icon-setting-copy",
   },
+  "/user/myAddress": {
+    component: MyAddress,
+    fetchData: async () => {
+      /* 地址管理页可能不需要 */
+    },
+    title: "地址管理",
+    icon: "icon-dizhi",
+  },
 };
 // 自动生成菜单项的工厂函数
 function createMenuItem(url: keyof typeof componentConfigMap): MenuItem {
@@ -256,12 +260,24 @@ function createMenuItem(url: keyof typeof componentConfigMap): MenuItem {
     icon: config.icon, // 你的图标映射
     // 点击菜单时，切换组件并刷新数据
     onClick: async (item: MenuItem) => {
+      // 设置路由参数为当前点击的菜单
+      router.push({ query: { tab: item.url } });
+      // 切换当前组件
       currentComponent.value = config.component;
       currentRefreshFn.value = config.fetchData;
-      await config.fetchData();
+      // isLoading.value = true;
+      try {
+        await config.fetchData();
+      } catch (error) {
+        console.error("刷新数据失败:", error);
+      } finally {
+        // isLoading.value = false;
+      }
     },
   };
 }
+
+const loadingStore = useLoadingStore();
 
 // 然后菜单定义变得超简单
 const menuItems: MenuItem[] = [
@@ -269,6 +285,7 @@ const menuItems: MenuItem[] = [
   createMenuItem("/user/myOrder"),
   createMenuItem("/user/myCollect"),
   createMenuItem("/user/myHistory"),
+  createMenuItem("/user/myAddress"),
   createMenuItem("/user/mySetting"),
   // ...
 ];
@@ -279,7 +296,14 @@ const currentRefreshFn = ref<(() => Promise<void>) | null>(null);
 // 统一的刷新入口
 async function refreshCurrentComponent() {
   if (currentRefreshFn.value) {
-    await currentRefreshFn.value();
+    try {
+      // isLoading.value = true;
+      await currentRefreshFn.value();
+    } catch (error) {
+      console.error("刷新数据失败:", error);
+    } finally {
+      // isLoading.value = false;
+    }
   }
 }
 </script>
@@ -304,6 +328,10 @@ async function refreshCurrentComponent() {
     border-radius: 12px;
     box-sizing: border-box;
   }
+}
+
+:deep(.el-tabs__item.is-active) {
+  font-weight: 700;
 }
 
 .my-avatar-hover::after {

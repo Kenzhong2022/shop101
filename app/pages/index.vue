@@ -62,6 +62,8 @@
 </template>
 
 <script setup lang="ts">
+import { useLoadingStore } from "@/stores/loading";
+const loadingStore = useLoadingStore();
 // 引入消息提示组件
 const { $message } = useNuxtApp();
 
@@ -106,7 +108,7 @@ const banners: Banner[] = [
 ];
 
 import { useProductBehavior } from "~/composables/useProductBehavior";
-import type { Goods } from "~~/server/api/goods/list.post";
+import type { Goods } from "~~/server/types/goods";
 const goodsList = ref<Goods[]>();
 
 const loadingGoods = ref<boolean>(true);

@@ -3,18 +3,18 @@ import { defineEventHandler, readBody, createError } from "h3";
 import dayjs from "dayjs";
 import getNeon from "~~/server/utils/neon";
 import { requireAuth } from "~~/server/utils/auth";
+import type {
+  CreateOrderRequestDTO,
+  OrderItemData,
+  SubOrderData,
+  OrderCreateResponse,
+  SubOrderVO,
+} from "~~/server/types/order";
 
 // 初始化数据库连接
 const sql = getNeon();
 
 // ==================== 1. 类型定义 ====================
-
-// 地址信息
-export interface AddressDTO {
-  name: string;
-  phone: string;
-  detail: string;
-}
 
 /** 购物车项（来自前端） */
 export interface CartItemRequest {
@@ -31,55 +31,6 @@ export interface CartItemRequest {
   sku_value: string;
 }
 
-/** 创建订单请求体 */
-export interface CreateOrderRequestDTO {
-  items: CartItemRequest[];
-  address?: AddressDTO;
-  remark?: string;
-}
-
-/** 内部订单项（商品维度） */
-export interface OrderItemData {
-  id?: number; // 自增主键 (BIGSERIAL PRIMARY KEY)
-  order_shop_id?: number; // 关联子订单ID (BIGINT NOT NULL)
-  goods_id: number; // 商品ID (BIGINT NOT NULL)
-  goods_name: string; // 商品名称 (VARCHAR(255) NOT NULL)
-  quantity: number; // 商品数量 (INTEGER NOT NULL DEFAULT 1)
-  price: number; // 商品单价 (NUMERIC(10, 2) NOT NULL)
-  total: number; // 商品总价 (NUMERIC(10, 2) NOT NULL)
-  sku_code: string; // 商品规格编码 (VARCHAR(64))
-  sku_value: string; // 商品规格值 (VARCHAR(500))
-  image: string; // 商品图片 (VARCHAR(500))
-  shop_name: string; // 店铺名称 (VARCHAR(100))
-  shop_id: number; // 店铺ID (BIGINT NOT NULL)
-  item_status?: number; // 商品项状态 (SMALLINT DEFAULT 0)
-  created_at?: Date; // 创建时间 (TIMESTAMP WITH TIME ZONE DEFAULT now())
-  updated_at?: Date; // 更新时间 (TIMESTAMP WITH TIME ZONE DEFAULT now())
-  deleted_at?: Date; // 软删除时间 (TIMESTAMP WITH TIME ZONE)
-  slave_order_no: string; // 子订单100))
-}
-
-/** 内部子订单（店铺维度） */
-export interface SubOrderData {
-  slave_order_no: string;
-  master_order_no: string;
-  shop_id: number;
-  shop_name: string;
-  total_amount: number;
-  payment_amount: number;
-  discount_amount: number;
-  order_status: number; // 0-待付款
-  payment_status: number; // 0-待付款
-  shipping_status: number; // 0-未发货
-  consignee: string;
-  phone: string;
-  address: string;
-  remark: string;
-  items: OrderItemData[];
-  created_at: Date;
-  expire_at: Date;
-}
-
 /** 返回给前端的商品项 VO */
 export interface OrderItemVO {
   goodsId: number;
@@ -90,31 +41,6 @@ export interface OrderItemVO {
   skuInfo: string;
   image: string;
   shopName: string;
-}
-
-/** 返回给前端的子订单 VO */
-export interface SubOrderVO {
-  orderNo: string; // slave_order_no
-  shopId: number;
-  shopName: string;
-  amountDisplay: string;
-  itemCount: number;
-  statusLabel: string;
-  paymentStatusLabel: string;
-  items: OrderItemVO[];
-}
-
-/** 创建订单响应 VO */
-export interface OrderCreateResponse {
-  code: number;
-  msg: string;
-  data: {
-    masterOrderNo: string;
-    subOrders: SubOrderVO[];
-    totalAmountDisplay: string;
-    createdAt: string;
-    expireTime: string;
-  };
 }
 
 // ==================== 2. 辅助函数 ====================

@@ -1,24 +1,8 @@
-import { Goods } from "../../goods/list.post";
-// 请求参数 分页 时间区间 key值
-export interface apihistoryProductsListRequest {
-  searchKey?: string; // 搜索关键词（可选）
-  timeStart?: number; // 时间开始（可选）
-  timeEnd?: number; // 时间结束（可选）
-  page?: number; // 页码（可选）
-  page_size?: number; // 每页数量（可选）
-}
-
-export interface apihistoryProductsListResponseData {
-  total: number; // 总记录数
-  GoodsItems: Goods[]; // 商品列表
-}
-
-// 响应数据 分页 时间区间 key值
-export interface apihistoryProductsListResponse {
-  code: number; // 状态码
-  msg: string; // 状态信息
-  data: apihistoryProductsListResponseData;
-}
+import type {
+  apihistoryProductsListRequest,
+  apihistoryProductsListResponse,
+} from "~~/server/types/history-products";
+import type { Goods } from "~~/server/types/goods";
 
 //====================基础依赖导入=========================
 import getNeon from "~~/server/utils/neon";
@@ -78,3 +62,10 @@ ORDER BY
     };
   },
 );
+
+// 重新导出类型，供其他服务器端文件使用
+export type {
+  apihistoryProductsListRequest,
+  apihistoryProductsListResponse,
+} from "~~/server/types/history-products";
+export type { Goods } from "~~/server/types/goods";

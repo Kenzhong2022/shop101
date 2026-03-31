@@ -1,50 +1,21 @@
-/** 订单列表请求参数 */
-export interface OrderListRequestDTO {
-  order_shop_id?: number;
-  goods_name?: string;
-  sku_code?: string;
-  sku_value?: string;
-  shop_name?: string;
-  item_status?: number;
-  created_at?: string | Date; // 前端传过来通常是字符串
-  updated_at?: string | Date;
-  page?: number;
-  pageSize?: number;
-}
-
-/** 内部订单项（商品维度） */
-export interface OrderItem {
-  order_shop_id: number;
-  slave_order_no: string;
-  goods_id: number;
-  goods_name: string;
-  image: string;
-  price: number;
-  quantity: number;
-  sku_code: string;
-  sku_value: string;
-  shop_name: string;
-  item_status: number;
-  created_at: string | Date;
-  updated_at: string | Date;
-}
-
-export interface OrderListResponseDTO {
-  code: number;
-  msg: string;
-  data: {
-    OrderList: OrderItem[]; // 建议定义具体的 Item 类型
-    total?: number;
-  };
-}
-
+/**
+ * 订单列表接口
+ * @description 获取用户的订单列表，支持分页和状态筛选
+ */
 import { defineEventHandler, readBody, createError } from "h3";
 import getNeon from "~~/server/utils/neon";
 import { requireAuth } from "~~/server/utils/auth";
+import type {
+  OrderListRequestDTO,
+  OrderListResponseDTO,
+  OrderItem,
+} from "~~/server/types/order";
+import { OrderStatus, ORDER_STATUS_LABEL_MAP } from "~~/server/types/order";
 
 // 初始化数据库连接
 const sql = getNeon();
 
+/** 订单列表接口 */
 export default defineEventHandler(
   async (event): Promise<OrderListResponseDTO> => {
     const { userId } = await requireAuth(event);
@@ -69,7 +40,7 @@ export default defineEventHandler(
 
     if (order_shop_id != null)
       conditions.push(sql`order_shop_id = ${order_shop_id}`);
-    if (item_status != null && item_status !== 5) {
+    if (item_status != null && item_status !== 0) {
       conditions.push(sql`item_status = ${item_status}`);
     }
     if (goods_name)
@@ -97,27 +68,33 @@ export default defineEventHandler(
     const offset = (page - 1) * pageSize;
 
     try {
-      // 3. 查询数据
+      // 3. 查询数据 (联表查询)
       const orderList = (await sql`
-        SELECT 
-          order_shop_id,
-          slave_order_no,
-          goods_id,
-          goods_name,
-          image,
-          price,
-          quantity,
-          sku_code,
-          sku_value,
-          shop_name,
-          item_status,
-          created_at,
-          updated_at
-        FROM order_items
-        ${whereClause}
-        ORDER BY created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}
-      `) as OrderItem[];
+  SELECT 
+    oi.order_shop_id,
+    oi.slave_order_no,
+    oi.goods_id,
+    oi.goods_name,
+    oi.image,
+    oi.price,
+    oi.quantity,
+    oi.sku_code,
+    oi.sku_value,
+    oi.item_status,
+    oi.created_at,
+    oi.updated_at,
+    -- 从 order_shops 表中获取额外字段
+    os.shop_name,
+    os.order_status as shop_order_status, -- 可选：如果需要子订单的状态
+    os.payment_status as shop_payment_status, -- 可选：如果需要子订单的支付状态
+    os.expire_at as shop_expire_at -- 可选：如果需要子订单的过期时间
+  FROM order_items oi
+  INNER JOIN order_shops os 
+    ON oi.slave_order_no = os.slave_order_no  -- 关联条件：items 的子订单号 = shops 的子订单号
+  ${whereClause}
+  ORDER BY oi.created_at DESC
+  LIMIT ${pageSize} OFFSET ${offset}
+`) as OrderItem[];
       console.log(orderList);
       // 4. 查询总数（分页用）
       const countResult = await sql`
@@ -131,7 +108,15 @@ export default defineEventHandler(
         code: 200,
         msg: "获取订单列表成功",
         data: {
-          OrderList: orderList,
+          OrderList: orderList.map((item) => {
+            // 使用数字比较，绝对安全
+            const isExpired =
+              new Date(item.shop_expire_at).getTime() < new Date().getTime();
+            return {
+              ...item,
+              is_expired: isExpired,
+            };
+          }),
           total,
         },
       };
@@ -145,3 +130,7 @@ export default defineEventHandler(
     }
   },
 );
+
+// 重新导出类型和常量，供其他服务器端文件使用
+export { OrderStatus, ORDER_STATUS_LABEL_MAP };
+export type { OrderListRequestDTO, OrderListResponseDTO, OrderItem };

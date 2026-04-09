@@ -59,7 +59,7 @@
     </el-form>
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleAdd" :loading="submitting">{{
+      <el-button type="primary" @click="handleSubmit" :loading="submitting">{{
         isEdit ? "更新" : "添加"
       }}</el-button>
     </template>
@@ -136,7 +136,7 @@ function handleOpen(row: UserAddress, flag: boolean = false) {
 }
 
 // 关键修复3：添加前手动触发表单校验
-async function handleAdd() {
+async function handleSubmit() {
   if (!formRef.value) return;
 
   try {
@@ -188,7 +188,6 @@ async function submitData() {
   }
 }
 
-// 关键修复4：before-close 阻止直接关闭，先询问
 function handleBeforeClose(done: () => void) {
   // 如果表单为空，直接关闭
   const isEmpty =
@@ -222,7 +221,6 @@ function handleBeforeClose(done: () => void) {
     });
 }
 
-// 取消按钮逻辑（直接关闭，触发 before-close）
 function handleClose() {
   // 手动触发关闭流程，让 before-close 拦截
   visibleDialog.value = false;

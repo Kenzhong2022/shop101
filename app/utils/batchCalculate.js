@@ -46,7 +46,7 @@ async function batchUpdateBayesianScores() {
 
       // 更新商品表
       await mySql`
-        UPDATE homepage_goods 
+        UPDATE goods 
         SET 
           average_rating = ${bayesianScore},
           review_count = ${v},

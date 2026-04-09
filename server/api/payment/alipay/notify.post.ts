@@ -28,11 +28,6 @@ export default defineEventHandler(async (event) => {
       return "fail";
     }
 
-    console.log("📥 回调数据:", body);
-    console.log("订单号:", body.out_trade_no);
-
-    // ... (后续逻辑保持不变) ...
-
     // 3️⃣ 初始化 SDK (注意密钥格式处理)
     const alipaySdk = new AlipaySdk({
       appId: process.env.ALIPAY_APP_ID || "",
@@ -66,7 +61,9 @@ export default defineEventHandler(async (event) => {
       console.log("⏳ 订单状态无需处理:", tradeStatus);
       return "success";
     }
-    let order = null;
+    // 他会是A类型或者B类型
+    let order;
+
     if (orderNo.length === 18) {
       // 子订单号
       order = await getOrderBySlaveOrderId(orderNo);
@@ -91,7 +88,7 @@ export default defineEventHandler(async (event) => {
       return "success";
     }
 
-    await updateOrderStatusByMasterOrderId(orderNo, {
+    await updateOrderStatusByOrderNo(order.order_no, {
       status: tradeStatus,
       alipayTradeNo: body.trade_no,
       paidAt: new Date(),
@@ -121,9 +118,9 @@ async function getOrderByMasterOrderId(orderId: string) {
     order[0];
   if (order_status === 0 && payment_status === 0) {
     return {
-      id: master_order_no,
-      amount: total_amount,
-      status: "pending",
+      order_no: master_order_no as string,
+      amount: total_amount as string,
+      status: "pending" as string,
     };
   }
   return null;
@@ -139,9 +136,9 @@ async function getOrderBySlaveOrderId(orderId: string) {
     order[0];
   if (order_status === 0 && payment_status === 0) {
     return {
-      id: slave_order_no,
-      amount: total_amount,
-      status: "pending",
+      order_no: slave_order_no as string,
+      amount: total_amount as string,
+      status: "pending" as string,
     };
   }
   return null;
@@ -149,11 +146,11 @@ async function getOrderBySlaveOrderId(orderId: string) {
 
 /**
  * 更新订单状态
- * @param orderId 订单号
+ * @param orderId 主订单号
  * @param updateData 更新数据
  */
-async function updateOrderStatusByMasterOrderId(
-  orderId: string,
+async function updateOrderStatusByOrderNo(
+  orderNo: string,
   updateData: {
     status: string;
     alipayTradeNo: string;
@@ -162,45 +159,67 @@ async function updateOrderStatusByMasterOrderId(
   },
 ) {
   const { status } = updateData;
-  console.log("status:", status); // TRADE_SUCCESS, TRADE_FINISHED
+  console.log("status:", status, "orderNo:", orderNo); // TRADE_SUCCESS, TRADE_FINISHED
   const statusMap = {
     TRADE_SUCCESS: {
-      payment_status: 1,
-      order_status: 1,
+      payment_status: 1, // 已支付
+      order_status: 1, // 已支付
       item_status: 2, // 1: 待支付 2: 已支付/待发货 3: 已发货 4: 已签收 5: 已取消
     },
   } as Record<
     string,
     { payment_status: number; order_status: number; item_status: number }
   >;
+  console.log("order_status:", statusMap[status].order_status);
+  console.log("item_status:", statusMap[status].item_status);
+  console.log("payment_status:", statusMap[status].payment_status);
+
   const updateQueries = [];
-  if (orderId.length === 18) {
+  try {
     updateQueries.push(
       sql`
       update orders_master
       set order_status = ${statusMap[status].order_status}
-      where master_order_no = ${orderId}
+      where master_order_no = ${orderNo}
     `,
     );
-  }
-  updateQueries.push(
-    // 2. 更新子订单表 (order_shops)
-    sql`
+    updateQueries.push(
+      // 2. 更新子订单表 (order_shops)
+      sql`
     update order_shops
     set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
-    where master_order_no = ${orderId}
+    where master_order_no = ${orderNo}
   `,
-  );
-  updateQueries.push(
-    // 3. 更新子订单的所有商品项 (order_items)
-    sql`
+    );
+    updateQueries.push(
+      // 2. 更新子订单表 (order_shops)
+      sql`
+    update order_shops
+    set payment_status = ${statusMap[status].payment_status}, order_status = ${statusMap[status].order_status}
+    where slave_order_no = ${orderNo}
+  `,
+    );
+    updateQueries.push(
+      // 3. 更新子订单的所有商品项 (order_items)
+      sql`
     update order_items
     set item_status = ${statusMap[status].item_status}
     where slave_order_no IN (
-      select slave_order_no from order_shops where master_order_no = ${orderId}
+      select slave_order_no from order_shops where master_order_no = ${orderNo}
     )
   `,
-  );
-  console.log("updateQueries:", updateQueries);
-  await sql.transaction(updateQueries);
+    );
+    updateQueries.push(
+      // 3. 更新子订单的所有商品项 (order_items)
+      sql`
+    update order_items
+    set item_status = ${statusMap[status].item_status}
+    where slave_order_no = ${orderNo}
+  `,
+    );
+    const result = await sql.transaction(updateQueries);
+    console.log("✅ 订单更新成功====================", result);
+  } catch (error) {
+    console.error("❌ 订单更新失败:", error);
+  }
 }

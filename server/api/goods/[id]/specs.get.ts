@@ -35,7 +35,7 @@ export default defineEventHandler(
         // 查询商品基本信息
         mySql`
         SELECT id, goods_name, image, price 
-        FROM homepage_goods 
+        FROM goods 
         WHERE id = ${id}
       `,
 

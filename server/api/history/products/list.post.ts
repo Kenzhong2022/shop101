@@ -41,7 +41,7 @@ FROM (
     FROM 
         user_product_behavior upb
     INNER JOIN 
-        homepage_goods hg ON upb.goods_id = hg.id::varchar
+        goods hg ON upb.goods_id = hg.id::varchar
     WHERE 
         upb.user_id = ${userId}
         AND upb.behavior_type = 'click'

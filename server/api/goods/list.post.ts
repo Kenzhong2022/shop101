@@ -38,7 +38,7 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
     const rows = await mySql`
         SELECT id, goods_name, image, price, stock, sort, is_show, average_rating,
         created_at, updated_at, shop_name
-        FROM homepage_goods
+        FROM goods
         ${mySql.unsafe(whereSql)}
         ORDER BY average_rating DESC NULLS LAST  -- 降序，NULL 放最后
         LIMIT ${body.page_size || 5} OFFSET ${

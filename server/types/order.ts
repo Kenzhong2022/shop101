@@ -39,6 +39,7 @@ export interface OrderItem {
   shop_payment_status: number;
   shop_expire_at: Date;
   is_expired: boolean;
+  address_id: number;
 }
 
 /** 订单列表响应 */
@@ -74,14 +75,6 @@ export const ORDER_STATUS_LABEL_MAP: Record<OrderStatus, string> = {
 };
 
 // ==================== 订单创建相关类型 ====================
-
-// 地址信息
-export interface AddressDTO {
-  name: string;
-  phone: string;
-  detail: string;
-}
-
 /** 购物车项（来自前端） */
 export interface CartItemRequest {
   id: number; // 购物车记录ID，用于清理
@@ -100,7 +93,7 @@ export interface CartItemRequest {
 /** 创建订单请求体 */
 export interface CreateOrderRequestDTO {
   items: CartItemRequest[];
-  address?: AddressDTO;
+  address_id?: number;
   remark?: string;
 }
 
@@ -137,9 +130,7 @@ export interface SubOrderData {
   order_status: number; // 0-待付款
   payment_status: number; // 0-待付款
   shipping_status: number; // 0-未发货
-  consignee: string;
-  phone: string;
-  address: string;
+  address_id?: number;
   remark: string;
   items: OrderItemData[];
   created_at: Date;

@@ -84,6 +84,7 @@ export default defineEventHandler(
     oi.created_at,
     oi.updated_at,
     -- 从 order_shops 表中获取额外字段
+    os.address_id,
     os.shop_name,
     os.order_status as shop_order_status, -- 可选：如果需要子订单的状态
     os.payment_status as shop_payment_status, -- 可选：如果需要子订单的支付状态

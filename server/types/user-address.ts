@@ -20,6 +20,7 @@ export interface UserAddressDB {
   district_code: string;
   detail_address: string;
   is_default: boolean;
+  isChecked: boolean;
   created_at: string; // ISO 8601: 2024-01-15T08:30:00Z
   updated_at: string;
 }
@@ -30,9 +31,8 @@ export interface UserAddressDB {
 
 /**
  * 前端地址展示类型
- * 包含解析后的中文地址（用于列表展示）
  */
-export interface UserAddress extends Omit<UserAddressDB, "user_id"> {
+export interface UserAddress extends UserAddressDB {
   // 前端计算属性：省市区中文名称
   province_name: string;
   city_name: string;

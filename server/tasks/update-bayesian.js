@@ -49,7 +49,7 @@ export default defineTask({
         //   `[Task] 商品 ${product.goods_id} 贝叶斯评分 = ${bayesianScore} (R=${R}, v=${v}, C=${C}, m=${m})`,
         // );
         await mySql`
-          UPDATE homepage_goods 
+          UPDATE goods 
           SET 
             average_rating = ${bayesianScore},
             review_count = ${v},

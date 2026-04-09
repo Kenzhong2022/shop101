@@ -111,7 +111,7 @@ export default defineEventHandler(
 
       // 2. 解析请求体
       const body = await readBody<CreateOrderRequestDTO>(event);
-      const { items, address, remark } = body;
+      const { items, address_id, remark } = body;
 
       // 3. 基础校验
       if (!items || !Array.isArray(items) || items.length === 0) {
@@ -209,9 +209,7 @@ export default defineEventHandler(
           order_status: 0,
           payment_status: 0,
           shipping_status: 0,
-          consignee: address?.name || "",
-          phone: address?.phone || "",
-          address: address?.detail || "",
+          address_id: address_id,
           remark: remark || "",
           items: orderItems,
           created_at: createdAt,
@@ -251,7 +249,7 @@ export default defineEventHandler(
             shop_id, shop_name,
             total_amount, payment_amount, discount_amount,
             order_status, payment_status, shipping_status,
-            consignee, phone, address, remark,
+            address_id, remark,
             created_at, expire_at
           ) VALUES (
             (SELECT id FROM orders_master WHERE master_order_no = ${masterOrderNo}),
@@ -259,7 +257,7 @@ export default defineEventHandler(
             ${sub.shop_id}, ${sub.shop_name},
             ${sub.total_amount}, ${sub.payment_amount}, ${sub.discount_amount},
             ${sub.order_status}, ${sub.payment_status}, ${sub.shipping_status},
-            ${sub.consignee}, ${sub.phone}, ${sub.address}, ${sub.remark || null},
+            ${sub.address_id}, ${sub.remark || null},
             ${sub.created_at}, ${sub.expire_at}
           )
         `);
@@ -288,7 +286,7 @@ export default defineEventHandler(
 
           // 扣减商品主表库存（如果业务需要）
           statements.push(sql`
-            UPDATE homepage_goods
+            UPDATE goods
             SET stock = stock - ${item.quantity}, updated_at = NOW()
             WHERE id = ${item.goods_id} AND stock >= ${item.quantity}
           `);

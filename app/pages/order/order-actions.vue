@@ -14,7 +14,9 @@
       </template>
       <template #footer>
         <div>
-          <el-button type="primary" @click="handlePay">确认付款</el-button>
+          <el-button type="primary" @click="handlePay"
+            >确认付款{{ address?.id }}</el-button
+          >
         </div>
       </template>
     </el-card>
@@ -23,6 +25,7 @@
 
 <script setup lang="ts">
 import type { OrderCreateResponse } from "~~/server/types/order";
+import type { UserAddress } from "~~/server/types/user-address";
 type OrderData = OrderCreateResponse["data"];
 
 const props = defineProps({
@@ -30,17 +33,28 @@ const props = defineProps({
     type: Object as PropType<OrderData>,
     default: () => {},
   },
+  address: {
+    type: Object as PropType<UserAddress>,
+    default: () => {},
+  },
 });
 
 const handlePay = async () => {
+  // 参数校验
+  if (!props.order || !props.address) {
+    alert("订单信息或地址不能为空");
+    return;
+  }
   try {
     // 1. 调用后端接口
     const res = await $fetch("/api/payment/alipay/create", {
       method: "POST",
       body: {
-        orderId: props.order?.masterOrderNo || "", // 你的真实订单号
-        amount: props.order?.totalAmountDisplay.replace("¥", "") || 0,
-        subject: "测试商品",
+        orderInfo: props.order, // 订单信息
+        orderId: props.order!.masterOrderNo, // 你的真实订单号
+        amount: props.order!.totalAmountDisplay.replace("¥", "") || 0,
+        subject: "通过主订单支付",
+        addressId: props.address!.id,
       },
     });
 

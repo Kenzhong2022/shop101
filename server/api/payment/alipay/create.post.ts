@@ -7,22 +7,25 @@ export default defineEventHandler(async (event) => {
   try {
     // 主订单号/子订单号、金额、订单标题
     const body = await readBody(event);
-    const { orderId, amount, subject } = body;
-
-    if (!orderId || !amount) {
+    const { orderInfo, orderId, amount, subject, addressId } = body;
+    console.log("orderInfo", orderInfo, addressId);
+    if (!orderId || !amount || !addressId) {
       throw createError({
         statusCode: 400,
-        statusMessage: "订单ID和金额不能为空",
+        statusMessage: "订单ID、金额和地址不能为空",
       });
     }
+
     let order = null;
     // 2️⃣ 查询数据库验证订单是否存在
     if (orderId.length === 18) {
-      // 子订单号
       order = await getOrderBySlaveOrderId(orderId);
+      // 更新订单收货地址
+      await updateOrderAddressBySlaveOrderId(orderId, addressId);
     } else {
-      // 主订单号
       order = await getOrderByMasterOrderId(orderId);
+      // 更新订单收货地址
+      await updateOrderAddressByMasterOrderId(orderId, addressId);
     }
     if (!order) {
       throw createError({
@@ -30,9 +33,6 @@ export default defineEventHandler(async (event) => {
         statusMessage: "订单不存在",
       });
     }
-    console.log(
-      `✅ 验证订单: ${orderId}, 金额: ${order.amount},amount:${amount}`,
-    );
 
     if (parseFloat(order.amount) !== parseFloat(amount)) {
       throw createError({
@@ -62,10 +62,14 @@ export default defineEventHandler(async (event) => {
     });
     // 4️⃣ 构建业务参数
     const bizContent = {
+      // 自定义参数
+      custom_params: JSON.stringify(orderInfo),
+      // 商户订单号 (用你的订单ID)
       out_trade_no: orderId, // 商户订单号 (用你的订单ID)
       total_amount: parseFloat(amount).toFixed(2), // 金额
       subject: subject || "ChainPay订单", // 订单标题
       product_code: "FAST_INSTANT_TRADE_PAY", // 产品码
+      // 商品详情
       goods_detail: [
         {
           goods_id: "123456", // 商品ID
@@ -75,7 +79,6 @@ export default defineEventHandler(async (event) => {
           show_url: `https://res.cloudinary.com/dlji1nmdj/image/upload/c_fill,w_280,h_280,g_auto/f_auto/q_80/v1763887762/${goodsImage}?_a=BBDAAEAE0`, // 商品展示URL
         },
       ],
-      // 商品详情
       timeout_express: "30m", // 超时时间
     };
     // 5️⃣ 生成支付表单 HTML
@@ -85,8 +88,8 @@ export default defineEventHandler(async (event) => {
       "POST", // 推荐用 POST，兼容性更好
       {
         bizContent,
-        returnUrl: `${process.env.ALIPAY_RETURN_URL}?orderId=${orderId}`,
-        notifyUrl: process.env.ALIPAY_NOTIFY_URL,
+        returnUrl: `${process.env.ALIPAY_RETURN_URL}?orderId=${orderId}`, // 支付成功后跳转的URL
+        notifyUrl: process.env.ALIPAY_NOTIFY_URL, // 支付通知URL
       },
     );
 
@@ -151,4 +154,17 @@ async function getOrderBySlaveOrderId(orderId: string) {
     };
   }
   return null;
+}
+
+async function updateOrderAddressBySlaveOrderId(
+  orderId: string,
+  addressId: number,
+) {
+  await sql`UPDATE order_shops SET address_id = ${addressId} WHERE slave_order_no = ${orderId}`;
+}
+async function updateOrderAddressByMasterOrderId(
+  orderId: string,
+  addressId: number,
+) {
+  await sql`UPDATE order_shops SET address_id = ${addressId} WHERE master_order_no = ${orderId}`;
 }

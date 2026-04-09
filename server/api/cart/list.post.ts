@@ -77,7 +77,7 @@ export default defineEventHandler(async (event): Promise<CartListResponse> => {
           c.created_at,
           c.updated_at
         FROM cart_items c
-        INNER JOIN homePage_goods g ON c.goods_id = g.id
+        INNER JOIN goods g ON c.goods_id = g.id
         INNER JOIN skus s ON c.sku_code = s.sku_code
         WHERE c.user_id = ${userId}
         ORDER BY c.created_at DESC

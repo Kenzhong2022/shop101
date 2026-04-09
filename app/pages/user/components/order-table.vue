@@ -159,7 +159,8 @@ async function handlePayClick(subOrderItem: OrderItem[]) {
       body: {
         orderId: subOrderItem[0]!.slave_order_no || "", // 你的真实订单号
         amount: getTotalPrice(subOrderItem) || 0,
-        subject: "测试商品",
+        subject: "通过子订单支付",
+        addressId: subOrderItem[0]!.address_id || 0,
       },
     });
 

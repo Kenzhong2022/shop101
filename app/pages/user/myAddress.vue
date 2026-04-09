@@ -50,15 +50,15 @@
 </template>
 
 <script setup lang="ts">
-import AddressDialog from "./components/addressDialog.vue";
+import AddressDialog from "@/components/addressDialog.vue";
 import {
   getAddressListApi,
   updateAddressApi,
   deleteAddressApi,
 } from "@/api/addressApi";
-import { codeToText } from "element-china-area-data";
-
 import type { UserAddress } from "~~/server/types/user-address";
+
+import { codeToText } from "element-china-area-data";
 import { ref, onMounted } from "vue";
 const loadingStore = useLoadingStore();
 const tableData = ref<UserAddress[]>([]);

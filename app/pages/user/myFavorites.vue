@@ -3,4 +3,11 @@
   <div>我的收藏</div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    required: true,
+  },
+});
+</script>

@@ -7,6 +7,7 @@
     :key="goodsItem.id"
     @click.stop="handleClick(goodsItem)"
   >
+    <!-- 商品图片区域 -->
     <div class="overflow-hidden relative w-fit" ref="goodsItemsRef">
       <!-- 加载动画 -->
       <kk-svg-loader-fast v-if="loading" :width="280" />
@@ -36,6 +37,7 @@
         @change="handleCheckChange($event as boolean, goodsItem)"
       />
     </div>
+    <!-- 商品信息区域 -->
     <div class="w-[280px] box-border p-[8px]">
       <!-- 商品名称：超过一行显示省略号 -->
       <div class="text-ellipsis whitespace-nowrap overflow-hidden">
@@ -50,12 +52,17 @@
       <div>店铺名: {{ goodsItem.shop_name }}</div>
     </div>
   </div>
+  <!-- 分割线 -->
+  <el-divider> 已到底部 </el-divider>
 </template>
 
 <script setup lang="ts">
 import type { Goods } from "~~/server/types/goods";
-
 const props = defineProps({
+  isCollectedMode: {
+    type: Boolean,
+    default: false,
+  },
   title: {
     type: String,
     default: "商品",
@@ -77,6 +84,10 @@ const props = defineProps({
     default: false,
   },
   collectedMode: {
+    type: Boolean,
+    default: false,
+  },
+  hasMore: {
     type: Boolean,
     default: false,
   },
@@ -119,26 +130,32 @@ function setItemRef(el: any, index: number) {
   }
 }
 
-// 创建 Observer
+/**
+ * 创建 Observer 实例
+ */
 function createObserver() {
   if (observer) return;
-
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
+        // isIntersecting 为 true 时，触发加载更多事件
         if (entry.isIntersecting) {
+          // 触发加载更多事件
           emit("loadMore");
+          return;
         }
       });
     },
     {
       threshold: 0.5, // 50% 可见即触发，比 1 更友好
-      rootMargin: "100px", // 提前 100px 触发，预加载
+      rootMargin: "0px", // 提前 0px 触发，预加载
     },
   );
 }
 
-// 取消监听
+/**
+ * 取消监听当前最后一个商品
+ */
 function unobserveLast() {
   if (curObservedEl && observer) {
     observer.unobserve(curObservedEl);
@@ -146,7 +163,9 @@ function unobserveLast() {
   }
 }
 
-// 监听当前最后一个商品
+/**
+ * 监听当前最后一个商品
+ */
 function observeLast() {
   if (!props.data.length || !observer) return;
 
@@ -158,16 +177,24 @@ function observeLast() {
     unobserveLast(); // 先取消旧的
     curObservedEl = lastEl;
     observer.observe(lastEl);
-    console.log("开始监听第", lastIndex, "个商品");
+    console.log("开始监听第", lastIndex + 1, "个商品");
   }
 }
 
 // 监听数据变化，重新绑定监听
 watch(
-  () => props.data.length,
-  () => {
+  () => [props.data.length, props.hasMore],
+  ([newLength, newHasMore]) => {
     nextTick(() => {
-      observeLast();
+      if (newHasMore) {
+        // 首次加载更多商品时，创建 Observer
+        createObserver();
+        // 监听当前最后一个商品
+        observeLast();
+      } else {
+        unobserveLast();
+        console.log("取消监听当前最后一个商品");
+      }
     });
   },
 );

@@ -28,15 +28,15 @@ export interface RouteMeta {
  */
 export default defineNuxtRouteMiddleware((to: RouteMeta, from: RouteMeta) => {
   // 打印基本的路由跳转信息
-  console.log("🔄 路由跳转:", {
-    from: from.path || "首次访问",
-    to: to.path || "未设置路径",
-    fullPath: to.fullPath || "未设置完整路径",
-    query: to.query || "未设置查询参数",
-    params: to.params || "未设置路径参数",
-    name: to.name || "未设置名称",
-    meta: to.meta || "未设置元数据",
-  });
+  // console.log("🔄 路由跳转:", {
+  //   from: from.path || "首次访问",
+  //   to: to.path || "未设置路径",
+  //   fullPath: to.fullPath || "未设置完整路径",
+  //   query: to.query || "未设置查询参数",
+  //   params: to.params || "未设置路径参数",
+  //   name: to.name || "未设置名称",
+  //   meta: to.meta || "未设置元数据",
+  // });
 
   // 检查是否跳转到会员中心页面
   const isAuthRequired = to.meta?.pageInfo?.requiresAuth;

@@ -4,36 +4,40 @@
   <!-- https://ibb.co/4wjH0LRK -->
   <!-- 电梯 banner区域 -->
   <div class="flex flex-col gap-50px" :style="{ flex: 1 }">
-    <!-- 轮播图内容 -->
-    <el-carousel
-      :interval="150000"
-      type="card"
-      :style="{
-        border: '4px solid var(--el-color-primary)',
-        aspectRatio: '7/2',
-      }"
-      class="box-border rd-20px w-100%"
-      ref="carousel"
-    >
-      <el-carousel-item
-        ref="carouselItem"
-        v-for="item in banners"
-        :key="item.id"
+    <div class="flex px-[20px] bg-[#fff]">
+      <!-- 分类树 - 不再需要传递data属性 -->
+      <kk-category-tree class="flex-[2]" />
+      <!-- 轮播图内容 -->
+      <el-carousel
+        :interval="150000"
+        type="card"
+        :style="{
+          border: '2px solid var(--el-color-primary)',
+          aspectRatio: '7/2',
+        }"
+        class="box-border rd-10px w-100% flex-[7]"
+        ref="carousel"
       >
-        <!-- todo:宽度和高度需要根据当前的页面宽度和高度来计算 -->
-        <kk-cld-image
-          :src="item.image"
-          :alt="item.title"
-          :width="800"
-          :height="450"
-          gravity="auto"
-          crop="fill"
-          :priority="true"
-        />
-      </el-carousel-item>
-    </el-carousel>
+        <el-carousel-item
+          ref="carouselItem"
+          v-for="item in banners"
+          :key="item.id"
+        >
+          <!-- todo:宽度和高度需要根据当前的页面宽度和高度来计算 -->
+          <kk-cld-image
+            :src="item.image"
+            :alt="item.title"
+            :width="700"
+            :height="450"
+            gravity="auto"
+            crop="fill"
+            :priority="true"
+          />
+        </el-carousel-item>
+      </el-carousel>
+    </div>
     <!-- 广告 -->
-    <div class="relative w-100%" :style="{ aspectRatio: '18/2' }">
+    <!-- <div class="relative w-100%" :style="{ aspectRatio: '18/2' }">
       <div
         class="absolute banner w-100% flex justify-center items-center"
         :style="{
@@ -42,7 +46,7 @@
       >
         <div class="reflect-container">Wear Freedom ， shine your beauty</div>
       </div>
-    </div>
+    </div> -->
 
     <!-- 商品列表 -->
     <!-- 商品列表行 -->
@@ -53,6 +57,7 @@
         :data="goodsList"
         :loading="loadingGoods"
         @loadMore="loadMore"
+        :has-more="hasMore"
         @click="handleClick"
         @check-change="({ id, checked }) => updateItemChecked(id, checked)"
       />
@@ -62,7 +67,10 @@
 </template>
 
 <script setup lang="ts">
+import { apiGoodsList } from "~/api/goods";
 import { useLoadingStore } from "@/stores/loading";
+import { useProductBehavior } from "~/composables/useProductBehavior";
+import type { Goods } from "~~/server/types/goods";
 const loadingStore = useLoadingStore();
 // 引入消息提示组件
 const { $message } = useNuxtApp();
@@ -74,6 +82,10 @@ definePageMeta({
   pageInfo: {
     showBanner: true,
   },
+  layoutOptions: {
+    showSearch: true,
+    isStickyMode: true,
+  },
 });
 
 interface Banner {
@@ -81,8 +93,6 @@ interface Banner {
   title: string;
   image: string;
 }
-
-const banner5 = "写真杂志1_g0ogwr"; //"/img/banners/写真杂志1.webp";
 
 const banners: Banner[] = [
   {
@@ -107,8 +117,6 @@ const banners: Banner[] = [
   },
 ];
 
-import { useProductBehavior } from "~/composables/useProductBehavior";
-import type { Goods } from "~~/server/types/goods";
 const goodsList = ref<Goods[]>();
 
 const loadingGoods = ref<boolean>(true);
@@ -131,49 +139,50 @@ function updateItemChecked(id: number, checked: boolean) {
     goodsItem.isChecked = checked;
   }
 }
+const hasMore = ref<boolean>(true);
+
+const currentPage = ref<number>(1);
 async function getGoodsList() {
-  return apiGoodsList({
-    page: 2,
+  loadingGoods.value = true;
+  // 是否没有更多
+  await apiGoodsList({
+    page: currentPage.value,
     page_size: 5,
   })
     .then((res) => {
-      console.log(res.data.list);
-      goodsList.value = [...goodsList.value!, ...res.data.list];
+      // 检查是否有更多数据
+      hasMore.value = res.data.list.length !== 0;
+      // 合并商品列表，追加新数据
+      goodsList.value = [...(goodsList.value || []), ...res.data.list];
+      // 初始化新数据的 isChecked 为 false
       goodsList.value.forEach((item) => {
         item.isChecked = false;
       });
-      console.log(goodsList.value);
     })
     .finally(() => {
+      currentPage.value++;
       loadingGoods.value = false;
       $message.success("加载完成");
     });
+  return hasMore.value;
 }
 
 /* 追加 5 行并重新监听最后一行 */
 async function loadMore() {
   $message.info("加载更多...");
-  await getGoodsList(); // 1. 先加载数据
+  hasMore.value = await getGoodsList(); // 1. 先加载数据
+  if (!hasMore.value) {
+    $message.info("没有更多商品了");
+    // 没有更多商品了，停止监听最后一行
+  }
 }
 
-import { apiGoodsList } from "~/api/goods";
-import { image } from "@cloudinary/url-gen/qualifiers/source";
 onMounted(async () => {
-  //测试调用api
-  await apiGoodsList({
-    page: 1,
-    page_size: 5,
-  }).then((res) => {
-    console.log(res.data.list);
-    goodsList.value = res.data.list;
-  });
-
+  await getGoodsList();
   loadingGoods.value = false;
 });
 
-onUnmounted(() => {
-  console.log("IntersectionObserver 已清理");
-});
+onUnmounted(() => {});
 </script>
 
 <style scoped>

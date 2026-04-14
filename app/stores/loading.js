@@ -25,12 +25,12 @@ export const useLoadingStore = defineStore("loading", () => {
     if (shouldShow) {
       // 延迟显示，避免短时间请求闪烁
       delayTimer = setTimeout(() => {
-        console.log("isLoading", isLoading);
+        // console.log("isLoading", isLoading);
         isLoading.value = true;
       }, DELAY_MS);
     } else {
       // 无请求时立即隐藏
-      console.log("isLoading", isLoading);
+      // console.log("isLoading", isLoading);
       isLoading.value = false;
     }
   }

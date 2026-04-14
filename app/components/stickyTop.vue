@@ -10,7 +10,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-
+defineProps({
+  isStickyMode: {
+    type: Boolean,
+    default: false,
+  },
+});
 // 控制吸顶状态
 const isSticky = ref(false);
 const containerRef = ref<HTMLElement | null>(null);

@@ -23,12 +23,18 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  title: "商品详情",
+  layout: "default",
+  layoutOptions: {
+    showSearch: false,
+    isStickyMode: false,
+  },
+});
 import { useScroll } from "@/composables/useScroll";
-
 import GoodsMain from "./components/goods-main.vue";
 import GoodsAside from "./components/goods-aside.vue";
 import GoodsOperation from "./components/goods-operation.vue";
-
 import { apiGoodsSpecs } from "@/api/goods";
 import type {
   SpecValue,

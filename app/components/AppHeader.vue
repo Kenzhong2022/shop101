@@ -51,13 +51,18 @@
 </template>
 
 <script setup>
-// 传递字符串给父组件
-const emit = defineEmits(["sendRoute"]);
+// 路由实例
+const router = useRouter();
 
-const sendRoute = (msg) => {
-  emit("sendRoute", msg);
-};
-const isActive = (item) => {
+// 组件挂载时初始化
+onMounted(() => {
+  // 监听路由变化
+  router.afterEach((to) => {
+    console.log("AppHeader:当前路由:", to.path);
+  });
+});
+
+function isActive(item) {
   const currentRoute = useRoute().path;
   // 当前item.path 为 / 则需要和当前路由完全相等
   if (item.path === "/") {
@@ -65,7 +70,7 @@ const isActive = (item) => {
   }
   // 其他情况：检查当前路由是否包含导航项的路径
   return currentRoute.includes(item.path);
-};
+}
 // 默认导航配置
 const navList = [
   { name: "首页", path: "/", icon: "icon-home" },
@@ -84,30 +89,16 @@ const navList = [
 ];
 
 // 导航点击处理
-const handleNavClick = (navItem) => {
+function handleNavClick(navItem) {
   // console.log("导航项点击:", navItem);
   if (navItem.isExternal) {
     // 外部链接：打开新页面
     window.open(navItem.path, "_blank");
   } else {
     console.log("导航项点击:", navItem);
-    // 发送路由信息给父组件
-    sendRoute(navItem);
-    // 内部路由：用 Nuxt 路由跳转（原有逻辑）
     router.push(navItem.path);
   }
-};
-
-// 路由实例
-const router = useRouter();
-
-// 组件挂载时初始化
-onMounted(() => {
-  // 监听路由变化
-  router.afterEach((to) => {
-    console.log("AppHeader:当前路由:", to.path);
-  });
-});
+}
 </script>
 
 <style scoped lang="scss">

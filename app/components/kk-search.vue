@@ -1,6 +1,8 @@
 <template>
   <!-- 搜索组件 -->
-  <div class="search position-relative flex-auto box-border mx-auto">
+  <div
+    class="search position-relative flex-auto box-border mx-auto mb-20px mt-10px"
+  >
     <el-input
       v-model="input"
       class="border-transparent w-full bg-#fff overflow-hidden"
@@ -56,7 +58,7 @@ const handleSearch = () => {
     border-width: 2px !important;
     /* 语法：水平偏移 垂直偏移 模糊半径 扩散半径 颜色 （内阴影用inset） */
     /* box-shadow: [inset] <水平偏移> <垂直偏移> <模糊半径> <扩散半径> <颜色>;*/
-    box-shadow: 0 0 0 2px var(--el-color-primary) inset !important;
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
   }
   :deep(.el-input__wrapper:hover) {
     box-shadow: 0 0 0 2px var(--el-color-primary-light-5) inset !important;

@@ -6,14 +6,14 @@
       <div class="index-container">
         <LazyKkColorPicker @change="handleColorChange" />
         <AppHeader
-          @sendRoute="handleChangeByRoute"
           class="bg-white max-w-[1200px] shadow-sm h-65px"
           :msg="msg"
         />
         <!-- 吸顶搜索 -->
         <LazyStickyTop
+          v-if="showSearch"
+          :isStickyMode="isStickyMode"
           class="w-80% max-w-1600px mx-auto"
-          v-if="showStickyTop"
         />
         <!-- 好友列表入口 -->
         <div
@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import type { RouteLocationNormalizedLoadedGeneric } from "vue-router";
 // 引入全局 CSS 变量函数
 import { setThemeColor } from "@/plugins/global-css-vars.client";
 // 全局颜色变量
@@ -65,24 +66,29 @@ const color = ref("");
 // 好友列表抽屉是否打开
 const isDrawerOpen = ref<boolean>(false);
 
-interface routeItem {
-  name: string;
-  path: string;
-  showStickyTop?: boolean;
-}
-
 const msg = "hello world";
 const showMenu = ref(false);
-const showStickyTop = ref(true);
+const isStickyMode = ref(false);
+const showSearch = ref(false);
+// 获取响应式的页面元数据
+const route = useRoute();
+watch(
+  () => route.fullPath,
+  () => {
+    handleChangeByRoute();
+  },
+  { flush: "post", immediate: true },
+);
 // 接收来自子组件的路由信息 切换tabs<= 未来修改命名
-function handleChangeByRoute(route: routeItem) {
-  console.log("顶部导航改变了：", route);
+function handleChangeByRoute() {
+  console.log("顶部导航改变了：", route, route.meta);
   // console.log("route.path", route.path, route.path == "/category");
   showMenu.value = route.path === "/category";
-  // 如果路由配置了 showStickyTop，使用它；否则默认 true
-  showStickyTop.value = route?.showStickyTop ?? true;
+  // 如果路由配置了 isStickyMode，使用它；否则默认 false
+  isStickyMode.value = route.meta!.layoutOptions.isStickyMode ?? false;
+  // 如果路由配置了 showSearch，使用它；否则默认 false
+  showSearch.value = route.meta!.layoutOptions.showSearch ?? false;
 }
-const route = useRoute();
 
 /**
  * 截取路径中的第一个层级（格式：/[第一个层级]）
@@ -92,10 +98,8 @@ const route = useRoute();
 const getFirstRouteLevel = (path: string): string => {
   // 兼容异常路径：空路径或非 / 开头，直接返回原路径
   if (!path || !path.startsWith("/")) return path;
-
   // 找第二个 / 的位置（从第一个 / 后面开始找）
   const secondSlashIndex = path.indexOf("/", 1);
-
   // 有第二个 / → 截到该位置；没有 → 整个路径就是第一个层级
   return secondSlashIndex > 0 ? path.slice(0, secondSlashIndex) : path;
 };
@@ -111,10 +115,6 @@ function handleColorChange(newHsl: string) {
 
 onMounted(() => {
   showMenu.value = getFirstRouteLevel(route.path) === "/category";
-  const layoutOpts = route.meta.layoutOptions as
-    | { stickyTop?: boolean }
-    | undefined;
-  showStickyTop.value = layoutOpts?.stickyTop ?? true;
 });
 </script>
 

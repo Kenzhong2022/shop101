@@ -27,6 +27,9 @@ definePageMeta({
   pageInfo: {
     requiresAuth: true,
   },
+  layoutOptions: {
+    showSearch: false,
+  },
 });
 import cartList from "./components/cart-list.vue";
 import cartSummary from "./components/Cart-Summary.vue";

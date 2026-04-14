@@ -7,6 +7,7 @@
 /** 商品列表请求参数 */
 export interface ListRequest {
   shop_name?: string; // 店铺名称
+  keyword?: string; // 搜索关键词
   category_id?: number; // 分类ID
   page: number; // 页码
   page_size: number; // 每页数量

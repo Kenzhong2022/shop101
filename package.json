@@ -13,7 +13,6 @@
     "@cloudinary/url-gen": "^1.22.0",
     "@element-plus/icons-vue": "^2.3.2",
     "@neondatabase/serverless": "^1.0.2",
-    "@netlify/neon": "^0.1.0",
     "@nuxtjs/cloudinary": "^4.0.0",
     "@pinia/nuxt": "^0.11.3",
     "@types/jsonwebtoken": "^9.0.10",

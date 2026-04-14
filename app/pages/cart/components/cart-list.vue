@@ -1,27 +1,29 @@
 <template>
-  <cart-operation :is-all-selected="cartStore.isAllSelected" />
-  <div
-    class="cart-list"
-    :class="{
-      'border-b-[1px] border-b-solid border-b-[#ccc]':
-        index == cartList.length - 1,
-    }"
-    v-for="(item, index) in cartList"
-    :key="item.shop_name"
-  >
+  <div>
+    <cart-operation :is-all-selected="cartStore.isAllSelected" />
     <div
-      class="cart-item-title flex flex-row items-center gap-[8px] border-t-[1px] border-t-solid border-t-[#ccc]"
+      class="cart-list"
+      :class="{
+        'border-b-[1px] border-b-solid border-b-[#ccc]':
+          index == cartList.length - 1,
+      }"
+      v-for="(item, index) in cartList"
+      :key="item.shop_name"
     >
-      <!-- 全选checkbox -->
-      <el-checkbox
-        size="large"
-        :model-value="isShopAllSelected(item.shop_name)"
-        @change="(val) => toggleShopSelect(item.shop_name, val as boolean)"
-      />
-      <!-- 店铺名 -->
-      <div class="shop-name flex-1">{{ item.shop_name }}</div>
+      <div
+        class="cart-item-title flex flex-row items-center gap-[8px] border-t-[1px] border-t-solid border-t-[#ccc]"
+      >
+        <!-- 全选checkbox -->
+        <el-checkbox
+          size="large"
+          :model-value="isShopAllSelected(item.shop_name)"
+          @change="(val: boolean) => toggleShopSelect(item.shop_name, val)"
+        />
+        <!-- 店铺名 -->
+        <div class="shop-name flex-1">{{ item.shop_name }}</div>
+      </div>
+      <cart-item :cart-item="item.items" :shop-name="item.shop_name" />
     </div>
-    <cart-item :cart-item="item.items" :shop-name="item.shop_name" />
   </div>
 </template>
 

@@ -9,10 +9,7 @@
   >
     <!-- 商品图片区域 -->
     <div class="overflow-hidden relative w-fit" ref="goodsItemsRef">
-      <!-- 加载动画 -->
-      <kk-svg-loader-fast v-if="loading" :width="280" />
       <kk-cld-image
-        v-else
         :src="goodsItem.image"
         :alt="goodsItem.image"
         :width="280"
@@ -53,10 +50,11 @@
     </div>
   </div>
   <!-- 分割线 -->
-  <el-divider> 已到底部 </el-divider>
+  <el-divider> {{ loading ? "加载中..." : "已到底部" }} </el-divider>
 </template>
 
 <script setup lang="ts">
+import { Loading } from "@element-plus/icons-vue";
 import type { Goods } from "~~/server/types/goods";
 const props = defineProps({
   isCollectedMode: {

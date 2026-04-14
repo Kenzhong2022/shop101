@@ -85,9 +85,9 @@ function handleChangeByRoute() {
   // console.log("route.path", route.path, route.path == "/category");
   showMenu.value = route.path === "/category";
   // 如果路由配置了 isStickyMode，使用它；否则默认 false
-  isStickyMode.value = route.meta!.layoutOptions.isStickyMode ?? false;
+  isStickyMode.value = route.meta?.layoutOptions?.isStickyMode ?? false;
   // 如果路由配置了 showSearch，使用它；否则默认 false
-  showSearch.value = route.meta!.layoutOptions.showSearch ?? false;
+  showSearch.value = route.meta?.layoutOptions?.showSearch ?? false;
 }
 
 /**

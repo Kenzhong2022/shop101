@@ -18,7 +18,9 @@ const sql = getNeon();
 /** 订单列表接口 */
 export default defineEventHandler(
   async (event): Promise<OrderListResponseDTO> => {
-    const { userId } = await requireAuth(event);
+    // 构建数据库插入数据
+    const { code, message, data } = await requireAuth(event);
+    const userId = data?.userId;
     if (!userId) throw createError({ statusCode: 401, message: "用户未登录" });
 
     const body: OrderListRequestDTO = await readBody(event);

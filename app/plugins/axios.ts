@@ -30,6 +30,8 @@ import { ERROR_MAP } from "~/types/api-error";
  * 处理未授权错误（401）
  */
 function handleUnauthorized(message?: string) {
+  console.log("[Axios] 未授权错误:", message);
+  // 未授权错误，重定向到登录页
   const route = useRoute();
   const redirect = encodeURIComponent(route.fullPath);
 
@@ -125,7 +127,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         // 统一错误处理
         switch (code) {
           case 401:
-            handleUnauthorized(message); // ✅ 使用提取的函数
+            handleUnauthorized(message);
             break;
           case 403:
             showError(msg);

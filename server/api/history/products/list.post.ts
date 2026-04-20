@@ -10,16 +10,16 @@ const mySql = getNeon();
 
 /**
  * API接口基础骨架
- * TODO: 根据具体业务需求修改函数名称和逻辑
  */
 export default defineEventHandler(
   async (event): Promise<apihistoryProductsListResponse> => {
     // 1. 获取请求参数
     const body: apihistoryProductsListRequest = await readBody(event);
-    const { page = 1, page_size = 10, searchKey, timeStart, timeEnd } = body;
+    const { page = 1, page_size = 10, searchKey, timeStart, timeEnd, action_type } = body;
     // 构建查询条件
     const token = getCookie(event, "auth-token");
-    const userId = token ? parseInt(token.split(".")[0]) : null; // 按照 . 分割获取用户ID
+    const userId = token ? parseInt(token.split(".")[0]) : null;
+
     /**通过子查询拿到每个商品的最新查看记录，之后根据时间排序 */
     const result = (await mySql`
 SELECT 
@@ -35,21 +35,21 @@ FROM (
         hg.sort,
         hg.is_show,
         hg.average_rating,
-        upb.created_at,  -- 保留原始时间用于外层排序
-        TO_CHAR(upb.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Shanghai', 'YYYY-MM-DD HH24:MI:SS') as created_at_fmt,
+        upb.action_time,
+        TO_CHAR(upb.action_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Shanghai', 'YYYY-MM-DD HH24:MI:SS') as created_at_fmt,
         hg.shop_name
     FROM 
-        user_product_behavior upb
+        user_item_action upb
     INNER JOIN 
-        goods hg ON upb.goods_id = hg.id::varchar
+        goods hg ON upb.item_id = hg.id
     WHERE 
         upb.user_id = ${userId}
-        AND upb.behavior_type = 'click'
+        ${action_type ? mySql`AND upb.action_type = ${action_type}` : mySql``}
     ORDER BY 
-        hg.id, upb.created_at DESC
+        hg.id, upb.action_time DESC
 ) as sub
 ORDER BY 
-    sub.created_at DESC;
+    sub.action_time DESC;
 `) as Goods[];
 
     return {
@@ -63,7 +63,7 @@ ORDER BY
   },
 );
 
-// 重新导出类型，供其他服务器端文件使用
+// 重新导出类型
 export type {
   apihistoryProductsListRequest,
   apihistoryProductsListResponse,

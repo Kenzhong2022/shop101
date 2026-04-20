@@ -46,7 +46,9 @@ import { requireAuth } from "~~/server/utils/auth";
  */
 export default defineEventHandler(async (event): Promise<CartListResponse> => {
   console.log("🛒 获取购物车列表API被调用");
-  const { userId } = await requireAuth(event);
+  // 构建数据库插入数据
+  const { code, message, data } = await requireAuth(event);
+  const userId = data?.userId;
   if (!userId) {
     throw createError({
       statusCode: 401,

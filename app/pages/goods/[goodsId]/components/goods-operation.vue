@@ -19,9 +19,9 @@
         立即购买
       </div>
     </div>
-    <div @click="toggleCollect">
+    <div @click="changeFav">
       <el-icon color="var(--el-color-primary)">
-        <StarFilled v-if="isCollect" />
+        <StarFilled v-if="isFav" />
         <Star v-else />
       </el-icon>
     </div>
@@ -30,10 +30,18 @@
 
 <script setup lang="ts">
 import { Star, StarFilled } from "@element-plus/icons-vue";
+import type { CartAddRequest, CartAddResponse } from "~~/server/types/cart";
 import type {
-  CartAddRequest,
-  CartAddResponse,
-} from "~~/server/types/cart";
+  userBehaviorProductsGetRequest,
+  userBehaviorProductsGetResponse,
+} from "~~/server/types/user-behavior";
+import {
+  userBehaviorProductsGet,
+  userBehaviorProductsDelete,
+} from "~/api/user-behavior/products";
+import { useProductBehavior } from "~/composables/useProductBehavior";
+import { useUser } from "~/composables/useUser";
+const userState = useUser();
 const { $message } = useNuxtApp();
 const cartStore = useCartStore();
 const props = defineProps({
@@ -50,9 +58,43 @@ const props = defineProps({
     required: true,
   },
 });
-const isCollect = ref(false);
-function toggleCollect() {
-  isCollect.value = !isCollect.value;
+const favRes = ref<userBehaviorProductsGetResponse>();
+onMounted(async () => {
+  // 检查用户是否收藏了该商品
+  favRes.value = await userBehaviorProductsGet({
+    productId: props.goodsId,
+  });
+  if (favRes.value.data) {
+    isFav.value = true;
+  }
+});
+const isFav = ref(false);
+/**
+ * 切换收藏状态
+ */
+function changeFav() {
+  // 检查用户是否登录
+  if (!userState.value.user_id) {
+    $message.warning("请先登录");
+    return;
+  }
+  // 切换收藏状态
+  if (isFav.value && favRes.value?.data?.id) {
+    // 取消收藏
+    userBehaviorProductsDelete({
+      productIds: [favRes.value?.data?.id],
+      action_type: 2,
+    });
+    isFav.value = false;
+    $message.success("取消收藏成功");
+  } else {
+    // 收藏商品
+    useProductBehavior(props.goodsId, {
+      behaviorType: "fav",
+    });
+    isFav.value = true;
+    $message.success("收藏成功");
+  }
 }
 
 function addCart() {

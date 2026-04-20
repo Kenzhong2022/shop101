@@ -17,7 +17,13 @@ const getAxios = () => {
 // 3. 定义收藏历史商品列表接口函数
 /**
  * 收藏历史商品列表接口
- * @param
+ * @param params 请求参数
+ * @param params.searchKey 搜索关键词（可选）
+ * @param params.timeStart 时间开始（可选）
+ * @param params.timeEnd 时间结束（可选）
+ * @param params.page 页码（可选）
+ * @param params.page_size 每页数量（可选）
+ * @param params.action_type 行为类型（可选）：1=点击, 2=收藏, 3=加购, 4=购买
  * @returns 收藏历史商品列表响应数据
  */
 export async function apihistoryProductsList(

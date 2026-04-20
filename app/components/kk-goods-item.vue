@@ -26,7 +26,7 @@
       </div>
       <!-- 操作按钮 -->
       <el-checkbox
-        v-if="!collectedMode"
+        v-if="showCheckbox"
         :model-value="goodsItem.isChecked"
         size="large"
         class="checked_btn"
@@ -46,7 +46,7 @@
           {{ goodsItem.sales || 0 }}人购买
         </span>
       </div>
-      <div>店铺名: {{ goodsItem.shop_name }}</div>
+      <div>{{ goodsItem.shop_name }}</div>
     </div>
   </div>
   <!-- 分割线 -->
@@ -96,7 +96,14 @@ const emit = defineEmits([
   "click", // 点击商品事件
   "checkChange", // 点击操作按钮事件
 ]);
-
+const showCheckbox = ref(false);
+watch(
+  () => props.collectedMode,
+  (newData) => {
+    showCheckbox.value = newData;
+  },
+  { immediate: true },
+);
 // 点击处理函数
 function handleClick(goodsItem: Goods) {
   // 可以在这里添加点击效果、埋点等

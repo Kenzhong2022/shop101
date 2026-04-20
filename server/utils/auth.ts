@@ -41,17 +41,23 @@ export interface AuthUser {
   exp: number; // 过期时间戳
 }
 
+export interface AuthResponse {
+  code: number;
+  message: string;
+  data?: AuthUser;
+}
+
 /**
- * @returns {AuthUser} 认证用户信息 包含用户ID、token和过期时间戳
+ * @returns {AuthResponse} 认证用户信息 包含用户ID、token和过期时间戳
  */
-export async function requireAuth(event: H3Event): Promise<AuthUser> {
+export async function requireAuth(event: H3Event): Promise<AuthResponse> {
   const token = getCookie(event, "auth-token");
 
   if (!token) {
-    throw createError({
-      statusCode: 401,
+    return {
+      code: 401,
       message: "用户未登录",
-    });
+    };
   }
 
   try {
@@ -61,9 +67,13 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
     const [, exp] = token.split(".");
 
     return {
-      userId: userId as number,
-      token,
-      exp: Number(exp),
+      code: 200,
+      message: "认证成功",
+      data: {
+        userId: userId as number,
+        token,
+        exp: Number(exp),
+      },
     };
   } catch (err: any) {
     // 统一转换为 H3 createError

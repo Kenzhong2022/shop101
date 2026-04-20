@@ -13,6 +13,7 @@ export interface apihistoryProductsListRequest {
   timeEnd?: number; // 时间结束（可选）
   page?: number; // 页码（可选）
   page_size?: number; // 每页数量（可选）
+  action_type: number; // 行为类型（可选）：1=点击, 2=收藏, 3=加购, 4=购买
 }
 
 export interface apihistoryProductsListResponseData {
@@ -30,6 +31,7 @@ export interface apihistoryProductsListResponse {
 // 删除请求参数 - 商品ID数组
 export interface apihistoryProductsDeleteRequest {
   productIds: number[]; // 要删除的商品ID数组
+  action_type: number; // 行为类型（可选）：1=点击, 2=收藏, 3=加购, 4=购买
 }
 
 // 删除响应数据

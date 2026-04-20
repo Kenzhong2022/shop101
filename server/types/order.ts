@@ -32,7 +32,7 @@ export interface OrderItem {
   sku_code: string;
   sku_value: string;
   shop_name: string;
-  item_status: number;
+  item_status: number;// 
   created_at: string | Date;
   updated_at: string | Date;
   shop_order_status: number;

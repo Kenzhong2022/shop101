@@ -19,16 +19,6 @@ export async function apiName(params: RequestType): Promise<ResponseType> {
   return response.data;
 }
 
-// 4. 类型定义
-interface RequestType {
-  // 请求参数
-}
-
-interface ResponseType {
-  // 响应数据
-}
-```
-
 ## 请求方法示例
 
 ```typescript

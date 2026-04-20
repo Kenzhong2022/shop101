@@ -53,7 +53,7 @@
     <div class="flex flex-wrap px-20px">
       <!-- 一排五个 gap25 -->
       <kk-goods-item
-        :collected-mode="true"
+        :collected-mode="false"
         :data="goodsList"
         :loading="loadingGoods"
         @loadMore="loadMore"
@@ -121,14 +121,21 @@ const goodsList = ref<Goods[]>();
 
 const loadingGoods = ref<boolean>(true);
 
-// 点击商品跳转详情页
+/**
+ * 点击商品跳转详情页 并上报商品点击行为
+ * @param goodsItem 点击的商品项
+ */
 function handleClick(goodsItem: Goods) {
   // 上报商品点击行为
-  const { track } = useProductBehavior(goodsItem.id, {
-    behaviorType: "click",
-    autoTrack: true,
-    sourcePage: window.location.href,
-  }) as { track: () => void };
+  const { track, getSessionId } = useProductBehavior(
+    goodsItem.id,
+    {
+      behaviorType: "click",
+      autoTrack: true,
+    },
+    window.location.href,
+  ) as { track: () => void; getSessionId: () => string };
+  console.log("【Session ID】", getSessionId());
   // 跳转详情页
   navigateTo(`/goods/${goodsItem.id}/detail`);
 }

@@ -43,10 +43,10 @@ export default defineEventHandler(
 
       // 4. 执行删除操作
       const deleteResult = await mySql`
-        DELETE FROM user_product_behavior 
+        DELETE FROM user_item_action 
         WHERE user_id = ${userId} 
-        AND goods_id = ANY(${productIds})
-        AND behavior_type = 'click'
+        AND item_id = ANY(${productIds})
+        AND action_type = ${body.action_type}
         RETURNING *
       `;
 

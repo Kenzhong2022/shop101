@@ -60,8 +60,12 @@ definePageMeta({
     requiresAuth: true,
     requiresAdmin: false,
   },
+  layoutOptions: {
+    showSearch: false,
+    isStickyMode: false,
+  },
 });
-import { apihistoryProductsList } from "~/api/history/products";
+import { userBehaviorProductsList } from "~/api/user-behavior/products";
 import { useUser } from "~/composables/useUser";
 import type { MenuItem } from "~/components/kk-menu.vue";
 import type { Goods } from "~~/server/types/goods";
@@ -87,57 +91,17 @@ const MyAddress = markRaw(
 const currentComponent = shallowRef<Component>(MyUserInfo);
 // 当前选中的菜单
 const currentMenu = ref<string>("/user/myUserInfo");
-// 组件映射表
-const componentMap: Record<string, Component> = {
-  "/user/myUserInfo": MyUserInfo,
-  "/user/myOrder": MyOrder,
-  "/user/myCollect": MyCollect,
-  "/user/mySetting": MySetting,
-  "/user/myHistory": MyHistory,
-  "/user/myAddress": MyAddress,
-};
+// 路由参数
 const route = useRoute();
 const router = useRouter();
 // 动态组件的数据
 const data = ref();
-
+// 用户状态
 const userState = useUser();
-
 // 头像是否悬停状态
 const isHovered = ref(false);
-
 // 倒计时时间状态
 const expTime = ref<number>(0);
-
-// 页面加载完成后的操作
-onMounted(() => {
-  console.log("页面加载完成后的操作", route.query.tab);
-  expTime.value = userState.value.expireTime;
-  updateComponentByTab((route.query.tab as string) || "/user/myUserInfo"); // 默认个人信息
-});
-// ========== 核心：页面激活时重置状态 ==========
-onActivated(() => {
-  console.log("页面激活时重置状态", route.query.tab);
-  updateComponentByTab((route.query.tab as string) || "/user/myUserInfo"); // 默认个人信息
-});
-// 根据 tab 参数获取对应的组件和刷新函数
-async function updateComponentByTab(tab: string) {
-  const config = componentConfigMap[`${tab}`]; // 注意 key 格式要与配置一致
-  currentMenu.value = `${tab}`;
-  if (config) {
-    currentComponent.value = config.component;
-    currentRefreshFn.value = config.fetchData;
-    try {
-      // isLoading.value = true;
-      await config.fetchData();
-    } catch (error) {
-      console.error("刷新数据失败:", error);
-    } finally {
-      // isLoading.value = false;
-    }
-    currentMenu.value = `${tab}`;
-  }
-}
 
 const fileInput = ref<HTMLInputElement>();
 
@@ -161,45 +125,38 @@ async function onSelect(e: any) {
 
 // 历史记录
 async function getHistoryList() {
-  const { data: res } = await apihistoryProductsList({
+  const { data: res } = await userBehaviorProductsList({
     page: 1,
     page_size: 10,
+    action_type: 1,
   });
-  data.value = res.GoodsItems.reduce(
-    (prev, curItem) => {
-      const date = curItem.created_at_fmt.split(" ")[0];
-      if (!prev[date]) prev[date] = [];
-      prev[date].push({ ...curItem, isChecked: false });
-      return prev;
-    },
-    {} as Record<string, Goods[]>,
-  );
+  data.value = Array.isArray(res.GoodsItems)
+    ? res.GoodsItems.map((item) => ({ ...item, isChecked: false }))
+    : [];
 }
 
-// // 收藏列表（假设你有这个API）
-// async function getCollectList() {
-//   const { data: res } = await apiCollectProductsList({
-//     page: 1,
-//     page_size: 10,
-//   });
-//   data.value = res.items; // 根据实际API调整
-// }
-
-// // 订单列表（假设你有这个API）
-// async function getOrderList() {
-//   const { data: res } = await apiOrderList({ page: 1, page_size: 10 });
-//   data.value = res.orders; // 根据实际API调整
-// }
+// 收藏夹
+async function getFavoritesList() {
+  const { data: res } = await userBehaviorProductsList({
+    page: 1,
+    page_size: 10,
+    action_type: 2,
+  });
+  data.value = Array.isArray(res.GoodsItems)
+    ? res.GoodsItems.map((item) => ({ ...item, isChecked: false }))
+    : [];
+}
 
 // ========== 2. 组件配置表：每个组件绑定自己的数据和刷新函数 ==========
-
 interface ComponentConfig {
   component: Component;
   fetchData: () => Promise<void>;
   title: string;
   icon: string;
 }
-
+/**
+ * 组件配置表：每个组件绑定自己的数据和刷新函数
+ */
 const componentConfigMap: Record<string, ComponentConfig> = {
   "/user/myUserInfo": {
     component: MyUserInfo,
@@ -219,9 +176,7 @@ const componentConfigMap: Record<string, ComponentConfig> = {
   },
   "/user/myCollect": {
     component: MyCollect,
-    fetchData: async () => {
-      /* 暂时没有 */
-    },
+    fetchData: getFavoritesList,
     title: "收藏夹",
     icon: "icon-collection",
   },
@@ -248,57 +203,24 @@ const componentConfigMap: Record<string, ComponentConfig> = {
     icon: "icon-dizhi",
   },
 };
-// 自动生成菜单项的工厂函数
-function createMenuItem(url: keyof typeof componentConfigMap): MenuItem {
-  const config = componentConfigMap[url];
-  if (!config) {
-    throw new Error(`未找到对应的配置: ${url}`);
-  }
-  return {
-    title: config.title,
-    url,
-    icon: config.icon, // 你的图标映射
-    // 点击菜单时，切换组件并刷新数据
-    onClick: async (item: MenuItem) => {
-      // 设置路由参数为当前点击的菜单
-      router.push({ query: { tab: item.url } });
-      // 切换当前组件
-      currentComponent.value = config.component;
-      currentRefreshFn.value = config.fetchData;
-      // isLoading.value = true;
-      try {
-        await config.fetchData();
-      } catch (error) {
-        console.error("刷新数据失败:", error);
-      } finally {
-        // isLoading.value = false;
-      }
-    },
-  };
-}
+
+// ========== 3. 统一的刷新函数（根据当前组件动态调用）=========
+/**
+ * 当前组件的刷新函数
+ */
+const currentRefreshFn = ref<(() => Promise<void>) | null>(null);
 
 const loadingStore = useLoadingStore();
 
-// 然后菜单定义变得超简单
-const menuItems: MenuItem[] = [
-  createMenuItem("/user/myUserInfo"),
-  createMenuItem("/user/myOrder"),
-  createMenuItem("/user/myCollect"),
-  createMenuItem("/user/myHistory"),
-  createMenuItem("/user/myAddress"),
-  createMenuItem("/user/mySetting"),
-  // ...
-];
-// ========== 3. 统一的刷新函数（根据当前组件动态调用） ==========
-
-const currentRefreshFn = ref<(() => Promise<void>) | null>(null);
-
 // 统一的刷新入口
+/**
+ * 刷新当前组件的数据
+ */
 async function refreshCurrentComponent() {
   if (currentRefreshFn.value) {
     try {
       // isLoading.value = true;
-      await currentRefreshFn.value();
+      await currentRefreshFn.value(); // 刷新数据
     } catch (error) {
       console.error("刷新数据失败:", error);
     } finally {
@@ -306,6 +228,105 @@ async function refreshCurrentComponent() {
     }
   }
 }
+/**
+ * 根据 tab 参数获取对应的组件和刷新函数
+ * @param tab 菜单路径
+ */
+async function updateComponentByTab(tab: string) {
+  // 处理 tab 值格式，确保与 componentConfigMap 键匹配
+  let normalizedTab = tab;
+  if (tab && !tab.startsWith("/user/")) {
+    normalizedTab = `/user/${tab}`;
+  }
+  const config = componentConfigMap[normalizedTab];
+  currentMenu.value = normalizedTab;
+  if (config) {
+    currentRefreshFn.value = config.fetchData;
+    try {
+      // isLoading.value = true;
+      await config.fetchData(); // 刷新数据
+      currentComponent.value = config.component;
+    } catch (error) {
+      console.error("刷新数据失败:", error);
+    } finally {
+      // isLoading.value = false;
+    }
+  } else {
+    console.warn(`未找到对应的组件配置: ${tab}`);
+    // 默认显示个人信息页
+    const defaultConfig = componentConfigMap["/user/myUserInfo"];
+    if (defaultConfig) {
+      currentMenu.value = "/user/myUserInfo";
+      currentRefreshFn.value = defaultConfig.fetchData;
+      await defaultConfig.fetchData();
+      currentComponent.value = defaultConfig.component;
+    }
+  }
+}
+// 自动生成菜单项的工厂函数
+/**
+ * 创建菜单项
+ * @param url 菜单路径
+ * @returns 菜单项
+ */
+function createMenuItem(url: keyof typeof componentConfigMap): MenuItem {
+  const config = componentConfigMap[url]; // 获取组件配置
+  if (!config) {
+    throw new Error(`未找到对应的配置: ${url}`);
+  }
+  return {
+    title: config.title,
+    url,
+    icon: config.icon,
+    /**
+     * 点击菜单时，切换组件并刷新数据
+     * @param item 菜单项
+     */
+    onClick: async (item: MenuItem) => {
+      // 设置路由参数为当前点击的菜单
+      router.push({ query: { tab: item.url } });
+      currentRefreshFn.value = config.fetchData;
+      try {
+        await config.fetchData();
+      } catch (error) {
+        console.error("刷新数据失败:", error);
+      } finally {
+        // 切换当前组件
+        currentComponent.value = config.component;
+      }
+    },
+  };
+}
+
+/**
+ * 菜单项配置
+ */
+const menuItems: MenuItem[] = [
+  createMenuItem("/user/myUserInfo"),
+  createMenuItem("/user/myOrder"),
+  createMenuItem("/user/myCollect"),
+  createMenuItem("/user/myHistory"),
+  createMenuItem("/user/myAddress"),
+  createMenuItem("/user/mySetting"),
+];
+
+// 页面加载完成后的操作
+onMounted(() => {
+  expTime.value = userState.value.expireTime;
+  updateComponentByTab(route.query.tab as string); // 默认个人信息
+});
+// 监听路由变化
+watch(
+  () => route.query,
+  async (newTab) => {
+    console.log("页面激活时重置状态", newTab);
+    await updateComponentByTab(newTab.tab as string); // 默认个人信息
+  },
+  {
+    deep: true,
+    immediate: true,
+  },
+);
 </script>
 
 <style lang="scss" scoped>

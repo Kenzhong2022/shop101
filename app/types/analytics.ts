@@ -2,115 +2,124 @@
 
 /**
  * 用户商品行为数据表结构
- * 对应数据库表: user_product_behavior
+ * 对应数据库表: user_item_action
  */
-export interface UserProductBehavior {
+export interface UserItemAction {
   /** 主键ID */
   id: number;
 
-  /** 用户ID（登录用户） */
-  user_id: string | null;
+  /** 用户ID */
+  user_id: number;
 
-  /** 会话ID（未登录用户，必填） */
-  session_id: string;
+  /** 商品ID */
+  item_id: number;
 
-  /** 商品ID（必填） */
-  goods_id: string;
+  /** 行为类型: 1=点击, 2=收藏, 3=加购, 4=购买 */
+  action_type: ActionType;
 
-  /** 行为类型（必填）: view|click|cart|order|fav|share */
-  behavior_type: BehaviorType;
+  /** 行为权重: 1=点击, 3=收藏, 5=加购, 10=购买 */
+  action_weight: ActionWeight;
 
-  /** 停留时长（毫秒，view行为时有值） */
-  duration_ms: number | null;
-
-  /** 数量（cart/order行为时有值） */
-  quantity: number | null;
-
-  /** 价格（cart/order行为时有值） */
-  price: number | null;
-
-  /** 扩展字段（JSON格式） */
-  extra: Record<string, any>;
-
-  /** 来源页面 */
-  source_page: string | null;
-
-  /** 设备类型: mobile|pc|tablet|miniapp */
-  device_type: string | null;
-
-  /** 创建时间 */
-  created_at: string; // ISO 8601 格式
+  /** 行为发生时间 */
+  action_time: Date;
 }
 
 /**
  * 行为类型枚举
+ * 1=点击, 2=收藏, 3=加购, 4=购买
  */
-export type BehaviorType =
-  | "view" // 浏览
-  | "click" // 点击
-  | "cart" // 加购
-  | "order" // 下单
-  | "fav" // 收藏
-  | "share"; // 分享
+export enum ActionType {
+  Click = 1, // 点击
+  Fav = 2, // 收藏
+  Cart = 3, // 加购
+  Buy = 4, // 购买
+}
 
 /**
- * 设备类型枚举
+ * 行为权重枚举
+ * 权重值: 点击=1, 收藏=3, 加购=5, 购买=10
  */
-export type DeviceType =
-  | "mobile" // 移动端
-  | "pc" // 电脑端
-  | "tablet" // 平板
-  | "miniapp"; // 小程序
+export enum ActionWeight {
+  Click = 1, // 点击权重 1
+  Fav = 3, // 收藏权重 3
+  Cart = 5, // 加购权重 5
+  Buy = 10, // 购买权重 10
+}
 
 /**
- * 数据库索引定义（用于迁移文件或文档）
+ * 行为类型字符串映射（用于前端显示）
+ */
+export const ActionTypeName: Record<ActionType, string> = {
+  [ActionType.Click]: "点击",
+  [ActionType.Fav]: "收藏",
+  [ActionType.Cart]: "加购",
+  [ActionType.Buy]: "购买",
+};
+
+/**
+ * 数据库索引定义
  */
 export interface DatabaseIndexes {
-  /** 用户+时间索引 */
-  idx_user_time: ["user_id", "created_at"];
+  /** 用户+商品索引：快速查找指定用户对指定商品的所有行为 */
+  idx_user_item: ["user_id", "item_id"];
 
-  /** 商品+时间索引 */
-  idx_product_time: ["goods_id", "created_at"];
+  /** 时间索引：便于按时间范围清理或分析 */
+  idx_action_time: ["action_time"];
 
-  /** 行为类型+时间索引 */
-  idx_behavior: ["behavior_type", "created_at"];
-
-  /** 会话+时间索引 */
-  idx_session_time: ["session_id", "created_at"];
+  /** 商品+用户索引：物品向量构建时使用 */
+  idx_item_user: ["item_id", "user_id"];
 }
 
 /**
  * 创建行为记录请求参数
  */
-export interface CreateBehaviorRequest {
-  goodsId: string;
-  behaviorType: BehaviorType;
-  duration?: number; // 毫秒
-  quantity?: number;
-  price?: number;
-  extra?: Record<string, any>;
-  sourcePage?: string;
-  deviceType?: DeviceType;
-  timestamp?: string; // ISO 8601
+export interface CreateActionRequest {
+  /** 商品ID */
+  item_id: number;
+
+  /** 行为类型: 1=点击, 2=收藏, 3=加购, 4=购买 */
+  action_type: ActionType;
+
+  /** 行为权重: 1, 3, 5, 10 */
+  action_weight?: ActionWeight;
+
+  /** 行为发生时间 */
+  action_time?: string; // ISO 8601 格式
+
+  /** 会话ID */
+  session_id?: string; // 用于关联用户会话的唯一标识
 }
 
 /**
- * 扩展字段示例类型（可选，用于代码提示）
+ * 行为统计响应
  */
-export interface ViewExtra {
-  scroll_depth?: number; // 滚动深度 0-1
+export interface ActionStatsResponse {
+  /** 商品ID */
+  item_id: number;
+
+  /** 行为类型 */
+  action_type: ActionType;
+
+  /** 行为次数 */
+  count: number;
+
+  /** 行为权重总和 */
+  total_weight: number;
 }
 
-export interface ClickExtra {
-  target?: string; // 点击目标: buy_btn|image|title
-}
+/**
+ * 用户行为历史响应
+ */
+export interface UserActionHistoryResponse {
+  /** 行为列表 */
+  list: UserItemAction[];
 
-export interface CartExtra {
-  sku_id?: string; // SKU ID
-  coupon_used?: boolean; // 是否使用优惠券
-}
+  /** 总数 */
+  total: number;
 
-export interface OrderExtra {
-  order_id?: string; // 订单号
-  status?: "pending" | "paid" | "cancelled";
+  /** 页码 */
+  page: number;
+
+  /** 每页数量 */
+  page_size: number;
 }

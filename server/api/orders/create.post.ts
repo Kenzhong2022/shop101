@@ -107,7 +107,9 @@ export default defineEventHandler(
   async (event): Promise<OrderCreateResponse> => {
     try {
       // 1. 身份验证
-      const { userId } = await requireAuth(event);
+      // 构建数据库插入数据
+      const { code, message, data } = await requireAuth(event);
+      const userId = data?.userId;
 
       // 2. 解析请求体
       const body = await readBody<CreateOrderRequestDTO>(event);

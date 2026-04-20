@@ -13,7 +13,9 @@ const sql = getNeon();
  */
 export default defineEventHandler(async (event): Promise<ApiResponse<any>> => {
   console.log("🔍 API接口被调用 ");
-  const { userId } = await requireAuth(event);
+  // 构建数据库插入数据
+  const { code, message, data } = await requireAuth(event);
+  const userId = data?.userId;
   // 1. 获取请求参数
   const body: CreateAddressRequest = await readBody(event);
   console.log("📋 接收到的请求参数:", body);

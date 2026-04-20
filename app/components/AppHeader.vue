@@ -35,10 +35,32 @@
             </span>
             <!-- 下拉菜单 -->
             <el-dropdown>
-              <span class="el-dropdown-link"> </span>
+              <span class="el-dropdown-link cursor-pointer flex items-center">
+                <el-icon class="el-icon--right ml-1">
+                  <arrow-down />
+                </el-icon>
+              </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item>Action 1</el-dropdown-item>
+                  <!-- 个人中心 -->
+                  <el-dropdown-item>个人中心</el-dropdown-item>
+
+                  <!-- 账号设置 -->
+                  <el-dropdown-item>账号设置</el-dropdown-item>
+
+                  <!-- 我的订单 -->
+                  <el-dropdown-item>我的订单</el-dropdown-item>
+
+                  <!-- 我的收藏 -->
+                  <el-dropdown-item>我的收藏</el-dropdown-item>
+
+                  <!-- 分隔线 -->
+                  <el-dropdown-item divided></el-dropdown-item>
+
+                  <!-- 登出（最常用） -->
+                  <el-dropdown-item class="text-red-500"
+                    >退出登录</el-dropdown-item
+                  >
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -51,16 +73,11 @@
 </template>
 
 <script setup>
+import { ArrowDown } from "@element-plus/icons-vue";
 // 路由实例
 const router = useRouter();
-
 // 组件挂载时初始化
-onMounted(() => {
-  // 监听路由变化
-  router.afterEach((to) => {
-    console.log("AppHeader:当前路由:", to.path);
-  });
-});
+onMounted(() => {});
 
 function isActive(item) {
   const currentRoute = useRoute().path;

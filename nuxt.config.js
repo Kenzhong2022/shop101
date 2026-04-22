@@ -153,12 +153,12 @@ export default defineNuxtConfig({
         },
       },
       plugins: [
-        (await import("rollup-plugin-visualizer")).default({
-          open: true,
-          filename: "stats.html",
-          gzipSize: true,
-          brotliSize: true,
-        }),
+        // (await import("rollup-plugin-visualizer")).default({
+        //   open: true,
+        //   filename: "stats.html",
+        //   gzipSize: true,
+        //   brotliSize: true,
+        // }),
         (await import("vite-plugin-image-optimizer")).ViteImageOptimizer({
           // 1. 启用/禁用开关（核心）
           disable: process.env.NODE_ENV === "development" ? false : false,

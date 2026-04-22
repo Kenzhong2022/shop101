@@ -108,10 +108,11 @@ export default defineNuxtConfig({
   hub: {
     // 要什么功能开什么，不需要的可以关
     ai: true,
-    cache: true,
+    db: "postgresql", // 明确指定，因为你在用 Neon
+    // 如果使用 KV 或 Blob，也显式声明
+    kv: false, // 如果没有使用 KV 就关闭
     blob: false,
-    kv: true,
-    database: false,
+    cache: false,
   },
 
   // 可选：配置 Pinia

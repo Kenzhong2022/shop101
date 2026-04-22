@@ -252,7 +252,7 @@ export default defineEventHandler(
             total_amount, payment_amount, discount_amount,
             order_status, payment_status, shipping_status,
             address_id, remark,
-            created_at, expire_at
+            created_at, expire_at, user_id
           ) VALUES (
             (SELECT id FROM orders_master WHERE master_order_no = ${masterOrderNo}),
             ${sub.slave_order_no}, ${sub.master_order_no},
@@ -260,7 +260,7 @@ export default defineEventHandler(
             ${sub.total_amount}, ${sub.payment_amount}, ${sub.discount_amount},
             ${sub.order_status}, ${sub.payment_status}, ${sub.shipping_status},
             ${sub.address_id}, ${sub.remark || null},
-            ${sub.created_at}, ${sub.expire_at}
+            ${sub.created_at}, ${sub.expire_at}, ${userId}
           )
         `);
 
@@ -269,11 +269,11 @@ export default defineEventHandler(
           statements.push(sql`
             INSERT INTO order_items (
               order_shop_id, goods_id, goods_name, quantity, price, total,
-              sku_code, sku_value, image, shop_name, shop_id,slave_order_no
+              sku_code, sku_value, image, shop_name, shop_id,slave_order_no, user_id
             ) VALUES (
               (SELECT id FROM order_shops WHERE slave_order_no = ${sub.slave_order_no}),
               ${item.goods_id}, ${item.goods_name}, ${item.quantity}, ${item.price}, ${item.total},
-              ${item.sku_code}, ${item.sku_value}, ${item.image}, ${item.shop_name}, ${item.shop_id}, ${item.slave_order_no}
+              ${item.sku_code}, ${item.sku_value}, ${item.image}, ${item.shop_name}, ${item.shop_id}, ${item.slave_order_no}, ${userId}
             )
           `);
 

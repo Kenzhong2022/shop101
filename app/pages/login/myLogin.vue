@@ -277,6 +277,7 @@ definePageMeta({
     requiresAdmin: false,
     pageType: "auth",
   },
+  layoutOptions: {},
 });
 
 // 表单实例

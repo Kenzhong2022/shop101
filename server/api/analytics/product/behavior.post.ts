@@ -24,7 +24,16 @@ export default defineEventHandler(async (event) => {
 
     const { item_id, action_type, action_weight, action_time, session_id } =
       body;
+    const sessionId = session_id || generateSessionId(); // 生成会话ID
 
+    const insertData = {
+      user_id: null as number | null,
+      session_id: sessionId,
+      item_id: item_id,
+      action_type: action_type,
+      action_weight: action_weight || null,
+      action_time: action_time || new Date().toISOString(),
+    };
     // 必要字段验证
     if (!item_id) {
       throw createError({
@@ -32,28 +41,22 @@ export default defineEventHandler(async (event) => {
         message: "商品ID不能为空",
       });
     }
-
+    let userId: number;
     // 构建数据库插入数据
-    const { code, message, data } = await requireAuth(event);
-    const userId = data?.userId;
-
-    if (code === 401 && action_type !== 1) {
-      throw createError({
-        statusCode: 401,
-        message: "用户未登录",
-        data: {},
-      });
+    if (action_type !== 1) {
+      const { code, message, data } = await requireAuth(event);
+      if (code === 401) {
+        throw createError({
+          statusCode: 401,
+          message: "用户未登录,不能记录商品浏览行为数据",
+          data: {},
+        });
+      }
+      if (data) {
+        // 新增insertData对象属性user_id
+        insertData.user_id = data.userId;
+      }
     }
-    const sessionId = session_id || generateSessionId(); // 生成会话ID
-
-    const insertData = {
-      user_id: userId,
-      session_id: sessionId,
-      item_id: item_id,
-      action_type: action_type,
-      action_weight: action_weight || null,
-      action_time: action_time || new Date().toISOString(),
-    };
 
     // 执行数据库插入
     const result = await mySql`

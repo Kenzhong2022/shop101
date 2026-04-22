@@ -91,7 +91,7 @@ function getCurrentDuration() {
 
 // 传给 useProductBehavior
 const { track } = useProductBehavior(goodsId, {
-  behaviorType: "view",
+  behaviorType: "click",
   getDuration: getCurrentDuration, // 关键：传入获取函数
 }) as { track: () => void };
 // 加载商品数据（只在首次执行）

@@ -36,12 +36,13 @@ onMounted(() => {
   getGoodsList();
 });
 
-// 监听路由变化，当分类ID变化时，重置分页并重新加载商品
+// 监听路由变化，当分类ID变化时，重置分页和商品列表并重新加载商品列表
 watch(
   () => route.query.category_id,
   (newVal) => {
     if (newVal) {
       currentPage.value = 1;
+      goodsList.value = [];
       getGoodsList();
     }
   },
@@ -51,14 +52,14 @@ async function getGoodsList() {
   // 从路由参数中获取分类ID
   const category_id = Number(route.query.category_id);
   loadingGoods.value = true;
-  // 是否没有更多
+  // 调用 API获取商品列表
   await apiGoodsList({
     category_id,
     page: currentPage.value,
     page_size: 5,
   })
     .then((res) => {
-      // 检查是否有更多数据
+      // 检查是否有数据
       hasMore.value = res.data.list.length !== 0;
       // 合并商品列表，追加新数据
       goodsList.value = [...(goodsList.value || []), ...res.data.list];
@@ -91,7 +92,6 @@ function handleClick(goodsItem: Goods) {
   const { track } = useProductBehavior(goodsItem.id, {
     behaviorType: "click",
     autoTrack: true,
-    sourcePage: window.location.href,
   }) as { track: () => void };
   // 跳转详情页
   navigateTo(`/goods/${goodsItem.id}/detail`);

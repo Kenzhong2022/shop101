@@ -33,7 +33,7 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
     // 4. 处理结果 根据贝叶斯评分
     console.log(
       "排序后的商品列表:",
-      rows.map((item) => item.average_rating),
+      rows.map((item) => item),
     );
     return {
       code: 200,

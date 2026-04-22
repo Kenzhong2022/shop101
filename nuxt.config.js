@@ -26,7 +26,6 @@ export default defineNuxtConfig({
       SOCKET_URL: process.env.NUXT_PUBLIC_SOCKET_URL,
     },
   },
-
   cloudinary: {
     cloudName: "dlji1nmdj", // udinary 云名称
     uploadPreset: "shop101-upload-preset", // 替换为你的预设名称
@@ -44,6 +43,11 @@ export default defineNuxtConfig({
 
   // 处理304
   nitro: {
+    preset: "cloudflare-pages",
+    // 关键：启用 Cloudflare Node.js 兼容模式
+    nodeCompat: true,
+    // 关键：禁止使用 Node.js 原生模块
+    exportConditions: ["worker"],
     experimental: {
       websocket: true, // 开启 WebSocket 支持
       tasks: true, // 开启定时任务支持
@@ -97,9 +101,19 @@ export default defineNuxtConfig({
     "@element-plus/nuxt",
     "@unocss/nuxt",
     "@nuxt/image",
-    "@nuxtjs/cloudinary",
-    "@pinia/nuxt", // 注册 Pinia 模块
+    "@nuxtjs/cloudinary", // 注册 Pinia 模块
+    "@pinia/nuxt",
+    "@nuxthub/core",
   ],
+  hub: {
+    // 要什么功能开什么，不需要的可以关
+    ai: true,
+    cache: true,
+    blob: false,
+    kv: true,
+    database: false,
+  },
+
   // 可选：配置 Pinia
   pinia: {
     storesDirs: ["./stores/**"], // 自动导入 stores 目录

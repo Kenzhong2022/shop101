@@ -55,7 +55,16 @@ function saveSessionIdToStorage(id) {
 
 // 初始化 sessionId（从 localStorage 读取）
 let sessionId = getSessionIdFromStorage();
-
+/**
+ *
+ * @param {string|number} itemId - 商品ID，必须是 string 或 number 类型
+ * @param {Object} options 配置项，可选参数
+ * @param {string} [options.behaviorType="click"] - 行为类型：click|fav|cart|buy
+ * @param {boolean} [options.autoTrack=true] - 是否自动上报
+ * @param {Function} [options.getDuration] - 外部传入的获取浏览时长函数（毫秒）
+ * @param {string} [sourcePage=""] - 来源页面URL，用于记录用户行为来源
+ * @returns
+ */
 export function useProductBehavior(itemId, options = {}, sourcePage = "") {
   // 参数校验
   if (!itemId || (typeof itemId !== "string" && typeof itemId !== "number")) {

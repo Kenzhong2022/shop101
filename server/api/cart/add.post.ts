@@ -94,7 +94,6 @@ export default defineEventHandler(async (event): Promise<CartAddResponse> => {
       `;
 
     console.log("✅ 添加成功，购物车ID:", cart_id);
-
     // 7. 返回响应
     return {
       code: 200,

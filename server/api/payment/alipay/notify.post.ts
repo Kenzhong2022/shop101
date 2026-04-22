@@ -52,16 +52,13 @@ export default defineEventHandler(async (event) => {
       console.log("收到的 sign:", body.sign);
       return "fail";
     }
-    console.log("✅ 签名验证通过");
 
     const orderNo = body.out_trade_no; // 支付宝订单号
     const tradeStatus = body.trade_status; // 支付宝订单状态
-    console.log("orderNo:", orderNo, "tradeStatus:", tradeStatus);
     if (tradeStatus !== "TRADE_SUCCESS" && tradeStatus !== "TRADE_FINISHED") {
       console.log("⏳ 订单状态无需处理:", tradeStatus);
       return "success";
     }
-    // 他会是A类型或者B类型
     let order;
 
     if (orderNo.length === 18) {
@@ -77,7 +74,7 @@ export default defineEventHandler(async (event) => {
       return "fail";
     }
 
-    // 5️⃣ 验证金额
+    // 5️⃣ 验证金额是否匹配
     if (parseFloat(order.amount) !== parseFloat(body.total_amount)) {
       console.error("❌ 金额不匹配:", order.amount, "vs", body.total_amount);
       return "fail";
@@ -104,9 +101,9 @@ export default defineEventHandler(async (event) => {
 });
 
 /**
- * 根据订单号查询订单
- * @param orderId 订单号
- * @returns 订单信息
+ * 根据主订单号查询主订单
+ * @param orderId 主订单号
+ * @returns 主订单信息
  */
 async function getOrderByMasterOrderId(orderId: string) {
   const order =
@@ -125,7 +122,11 @@ async function getOrderByMasterOrderId(orderId: string) {
   }
   return null;
 }
-
+/**
+ * 根据子订单号查询子订单
+ * @param orderId 子订单号
+ * @returns 子订单信息
+ */
 async function getOrderBySlaveOrderId(orderId: string) {
   const order =
     await sql`select slave_order_no, payment_status, order_status, total_amount from order_shops where slave_order_no = ${orderId}`;
@@ -146,7 +147,7 @@ async function getOrderBySlaveOrderId(orderId: string) {
 
 /**
  * 更新订单状态
- * @param orderId 主订单号
+ * @param orderNo 订单号
  * @param updateData 更新数据
  */
 async function updateOrderStatusByOrderNo(
@@ -159,7 +160,6 @@ async function updateOrderStatusByOrderNo(
   },
 ) {
   const { status } = updateData;
-  console.log("status:", status, "orderNo:", orderNo); // TRADE_SUCCESS, TRADE_FINISHED
   const statusMap = {
     TRADE_SUCCESS: {
       payment_status: 1, // 已支付
@@ -170,9 +170,6 @@ async function updateOrderStatusByOrderNo(
     string,
     { payment_status: number; order_status: number; item_status: number }
   >;
-  console.log("order_status:", statusMap[status].order_status);
-  console.log("item_status:", statusMap[status].item_status);
-  console.log("payment_status:", statusMap[status].payment_status);
 
   const updateQueries = [];
   try {

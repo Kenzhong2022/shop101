@@ -61,7 +61,7 @@ export async function requireAuth(event: H3Event): Promise<AuthResponse> {
   }
 
   try {
-    const userId = checkToken(token); // 调用现有函数
+    const userId = checkToken(token); // 调用现有函数检查 token 有效性
 
     // 解析 exp 返回（可选，用于刷新 token 判断）
     const [, exp] = token.split(".");

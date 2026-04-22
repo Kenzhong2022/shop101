@@ -103,6 +103,10 @@ function addCart() {
     return;
   }
   console.log(props);
+  // 传给 useProductBehavior
+  useProductBehavior(props.goodsId, {
+    behaviorType: "cart",
+  });
   cartStore.addCart({
     goods_id: props.goodsId,
     quantity: 1,

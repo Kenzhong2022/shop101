@@ -50,11 +50,7 @@ export default defineNuxtConfig({
 
   // 处理304
   nitro: {
-    preset: "cloudflare-pages",
-    // 关键：启用 Cloudflare Node.js 兼容模式
-    nodeCompat: true,
-    // 关键：禁止使用 Node.js 原生模块
-    exportConditions: ["worker"],
+    preset: "netlify",
     experimental: {
       websocket: true, // 开启 WebSocket 支持
       tasks: true, // 开启定时任务支持

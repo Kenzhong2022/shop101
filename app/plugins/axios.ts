@@ -47,9 +47,12 @@ function showError(message: string) {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
+  // 获取运行时配置
+  const config = useRuntimeConfig();
+
   // 创建axios实例
   const axiosInstance = axios.create({
-    baseURL: "/api", // 基础路径
+    baseURL: (config.public.apiBaseUrl as string) || "/api", // 基础路径，优先使用环境变量
     timeout: 30000, // 30秒超时
     headers: {
       "Content-Type": "application/json",

@@ -62,7 +62,6 @@
         @check-change="({ id, checked }) => updateItemChecked(id, checked)"
       />
     </div>
-    <div v-for="i in 5" :key="i" class="animate-fade-in">这是第一层</div>
   </div>
 </template>
 
@@ -157,6 +156,7 @@ async function getGoodsList() {
     page_size: 5,
   })
     .then((res) => {
+      currentPage.value++;
       // 检查是否有更多数据
       hasMore.value = res.data.list.length !== 0;
       // 合并商品列表，追加新数据
@@ -167,7 +167,6 @@ async function getGoodsList() {
       });
     })
     .finally(() => {
-      currentPage.value++;
       loadingGoods.value = false;
       $message.success("加载完成");
     });
@@ -180,13 +179,16 @@ async function loadMore() {
   hasMore.value = await getGoodsList(); // 1. 先加载数据
   if (!hasMore.value) {
     $message.info("没有更多商品了");
-    // 没有更多商品了，停止监听最后一行
   }
 }
 
 onMounted(async () => {
   await getGoodsList();
   loadingGoods.value = false;
+  // 测试后端接口compute-item-sim
+  fetch("/api/compute-item-sim").then((res) => {
+    console.log(res);
+  });
 });
 
 onUnmounted(() => {});

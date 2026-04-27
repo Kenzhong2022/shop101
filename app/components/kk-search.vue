@@ -7,6 +7,7 @@
       v-model="input"
       class="border-transparent w-full bg-#fff overflow-hidden"
       placeholder="Please input"
+      @keyup.enter="handleSearch"
     >
       <template #prefix>
         <div v-debounce:[800]="handleSearch">
@@ -30,14 +31,18 @@ const input = ref("");
 // 定义事件：search
 const emit = defineEmits(["search"]);
 
-// 定义方法：handleSearch
 /**
  * 搜索方法
  * @description 当用户点击搜索按钮时，触发搜索事件，将输入框中的值作为搜索关键词。并且清空输入框。
  */
 const handleSearch = () => {
-  // 触发事件：search
-  emit("search", input.value);
+  if (input.value.trim()) {
+    // 跳转到搜索列表页，带搜索参数
+    navigateTo({
+      path: "/searchList",
+      query: { keyword: input.value.trim() },
+    });
+  }
   // 清空输入框
   input.value = "";
 };

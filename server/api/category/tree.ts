@@ -17,6 +17,6 @@ export default defineEventHandler(async (event): Promise<CategoryTree[]> => {
     categories =
       await mySql`SELECT * FROM categories WHERE parent_id = ${parent_id};`;
   }
-  console.log("分类树:", categories);
+  // console.log("分类树:", categories);
   return categories as CategoryTree[];
 });

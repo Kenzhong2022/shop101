@@ -7,34 +7,51 @@ import getNeon from "~~/server/utils/neon";
 const mySql = getNeon();
 
 export default defineEventHandler(async (event): Promise<ListResponse> => {
-  console.log("🔍 商品列表接口被调用 ");
-  // 从事件中获取请求体参数
   const body: ListRequest = await readBody(event);
-  console.log("📋 接收到的请求体参数:", body);
   body.page = body.page || 1;
   body.page_size = body.page_size || 5;
   body.shop_name = body.shop_name || "";
   body.keyword = body.keyword || "";
   body.category_id = body.category_id || 0;
 
-  // 计算偏移量 向后偏移
-  const offset = (body.page - 1) * body.page_size;
-  // 1. 真正的"条件片段"数组
   try {
-    const { whereSql, values } = buildWhereClause(body);
-    const rows = await mySql`
-        SELECT id, goods_name, image, price, stock, sort, is_show, g.average_rating,
-        created_at, updated_at, shop_name
-        FROM goods g LEFT JOIN goods_categories gc ON g.id = gc.goods_id
-        ${mySql.unsafe(whereSql)}
-        ORDER BY g.average_rating DESC NULLS LAST  
-        LIMIT ${body.page_size} OFFSET ${(body.page - 1) * body.page_size}`;
+    // 动态构建条件数组和参数数组
+    const conditions: string[] = [];
+    const params: any[] = [];
 
-    // 4. 处理结果 根据贝叶斯评分
-    console.log(
-      "排序后的商品列表:",
-      rows.map((item) => item),
-    );
+    if (body.keyword) {
+      conditions.push(`g.goods_name ILIKE $${params.length + 1}`);
+      params.push(`%${body.keyword}%`);
+    }
+    if (body.shop_name) {
+      conditions.push(`g.shop_name ILIKE $${params.length + 1}`);
+      params.push(`%${body.shop_name}%`);
+    }
+    if (body.category_id) {
+      conditions.push(`gc.category_id = $${params.length + 1}`);
+      params.push(body.category_id);
+    }
+
+    const whereClause = conditions.length
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "";
+
+    // 分页参数
+    params.push(body.page_size);
+    params.push((body.page - 1) * body.page_size);
+
+    // 使用参数化查询（$1, $2...）
+    const query = `
+      SELECT id, goods_name, image, price, stock, sort, is_show, g.average_rating,
+        created_at, updated_at, shop_name
+      FROM goods g 
+      LEFT JOIN goods_categories gc ON g.id = gc.goods_id
+      ${whereClause}
+      LIMIT $${params.length - 1} OFFSET $${params.length}
+    `;
+
+    // neon 支持 query() 方法执行参数化 SQL
+    const rows = await mySql.query(query, params);
     return {
       code: 200,
       msg: "商品列表获取成功",
@@ -47,33 +64,11 @@ export default defineEventHandler(async (event): Promise<ListResponse> => {
     console.error("数据库查询错误:", error);
     return {
       code: 500,
-      msg: `数据库查询错误,${error}`,
+      msg: `数据库查询错误: ${error}`,
       data: {},
     } as ListResponse;
   }
 });
-
-function buildWhereClause(params: ListRequest) {
-  const conditions: string[] = [];
-  const values: any[] = [];
-
-  if (params.keyword) {
-    conditions.push(`g.goods_name LIKE ${params.keyword}%`);
-    values.push(`%${params.keyword}%`);
-  }
-  if (params.shop_name) {
-    conditions.push(`g.shop_name LIKE ${params.shop_name}%`);
-    values.push(`%${params.shop_name}%`);
-  }
-  if (params.category_id) {
-    console.log("params.category_id:", params.category_id);
-    conditions.push(`gc.category_id = ${params.category_id}`);
-  }
-
-  const whereSql = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  console.log("whereSql:", whereSql);
-  return { whereSql, values };
-}
 
 // 重新导出类型，供其他服务器端文件使用
 export type { ListRequest, ListResponse, Goods } from "~~/server/types/goods";

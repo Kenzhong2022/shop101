@@ -115,7 +115,6 @@ function handleClick(goodsItem: Goods) {
   const { track } = useProductBehavior(goodsItem.id, {
     behaviorType: "click",
     autoTrack: true,
-    sourcePage: window.location.href,
   }) as { track: () => void };
   navigateTo(`/goods/${goodsItem.id}/detail`);
 }

@@ -9,7 +9,15 @@
   >
     <!-- 商品图片区域 -->
     <div class="overflow-hidden relative w-fit" ref="goodsItemsRef">
+      <el-image
+        v-if="goodsItem.image.startsWith('http')"
+        :src="goodsItem.image"
+        :alt="goodsItem.image"
+        :width="280"
+        :height="280"
+      />
       <kk-cld-image
+        v-else
         :src="goodsItem.image"
         :alt="goodsItem.image"
         :width="280"
@@ -49,6 +57,7 @@
       <div>{{ goodsItem.shop_name }}</div>
     </div>
   </div>
+  <el-empty v-if="data.length === 0" description="暂无商品" class="w-full" />
   <!-- 分割线 -->
   <el-divider> {{ loading ? "加载中..." : "已到底部" }} </el-divider>
 </template>
@@ -153,7 +162,7 @@ function createObserver() {
     },
     {
       threshold: 0.5, // 50% 可见即触发，比 1 更友好
-      rootMargin: "0px", // 提前 0px 触发，预加载
+      rootMargin: "500px", // 提前 0px 触发，预加载
     },
   );
 }

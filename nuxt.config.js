@@ -5,6 +5,12 @@ import manualChunks from "./config/chunk-rules";
 // 无需手动导入 AutoImport、Components 和 ElementPlus 插件，@element-plus/nuxt 会自动处理
 
 export default defineNuxtConfig({
+  ssr: true,
+  // 配置端口和主机
+  devServer: {
+    port: 3000, // （随便写：8080、9000、3001都行）
+    host: "0.0.0.0", // 同一个网络下的设备都可以访问
+  },
   runtimeConfig: {
     // 服务端专属配置（仅服务端可访问，安全存储敏感信息）
     DB_HOST: process.env.DB_HOST,
@@ -23,11 +29,12 @@ export default defineNuxtConfig({
     // 客户端可访问的配置（放这里会暴露给前端，数据库相关一律不放这）
     public: {
       // 比如前端需要的接口基础路径等，数据库相关一律不放这
+      apiBaseUrl: process.env.API_BASE_URL || "/api",
       SOCKET_URL: process.env.NUXT_PUBLIC_SOCKET_URL,
     },
   },
   cloudinary: {
-    cloudName: "dlji1nmdj", // udinary 云名称
+    cloudName: "dlji1nmdj", // Cloudinary 云名称
     uploadPreset: "shop101-upload-preset", // 替换为你的预设名称
     apiKey: "621639418357725",
     analytics: true,
@@ -57,7 +64,9 @@ export default defineNuxtConfig({
       // 每分钟执行一次
       "*/1 * * * *": ["update-bayesian"],
       // 每5分钟执行一次（取消过期订单）
-      "*/1 * * * *": ["cancel-expired-orders"],
+      "*/5 * * * *": ["cancel-expired-orders"],
+      // 每10分钟执行一次（刷新用户对商品的分数）
+      "*/2 * * * *": ["refresh-user-item-score"],
     },
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
@@ -105,15 +114,6 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxthub/core",
   ],
-  hub: {
-    // 要什么功能开什么，不需要的可以关
-    ai: true,
-    db: "postgresql", // 明确指定，因为你在用 Neon
-    // 如果使用 KV 或 Blob，也显式声明
-    kv: false, // 如果没有使用 KV 就关闭
-    blob: false,
-    cache: false,
-  },
 
   // 可选：配置 Pinia
   pinia: {

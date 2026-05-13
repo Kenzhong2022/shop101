@@ -40,12 +40,17 @@ export default defineTask({
             user_id,
             item_id,
             CASE 
+              -- 有显式评分：直接用评分 * 乘数
               WHEN explicit_rating IS NOT NULL THEN explicit_rating * explicit_multiplier
-              ELSE action_weight + duration_weight * LEAST(duration_seconds, max_duration)
+              -- 无显式评分，且是浏览行为（type=1）：基础权重 + 时长折算
+              WHEN action_type = 1 THEN action_weight + duration_weight * LEAST(duration_seconds, max_duration)
+              -- 无显式评分，其他隐式行为（如点击、购买等）：仅基础权重
+              ELSE action_weight
             END AS base_strength,
             action_time
           FROM user_item_action, config
           WHERE action_time > NOW() - INTERVAL '90 days'
+            AND user_id IS NOT NULL
         )
         INSERT INTO user_item_score (user_id, item_id, score, last_update)
         SELECT 

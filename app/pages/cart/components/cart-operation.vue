@@ -42,7 +42,8 @@ function removeSelected() {
     return;
   }
   // 弹窗确认删除
-  cartStore.removeSelected();
+  cartStore.removeCart(cartStore.selectedItems.map((item) => item.id));
+  $message.success("删除成功");
 }
 </script>
 

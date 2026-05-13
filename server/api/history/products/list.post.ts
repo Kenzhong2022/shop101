@@ -6,6 +6,8 @@ import type { Goods } from "~~/server/types/goods";
 
 //====================基础依赖导入=========================
 import getNeon from "~~/server/utils/neon";
+import { defineEventHandler, readBody } from "h3";
+import { requireAuth } from "~~/server/utils/auth";
 const mySql = getNeon();
 
 /**
@@ -13,12 +15,19 @@ const mySql = getNeon();
  */
 export default defineEventHandler(
   async (event): Promise<apihistoryProductsListResponse> => {
-    // 1. 获取请求参数
+    // 1. 使用JWT认证获取用户ID
+    const { userId } = event.context.user;
+    console.log("userId", userId);
+    // 2. 获取请求参数
     const body: apihistoryProductsListRequest = await readBody(event);
-    const { page = 1, page_size = 10, searchKey, timeStart, timeEnd, action_type } = body;
-    // 构建查询条件
-    const token = getCookie(event, "auth-token");
-    const userId = token ? parseInt(token.split(".")[0]) : null;
+    const {
+      page = 1,
+      page_size = 10,
+      searchKey,
+      timeStart,
+      timeEnd,
+      action_type,
+    } = body;
 
     /**通过子查询拿到每个商品的最新查看记录，之后根据时间排序 */
     const result = (await mySql`
@@ -44,7 +53,7 @@ FROM (
         goods hg ON upb.item_id = hg.id
     WHERE 
         upb.user_id = ${userId}
-        ${action_type ? mySql`AND upb.action_type = ${action_type}` : mySql``}
+        AND upb.action_type = ${action_type}
     ORDER BY 
         hg.id, upb.action_time DESC
 ) as sub

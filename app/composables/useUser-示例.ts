@@ -17,7 +17,7 @@ export function example1() {
   const userState = useUser();
 
   // 在模板中可以直接使用 userState
-  console.log("当前用户ID:", userState.value.user_id);
+  console.log("当前用户ID:", userState.value.userId);
   console.log("当前token:", userState.value.token);
   console.log("过期时间:", userState.value.expireTime);
 }
@@ -51,7 +51,7 @@ export function example3() {
 
   // 监听用户状态变化
   watchEffect(() => {
-    console.log("用户状态变化:", userState.value.user_id);
+    console.log("用户状态变化:", userState.value.userId);
   });
 
   // 在模板中使用

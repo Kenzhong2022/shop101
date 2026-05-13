@@ -2,7 +2,7 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import dayjs from "dayjs";
 import getNeon from "~~/server/utils/neon";
-import { requireAuth } from "~~/server/utils/auth";
+
 import type {
   CreateOrderRequestDTO,
   OrderItemData,
@@ -106,10 +106,7 @@ function getPaymentStatusLabel(statusCode: number): string {
 export default defineEventHandler(
   async (event): Promise<OrderCreateResponse> => {
     try {
-      // 1. 身份验证
-      // 构建数据库插入数据
-      const { code, message, data } = await requireAuth(event);
-      const userId = data?.userId;
+      const { userId } = event.context.user;
 
       // 2. 解析请求体
       const body = await readBody<CreateOrderRequestDTO>(event);
@@ -117,7 +114,10 @@ export default defineEventHandler(
 
       // 3. 基础校验
       if (!items || !Array.isArray(items) || items.length === 0) {
-        throw createError({ statusCode: 400, statusMessage: "购物车不能为空" });
+        throw createError({
+          statusCode: 400,
+          statusMessage: "创建订单参数不能为空",
+        });
       }
 
       // 4. 按店铺分组

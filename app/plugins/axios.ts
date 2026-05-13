@@ -54,6 +54,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const axiosInstance = axios.create({
     baseURL: (config.public.apiBaseUrl as string) || "/api", // 基础路径，优先使用环境变量
     timeout: 30000, // 30秒超时
+    withCredentials: true, // 关键配置：允许携带凭证（Cookie）
     headers: {
       "Content-Type": "application/json",
     },

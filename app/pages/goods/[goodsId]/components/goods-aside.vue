@@ -46,7 +46,10 @@
     </div>
 
     <!-- 选中结果展示 -->
-    <div class="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div
+      v-if="0"
+      class="mt-6 bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+    >
       <!-- 未完成选择 -->
       <div v-if="!isComplete" class="text-gray-500 text-center py-4">
         <p class="text-lg font-medium">请选择完整规格</p>
@@ -110,7 +113,7 @@
     </div>
 
     <!-- 操作按钮 -->
-    <div class="mt-6 flex gap-4">
+    <div class="mt-6 flex gap-4" v-if="0">
       <button
         class="flex-1 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-blue-500/30 active:scale-95"
         :class="
@@ -127,6 +130,7 @@
 
     <!-- 调试信息（开发时可用，生产环境可删除） -->
     <div
+      v-if="0"
       class="mt-6 p-4 bg-gray-100 rounded-lg text-xs font-mono text-gray-600 space-y-1"
     >
       <p>

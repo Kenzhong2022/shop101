@@ -27,10 +27,7 @@ export default defineEventHandler(
   async (event): Promise<CartDeleteResponse> => {
     console.log("🛒 删除购物车商品API被调用");
 
-    // 1. 认证
-    // 构建数据库插入数据
-    const { code, message, data } = await requireAuth(event);
-    const userId = data?.userId;
+    const { userId } = event.context.user;
     if (!userId) {
       throw createError({ statusCode: 401, message: "用户未登录" });
     }

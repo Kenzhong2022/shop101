@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { Star, StarFilled } from "@element-plus/icons-vue";
 import type { CartAddRequest, CartAddResponse } from "~~/server/types/cart";
 import type {
@@ -41,6 +42,7 @@ import {
 } from "~/api/user-behavior/products";
 import { useProductBehavior } from "~/composables/useProductBehavior";
 import { useUser } from "~/composables/useUser";
+import { useCartStore } from "~/stores/cart";
 const userState = useUser();
 const { $message } = useNuxtApp();
 const cartStore = useCartStore();
@@ -59,22 +61,25 @@ const props = defineProps({
   },
 });
 const favRes = ref<userBehaviorProductsGetResponse>();
+const isFav = ref(false);
+
 onMounted(async () => {
-  // 检查用户是否收藏了该商品
-  favRes.value = await userBehaviorProductsGet({
-    productId: props.goodsId,
-  });
-  if (favRes.value.data) {
-    isFav.value = true;
+  // 检查用户是否收藏了该商品 tokenExpried()
+  if (tokenExpried()) {
+    favRes.value = await userBehaviorProductsGet({
+      productId: props.goodsId,
+    });
+    if (favRes.value.data) {
+      isFav.value = true;
+    }
   }
 });
-const isFav = ref(false);
 /**
  * 切换收藏状态
  */
 function changeFav() {
   // 检查用户是否登录
-  if (!userState.value.user_id) {
+  if (userState.value.userId == -1) {
     $message.warning("请先登录");
     return;
   }
@@ -98,11 +103,15 @@ function changeFav() {
 }
 
 function addCart() {
+  // 检查用户是否登录
+  if (userState.value.userId == -1) {
+    $message.warning("请先登录");
+    return;
+  }
   if (!props.currentSku.sku_code) {
     $message.warning("请选择商品规格");
     return;
   }
-  console.log(props);
   // 传给 useProductBehavior
   useProductBehavior(props.goodsId, {
     behaviorType: "cart",
@@ -116,6 +125,12 @@ function addCart() {
 }
 
 function buyNow() {
+  // 检查用户是否登录
+  if (userState.value.userId == -1) {
+    $message.warning("请先登录");
+    return;
+  }
+  console.log(userState.value, 123);
   cartStore.addCart({
     goods_id: props.goodsId,
     quantity: 1,

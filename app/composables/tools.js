@@ -123,6 +123,28 @@ const handleCopy = async (target) => {
 };
 
 /**
+ * @description 解析JWT获取exp声明（不验证签名，只读取payload）
+ * @param {string} token - JWT token
+ * @returns {number|null} - 过期时间戳（秒），解析失败返回null
+ */
+function parseJWTExp(token) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+    const payload = JSON.parse(jsonPayload);
+    return payload.exp ? payload.exp * 1000 : null; // 转换为毫秒
+  } catch {
+    return null;
+  }
+}
+
+/**
  * @description 检查token是否过期 false 表示已过期 true 表示未过期
  * @returns {boolean}
  */
@@ -132,8 +154,12 @@ function tokenExpried() {
     console.log("token不存在");
     return false;
   }
-  // 解析token，检查过期时间 ：【uid.过期时间戳.个人信息】1.1764868961926.460fc711d0d5a5d18cbbf587f51270e47c0f0cd67d98f467bd331d3dabf60632
-  const exp = Number(token.split(".")[1]);
+  // 解析JWT格式token，检查exp声明
+  const exp = parseJWTExp(token);
+  if (exp === null) {
+    console.log("token格式错误，无法解析exp");
+    return false;
+  }
   return Date.now() < exp; // 当前时间 小于 过期时间 表示未过期 返回true， 否则返回false 表示已过期
 }
 

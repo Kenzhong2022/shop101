@@ -74,6 +74,9 @@ export interface DatabaseIndexes {
  * 创建行为记录请求参数
  */
 export interface CreateActionRequest {
+  /** 用户ID */
+  user_id?: number;
+
   /** 商品ID */
   item_id: number;
 

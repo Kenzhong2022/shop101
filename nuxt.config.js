@@ -26,6 +26,12 @@ export default defineNuxtConfig({
     smtpSecure: process.env.SMTP_SECURE,
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
+    // 支付宝配置
+    alipayAppId: process.env.ALIPAY_APP_ID,
+    alipayPrivateKey: process.env.ALIPAY_PRIVATE_KEY,
+    alipayPublicKey: process.env.ALIPAY_PUBLIC_KEY,
+    alipayNotifyUrl: process.env.ALIPAY_NOTIFY_URL,
+    alipayReturnUrl: process.env.ALIPAY_RETURN_URL,
     // 客户端可访问的配置（放这里会暴露给前端，数据库相关一律不放这）
     public: {
       // 比如前端需要的接口基础路径等，数据库相关一律不放这
@@ -63,6 +69,8 @@ export default defineNuxtConfig({
       "*/5 * * * *": ["cancel-expired-orders"],
       // 每10分钟执行一次（刷新用户对商品的分数）
       "*/2 * * * *": ["refresh-user-item-score"],
+      // 每20分钟执行一次（刷新商品相似度）
+      "*/1 * * * *": ["refresh-item-similarity"],
     },
     routeRules: {
       // ① 静态资源（/_nuxt/ 下的 js/css/woff2）
@@ -89,8 +97,8 @@ export default defineNuxtConfig({
       script: [
         {
           // 引入 ColorThief 库
-          src: "https://cdn.jsdelivr.net/npm/colorthief@2.3.2/dist/color-thief.umd.js",
-          defer: true, // 异步加载，不阻塞渲染
+          // src: "https://cdn.jsdelivr.net/npm/colorthief@2.3.2/dist/color-thief.umd.js",
+          // defer: true, // 异步加载，不阻塞渲染
         },
         // {
         //   // 引入 Cloudinary 上传小部件
@@ -102,14 +110,7 @@ export default defineNuxtConfig({
   },
 
   // 模块配置（核心：仅保留 @element-plus/nuxt 和 @unocss/nuxt）
-  modules: [
-    "@element-plus/nuxt",
-    "@unocss/nuxt",
-    "@nuxt/image",
-    "@nuxtjs/cloudinary", // 注册 Pinia 模块
-    "@pinia/nuxt",
-    "@nuxthub/core",
-  ],
+  modules: ["@element-plus/nuxt", "@unocss/nuxt", "@nuxt/image", "@pinia/nuxt"],
 
   // 可选：配置 Pinia
   pinia: {

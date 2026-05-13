@@ -31,9 +31,7 @@ export default defineEventHandler(
       }
 
       // 3. 获取用户ID
-      const token = getCookie(event, "auth-token");
-      const userId = token ? parseInt(token.split(".")[0]) : null;
-
+      const { userId } = event.context.user;
       if (!userId) {
         throw createError({
           statusCode: 401,

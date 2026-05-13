@@ -1,6 +1,7 @@
 // server/api/payment/alipay/create.post.ts
 import { defineEventHandler, readBody, sendError, createError } from "h3";
 import { AlipaySdk } from "alipay-sdk";
+import AlipayConfig from "~~/config/alipay.mjs";
 import getNeon from "~~/server/utils/neon";
 const sql = getNeon();
 export default defineEventHandler(async (event) => {
@@ -8,7 +9,7 @@ export default defineEventHandler(async (event) => {
     // 主订单号/子订单号、金额、订单标题
     const body = await readBody(event);
     const { orderInfo, orderId, amount, subject, addressId } = body;
-    console.log("orderInfo", orderInfo, addressId);
+    console.log("orderInfo", orderInfo, addressId, AlipayConfig);
     if (!orderId || !amount || !addressId) {
       throw createError({
         statusCode: 400,
@@ -50,10 +51,11 @@ export default defineEventHandler(async (event) => {
 
     // 3️⃣ 初始化支付宝 SDK
     const alipaySdk = new AlipaySdk({
-      appId: process.env.ALIPAY_APP_ID || "",
-      privateKey: process.env.ALIPAY_PRIVATE_KEY?.replace(/\\n/g, "\n") || "",
+      appId: "9021000162615538",
+      privateKey:
+        "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDNOPS4VvzydQ/d7FxGDjwDyMmshGwGON8ydwhEf3OUk7tyfbruqeqjj2OoloWbpy9zsxHdBQosPQFQdP8wyc9TkItT3MnfOev+lZ2wMTC0/GqZVpAMPB5pgPAl1mI2G0aBvldIraTKq5mB2SUSxcddqcqpDuVL3ytJomXgRlWHo7T5m2edEENv5zXdezLZHZKBVC1bVt+EAQf4jVm1vkIbH55CCbP7J+F49xp1PuE2v2FKSDTl+Ek6q/MtzlevNN2ZGnpYdAGVBEFuhmzKD6mDirM52KV3OXX1Ug4n9wlBLE37+NyuyFbvKEoEbjYyRr+xX9scc4Pe8mqJXYhVnDzbAgMBAAECggEBAI5eed88caReM5C4fVcYXugdLlOhVjOG1shyrWifpnYner21na4ecKnhOrjlG3FdLV0tmDHlYiZIeBXx5GtbRZpqR035eI6E50QpVUi7B1g3WFhiJfJm7o4wpekJ7f4tM9+kRXclB5KWMxtSohaA4IsI1JAtxkK5YpVltRk+ke1TE/hx0sfQC/iBZivfGNdjXq1jTAMOxPzoFO61sOkL4vp2aSDXgXH2DR+QUpgVJUsaHgCPdQzyKrqKyUlTbpaJbQf7ON3RBByxrNZW6pT9prS53ut+YmMwosgOEs0pHkTbehVl6Hq0UL5RcCcm/NM/5wS3Bzm2L4le/91cBHYBHcECgYEA/cS8b5J2SSTz14DKqoifmwxWirMk1mfdLrLvJwj20sf1bYTkRgmlalNAOtZw/CuyRONnpKsoN8Q0+iJMSsfM8Tu725jMIzPn+GnEy2m1i1lA3TwGnKuG7UrIr4+lNq5u/TtY5GTk5xhyrO8+VPFkEULLQFUIN0VgRjJEReqSi2ECgYEAzwbv1OQWoxkjrR4BzsTJli06QkkWpFbKAB6N40/Frv6yR/ySkVufg4UobVN0pVpVuVNnVLSNkkid3ASeG9NSNrdEnNy1+Vc9tjQYV/sMd2vGoZcQYkI8IDw3CzVk62NKfpNpDebFtEgwi89gc1LpMF+3FO1lW4BQa0YZqQVMjbsCgYBkfWOhSv5MOLXWwMmAflm1rE0Y35fWz4pm07SgYIxdK5GkrNs4YNmAITduFTzonuUZInQIYT6r1qaj5rEPa89cN6tMalVsG0HgvQGRC2s4oz9sXDjCEap8jQCrhNaHsMuCu92Xk9yRJr1CffrQ6EYYD7ss3n9CY9ab9YvTo/AkAQKBgBTe/yi4Qev5adZXExmUTzpbnub11VmGAmFWszk6XpSQysplFSWgVgl9UCENa9ILtF61oNIyTZ90wK1grcviVwR7H2is+4+Ckw8eW2HrRkt3yxOZViaBxOv/BhGUNXNhlC4EkG+9Vysgp/xAUNnvfuDIlX1/nVtHKVRXQdj/VsNnAoGBAL3crZ2jLNLpyOioJFBxqiIJe+i9AMcYaBKiYzQaYfTXVry+ka2vKD1sOgVvgvgqTKdgmcwoYnjWrukqE6EPeefbXc1S/gOXbdVF0u07KSv/GD+pgsOiUSYwxXlwJd+HC0T1ZOA46qeyype0EHifiytTYEMEMuO6oX1reEBk8r4I",
       alipayPublicKey:
-        process.env.ALIPAY_PUBLIC_KEY?.replace(/\\n/g, "\n") || "",
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiwzaEhssICuzYh3TuCAHOt3afBocY8RViHgZTtdpS+e0ZaM9zEr2GlWMwpdqXO/66wFe+bz8F77kEfxbhNltrSZdNNJ/8748Vp/+xRUIjPY/9HujuW6sLQynkt9/8KrTKbSzYhcichjoFweIbuEEUtnsSNhZCWkOkhZAAkQzdm2p4DDJPwKeHxz/sgLjFkaNBnh0s3u9/XpBVETEFZZLI97wnhPnvHCOQfTWHBOz+hemO0xvuL9pxxZPqB12HxFg2JJ6yLNw0NVey2vgBRykNAjDesnhODFch3Iiq0Hda5YFRV1xXmRZniWbeQF2C0z1JWYZjobR6xyxWcYs+zaAmwIDAQAB",
       gateway: "https://openapi-sandbox.dl.alipaydev.com/gateway.do", // 沙箱环境网关
       signType: "RSA2",
       charset: "utf-8",

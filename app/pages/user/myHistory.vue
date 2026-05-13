@@ -44,6 +44,7 @@
             ref="goodsItemRefs"
             :data="historyList[date] || []"
             :collected-mode="true"
+            :history-mode="true"
             @click="handleClick"
             @check-change="({ id, checked }) => updateHistoryItem(id, checked)"
           />
@@ -83,6 +84,7 @@ const historyList = ref<Record<string, Goods[]>>({});
 watch(
   () => props.data,
   (newData) => {
+    historyList.value = {};
     if (Array.isArray(newData)) {
       // 预处理数据，将商品按日期分组
       if (newData.length > 0) {
@@ -187,7 +189,6 @@ function handleClick(goodsItem: Goods) {
   const { track } = useProductBehavior(goodsItem.id, {
     behaviorType: "click",
     autoTrack: true,
-    sourcePage: window.location.href,
   }) as { track: () => void };
   // 跳转详情页
   navigateTo(`/goods/${goodsItem.id}/detail`);

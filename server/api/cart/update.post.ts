@@ -22,6 +22,7 @@ export interface CartUpdateResponse {
 
 //====================基础依赖导入=========================
 import getNeon from "~~/server/utils/neon";
+import { requireAuth } from "~~/server/utils/auth";
 const mySql = getNeon();
 
 /**
@@ -32,27 +33,19 @@ export default defineEventHandler(
     console.log("🛒 更新购物车API被调用");
 
     try {
-      // 1. 获取请求参数
+      // 1. 获取用户ID（使用JWT验证）
+      const { userId } = event.context.user;
+
+      // 2. 获取请求参数
       const body: CartUpdateRequest = await readBody(event);
       console.log("📋 接收到的请求参数:", body);
       const { cart_id, quantity } = body;
 
-      // 2. 参数验证
+      // 3. 参数验证
       if (!cart_id || quantity < 0) {
         throw createError({
           statusCode: 400,
           message: "购物车ID不能为空，数量不能为负数",
-        });
-      }
-
-      // 3. 获取用户ID
-      const token = getCookie(event, "auth-token");
-      const userId = token ? parseInt(token.split(".")[0]) : null;
-
-      if (!userId) {
-        throw createError({
-          statusCode: 401,
-          message: "用户未登录",
         });
       }
 

@@ -1,107 +1,81 @@
 /**
- * 登录接口（POST /api/auth/login2）- 数据库版本
- * 接收邮箱和密码，查询数据库验证用户身份，生成登录token
- *
- * 功能说明：
- * 1. 接收前端传来的邮箱和密码
- * 2. 查询数据库验证用户是否存在
- * 3. 生成登录token（使用HMAC签名）
- * 4. 返回登录结果和token
+ * 登录接口（POST /api/auth/login2）- JWT版本
+ * 接收邮箱和密码，查询数据库验证用户身份，生成标准JWT
  */
 
-// 登录请求数据格式
+import { readBody, setCookie } from "h3";
+import getNeon from "../utils/neon";
+import { generateJWT, verifyPassword, type SafeUser } from "../utils/auth";
+
 interface LoginRequest {
-  email: string; // 用户邮箱
-  password: string; // 用户密码
+  email: string;
+  password: string;
+  token?: string;
 }
 
-// 登录响应数据格式
 interface LoginResponse {
-  success: boolean; // 登录是否成功
-  message: string; // 提示信息
+  success: boolean;
+  message: string;
   data?: {
-    token: string; // 登录令牌
-    user: {
-      id: number; // 用户ID
-      email: string; // 用户邮箱
-      username: string; // 用户名
-    };
+    token: string;
+    user: SafeUser;
+    expiresIn: number;
   };
   error?: {
-    code: number; // 错误码
-    message: string; // 错误信息
+    code: number;
+    message: string;
   };
 }
 
-// 导入数据库连接池
-// import db from "../utils/db";
-// 导入认证工具函数
-import { generateLoginToken, checkToken } from "../utils/auth";
-
-// server/api/users.get.ts
-import getNeon from "../utils/neon";
-
-// 执行SQL查询 - 查找匹配邮箱和密码的用户
-// 1. Neon 查询：用模板字符串写法
 const mySql = getNeon();
-// 导入密码加密函数
-// import md5 from "js-md5";
-// 导入bcrypt密码加密库
-import bcrypt from "bcrypt";
-/**
- * 处理登录请求的主函数
- * 查询数据库验证用户身份，支持token验证和邮箱密码登录
- *
- * 工作流程：
- * 1. 如果请求中包含token，先尝试验证token
- * 2. 如果token验证成功，直接返回用户信息
- * 3. 如果token验证失败或没有token，进行邮箱密码登录验证
- * 4. 登录成功时生成新的token并返回
- */
+
 export default defineEventHandler(async (event): Promise<LoginResponse> => {
   try {
-    console.log("👉【服务器】/api/auth/login2 数据库版本被访问了");
+    console.log("👉【服务器】/api/auth/login2 JWT版本被访问了");
 
-    // 第一步：获取前端传来的登录数据
-    const body = await readBody<LoginRequest & { token?: string }>(event);
+    const body = await readBody<LoginRequest>(event);
     const { email, password, token } = body;
 
-    // 如果有token，尝试解密验证
+    // 如果有token，验证是否有效
     if (token) {
       try {
-        console.log("🔍【Token验证】尝试解密token:", token);
+        console.log("🔍【Token验证】尝试验证token:", token);
+        const { checkToken } = await import("../utils/auth");
         const uid = checkToken(token);
         console.log("✅【Token验证】成功，用户ID:", uid);
 
-        // 查询数据库获取用户信息
         const [userRows] =
-          await mySql`SELECT id, email, username FROM user WHERE id = ${uid} LIMIT 1`;
-        if (Array.isArray(userRows) && userRows.length > 0) {
-          const user = userRows[0] as any;
-
-          // 如果token有效且用户存在，返回完整用户信息
+          await mySql`SELECT id, email, username, avatar FROM "users" WHERE id = ${uid} LIMIT 1`;
+        console.log("📊【数据库】查询结果123:", userRows);
+        if (userRows && userRows.id) {
+          const user = userRows as any;
+          setCookie(event, "auth-token", token, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 30 * 60, // 30分钟
+            path: "/",
+          });
           return {
             success: true,
             message: "Token验证成功，用户已登录",
             data: {
-              token: token, // 返回原token
+              token: token,
               user: {
                 id: user.id,
                 email: user.email,
                 username: user.username,
+                avatar: user.avatar,
               },
             },
-          } as LoginResponse;
-        } else {
-          console.log("❌【Token验证】用户不存在，ID:", uid);
+            expiresIn: 60,
+          } as unknown as LoginResponse;
         }
       } catch (tokenError: any) {
         console.log("❌【Token验证】失败:", tokenError.message);
-        // token验证失败，继续正常登录流程
       }
     }
 
-    // 第二步：参数验证
+    // 参数验证
     if (!email || !password) {
       return {
         success: false,
@@ -110,90 +84,81 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
           code: 400,
           message: "缺少必填参数",
         },
-      } as LoginResponse;
+      };
     }
 
-    // 第三步：查询数据库验证用户
+    // 查询用户
     console.log("🔍【数据库】查询用户电邮:", email);
-    console.log("🔍【数据库】查询密码:【未加密】", password);
-    // bcrypt加密明文密码
-    const saltRounds = 10;
-    const hashedPwd = await bcrypt.hash(password, saltRounds);
-    console.log("🔍【数据库】查询密码:【加密】", hashedPwd);
+    const [rows] = await mySql`
+      SELECT id, email, username, password, avatar FROM "users" WHERE email = ${email} LIMIT 1
+    `;
 
-    try {
-      const [rows] = await mySql`
-        SELECT id, email, username, password FROM "users" WHERE email = ${email} LIMIT 1
-      `;
+    console.log("📊【数据库】查询结果:", rows);
 
-      console.log("📊【数据库】查询结果:", rows);
-
-      // 检查是否找到用户
-      if (typeof rows === "object") {
-        const user = rows as any;
-        console.log("🔍【数据库】查询密码:【数据库】", user.password);
-        // 对比密码
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-          return {
-            success: false,
-            message: "邮箱或密码错误",
-            error: {
-              code: 401,
-              message: "用户认证失败",
-            },
-          };
-        }
-        console.log("✅【登录成功】用户:", user.username);
-
-        // 生成登录token（30分钟有效期）
-        const exp = String(Date.now() + 30 * 60 * 1000); // 30分钟后的时间戳
-        const hmacSecretKey = process.env.HMAC_SECRET_KEY || "abc123"; // 获取HMAC密钥
-        console.log("🔑【HMAC密钥】:", hmacSecretKey);
-        const token = generateLoginToken(Number(user.id), exp, hmacSecretKey);
-        console.log("🔐【生成Token】:", token);
-
-        // 返回成功响应
-        return {
-          success: true,
-          message: "登录成功",
-          data: {
-            token: token, // 登录令牌
-            user: {
-              id: user.id,
-              email: user.email,
-              username: user.username,
-            },
-          },
-        };
-      } else {
-        // 返回失败响应
-        return {
-          success: false,
-          message: "邮箱或密码错误",
-          error: {
-            code: 401,
-            message: "用户认证失败",
-          },
-        };
-      }
-    } catch (dbError: any) {
-      console.error("❌【数据库错误】:", dbError.message);
-
-      // 数据库查询错误
+    if (!rows || !rows.id) {
       return {
         success: false,
-        message: "数据库查询失败",
+        message: "用户不存在",
         error: {
-          code: 500,
-          message: "服务器内部错误",
+          code: 404,
+          message: "用户不存在",
         },
       };
     }
+
+    const user = rows as any;
+    console.log("🔍【数据库】数据库密码:【加密】", user.password);
+
+    // 验证密码
+    const isPasswordValid = await verifyPassword(password, user.password);
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        message: "邮箱或密码错误",
+        error: {
+          code: 401,
+          message: "用户认证失败",
+        },
+      };
+    }
+
+    console.log("✅【登录成功】用户:", user.username);
+
+    // 生成标准JWT（过期时间1分钟）为什么重新生成一个token
+    const newToken = generateJWT({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+    });
+
+    console.log("🔐【生成JWT】:", newToken);
+
+    // 将token设置到Cookie中
+    setCookie(event, "auth-token", newToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 60, // 30分钟
+      path: "/",
+    });
+
+    // 返回成功响应
+    return {
+      success: true,
+      message: "登录成功",
+      data: {
+        token: newToken as string,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          avatar: user.avatar,
+        },
+        expiresIn: 60, // 60秒
+      },
+    };
   } catch (error: any) {
     console.error("❌【服务器错误】:", error.message);
 
-    // 其他未预料的错误
     return {
       success: false,
       message: "服务器处理失败",
@@ -201,6 +166,6 @@ export default defineEventHandler(async (event): Promise<LoginResponse> => {
         code: 500,
         message: "服务器内部错误",
       },
-    } as LoginResponse;
+    };
   }
 });

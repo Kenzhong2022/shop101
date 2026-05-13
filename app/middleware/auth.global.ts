@@ -77,7 +77,7 @@ export default defineNuxtRouteMiddleware((to: RouteMeta, from: RouteMeta) => {
     // console.log("🔄 保存跳转路径:", redirectPath);
     // 1.检查token是否存在
     if (!token) {
-      // console.log("token为空，重定向到登录页");
+      console.log("token为空，重定向到登录页");
       return navigateTo("/login/myLogin?redirect=" + redirectPath);
     }
     //  2.检查token是否过期

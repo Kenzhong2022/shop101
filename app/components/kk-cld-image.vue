@@ -14,7 +14,7 @@ https://res.cloudinary.com/dlji1nmdj/image/upload/v1763887762 */
   >
     <!-- 客户端渲染 -->
     <client-only>
-      <CldImage
+      <NuxtImg
         :src="fullSrc"
         :width="width"
         :height="height"

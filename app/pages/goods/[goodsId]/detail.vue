@@ -89,10 +89,11 @@ function getCurrentDuration() {
   return totalDuration + currentSession;
 }
 
-// 传给 useProductBehavior
+// 传给 useProductBehavior（禁用自动上报，在离开时手动调用 track）
 const { track } = useProductBehavior(goodsId, {
   behaviorType: "click",
-  getDuration: getCurrentDuration, // 关键：传入获取函数
+  autoTrack: false, // 关键：禁用自动上报
+  getDuration: getCurrentDuration, // 关键：传入获取浏览时长函数
 }) as { track: () => void };
 // 加载商品数据（只在首次执行）
 const loadGoodsData = async () => {
@@ -118,7 +119,10 @@ onActivated(() => {
 onDeactivated(() => {
   console.log("组件被缓存（停用），停止定时器");
   stopTimer(); // 暂停并结算
-  track(); // 上报（此时 getDuration 返回累计时长）
+  const userState = useUser();
+  if (userState.value.userId != -1) {
+    track(); // 上报（此时 getDuration 返回累计时长）
+  }
 });
 
 // 卸载时（组件被销毁）：清理

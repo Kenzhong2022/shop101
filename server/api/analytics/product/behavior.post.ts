@@ -22,8 +22,14 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const { item_id, action_type, action_weight, action_time, session_id } =
-      body;
+    const {
+      item_id,
+      action_type,
+      action_weight,
+      action_time,
+      session_id,
+      user_id,
+    } = body;
     const sessionId = session_id || generateSessionId(); // 生成会话ID
 
     const insertData = {
@@ -41,20 +47,21 @@ export default defineEventHandler(async (event) => {
         message: "商品ID不能为空",
       });
     }
-    let userId: number;
+    const { userId } = event.context.user;
+    insertData.user_id = userId;
+    console.log("userId", userId);
     // 构建数据库插入数据
     if (action_type !== 1) {
-      const { code, message, data } = await requireAuth(event);
-      if (code === 401) {
+      try {
+        const { userId } = event.context.user;
+        insertData.user_id = userId;
+        console.log("userId", userId);
+      } catch (e) {
         throw createError({
           statusCode: 401,
           message: "用户未登录,不能记录商品浏览行为数据",
           data: {},
         });
-      }
-      if (data) {
-        // 新增insertData对象属性user_id
-        insertData.user_id = data.userId;
       }
     }
 

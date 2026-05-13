@@ -320,7 +320,7 @@ const handleSendMessage = () => {
   // 构建消息体
   const payload = {
     roomId: Number(props.curRoomID),
-    sender_id: Number(userState.value.user_id),
+    sender_id: Number(userState.value.userId),
     msg_type: 1,
     body: msg,
     update_at: formatTime(new Date(), {

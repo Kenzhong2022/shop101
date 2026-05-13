@@ -28,7 +28,7 @@
 
     <!-- 预览 / 结果 -->
     <div v-if="previewUrl" class="mt-20px">
-      <img :src="previewUrl" alt="preview" class="max-w-200px" />
+      <CldImage :src="previewUrl" alt="preview" class="max-w-200px" />
       <p v-if="resultUrl" class="break-all">
         上传成功：<br />
         <a

@@ -121,21 +121,11 @@ const goodsList = ref<Goods[]>();
 const loadingGoods = ref<boolean>(true);
 
 /**
- * 点击商品跳转详情页 并上报商品点击行为
+ * 点击商品跳转详情页（行为上报移至详情页离开时）
  * @param goodsItem 点击的商品项
  */
 function handleClick(goodsItem: Goods) {
-  // 上报商品点击行为
-  const { track, getSessionId } = useProductBehavior(
-    goodsItem.id,
-    {
-      behaviorType: "click",
-      autoTrack: true,
-    },
-    window.location.href,
-  ) as { track: () => void; getSessionId: () => string };
-  console.log("【Session ID】", getSessionId());
-  // 跳转详情页
+  // 直接跳转，行为上报在详情页离开时进行
   navigateTo(`/goods/${goodsItem.id}/detail`);
 }
 // 点击操作按钮处理函数
@@ -185,11 +175,38 @@ async function loadMore() {
 onMounted(async () => {
   await getGoodsList();
   loadingGoods.value = false;
-  // 测试后端接口compute-item-sim
-  fetch("/api/compute-item-sim").then((res) => {
-    console.log(res);
-  });
+
+  if (tokenExpried()) {
+    testRecommendApi();
+  }
 });
+
+/**
+ * 测试推荐接口
+ */
+async function testRecommendApi() {
+  try {
+    // 使用用户ID 1测试推荐接口
+    const userId = 1;
+    const response = await fetch(`/api/recommend`);
+    const data = await response.json();
+
+    console.log("📚 [推荐接口测试] 用户ID:", userId);
+    console.log("📊 [推荐接口测试] 响应数据:", data);
+
+    if (data.recommendations && data.recommendations.length > 0) {
+      console.log(`✅ [推荐接口测试] 成功获取 ${data.count} 条推荐`);
+      console.log(
+        "🔍 [推荐接口测试] 推荐列表:",
+        data.recommendations.slice(0, 5),
+      );
+    } else {
+      console.log("ℹ️ [推荐接口测试] 暂无推荐数据:", data.message);
+    }
+  } catch (error) {
+    console.error("❌ [推荐接口测试] 失败:", error);
+  }
+}
 
 onUnmounted(() => {});
 </script>

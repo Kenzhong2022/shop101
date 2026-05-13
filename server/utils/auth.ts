@@ -1,141 +1,215 @@
 /**
  * 文件路径: /d:/shop101/server/utils/auth.ts
- * 功能: 认证工具函数 - 提供Token验证和签名验证功能
- * 主要功能: 验证用户登录令牌的格式、过期时间和签名有效性
- * 提供HMAC签名生成和验证功能
+ * 功能: 认证工具函数 - 标准JWT实现
+ * 主要功能: 生成、验证标准JSON Web Token
  */
 
-import crypto from "node:crypto";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import type { H3Event } from "h3";
-import { getCookie } from "h3";
-import { createError } from "h3";
+import { getCookie, createError } from "h3";
 
-const SECRET = process.env.HMAC_SECRET_KEY || "abc123"; // 从环境变量获取密钥，默认值为 "abc123"
-interface ErrorResponse {
-  code: number;
-  message: string;
-}
-// 检查 token 是否有效
-export function checkToken(token: string): number | ErrorResponse {
-  // token 格式：uid.exp.sig （uid 为用户 id，exp 为过期时间戳，sig 为签名）
-  const [uid, exp, sig] = token.split(".");
-  if (!uid || !exp || !sig) throw new Error("格式不对");
+const JWT_SECRET =
+  process.env.JWT_SECRET || process.env.HMAC_SECRET_KEY || "abc123";
+const JWT_EXPIRES_IN = "30m"; // process.env.JWT_EXPIRES_IN || "1m";
+const JWT_ISSUER = "shop101-api"; // 发布者
+const JWT_AUDIENCE = "shop101-client"; // 接收者
 
-  if (Date.now() > Number(exp))
-    throw { code: 401, message: "登录信息已过期" } as ErrorResponse;
-
-  // 验证签名
-  const expect = crypto
-    .createHmac("sha256", SECRET) // 创建 HMAC 实例，使用 SHA-256 算法和密钥 SECRET
-    .update(`${uid}.${exp}`) // 更新 HMAC 实例，添加 uid 和 exp 字符串
-    .digest("hex"); // 计算签名并转换为十六进制字符串
-
-  if (sig !== expect) throw new Error("签名错");
-
-  return Number(uid); // 返回用户 id
-}
-
-export interface AuthUser {
+export interface JWTPayload {
   userId: number;
-  token: string;
-  exp: number; // 过期时间戳
+  email: string;
+  username: string;
+  iat?: number;
+  exp?: number;
+  iss?: string;
+  aud?: string;
+}
+
+export interface SafeUser {
+  id: number;
+  email: string;
+  username: string;
+  avatar: string;
 }
 
 export interface AuthResponse {
   code: number;
   message: string;
-  data?: AuthUser;
+  data?: {
+    token: string;
+    user: SafeUser;
+    expiresIn: number;
+  };
+}
+/**
+ * 生成JWT
+ * @param payload JWT payload，包含用户ID、邮箱、用户名
+ * @returns 生成的JWT字符串
+ */
+export function generateJWT(
+  payload: Omit<JWTPayload, "iat" | "exp" | "iss" | "aud">,
+): string {
+  /**
+   * 生成JWT
+   * @param payload JWT payload，包含用户ID、邮箱、用户名
+   * @returns 生成的JWT字符串
+   */
+  return jwt.sign(
+    {
+      userId: payload.userId,
+      email: payload.email,
+      username: payload.username,
+      iss: JWT_ISSUER,
+      aud: JWT_AUDIENCE,
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN },
+  );
+}
+/**
+ * 验证JWT
+ * @param token JWT字符串
+ * @returns 验证通过的JWT payload或null
+ */
+export function verifyJWT(token: string): JWTPayload | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    }) as JWTPayload;
+    return decoded;
+  } catch (error: any) {
+    console.error("[JWT验证失败]", error.message);
+    console.error("[JWT验证失败类型]", error.name);
+    if (error.name === "TokenExpiredError") {
+      console.error("[JWT已过期]");
+    } else if (error.name === "JsonWebTokenError") {
+      console.error("[JWT签名不匹配]");
+    }
+    return null;
+  }
 }
 
+export function decodeJWT(token: string): JWTPayload | null {
+  try {
+    return jwt.decode(token) as JWTPayload;
+  } catch {
+    return null;
+  }
+}
 /**
- * @returns {AuthResponse} 认证用户信息 包含用户ID、token和过期时间戳
+ * 获取JWT过期时间
+ * @param token JWT字符串
+ * @returns 过期时间（秒）
  */
-export async function requireAuth(event: H3Event): Promise<AuthResponse> {
+export function getTokenTTL(token: string): number {
+  /**
+   * 获取JWT过期时间
+   * @param token JWT字符串
+   * @returns 过期时间（秒）
+   */
+  const decoded = decodeJWT(token);
+  /**
+   * 解码JWT
+   * @param token JWT字符串
+   * @returns 解码后的JWT payload或null
+   */
+  if (!decoded || !decoded.exp) return 0;
+  return Math.max(0, decoded.exp - Math.floor(Date.now() / 1000));
+}
+/**
+ * 验证密码
+ * @param plainPassword 明文密码
+ * @param hashedPassword 哈希后的密码
+ * @returns 验证结果
+ */
+export async function verifyPassword(
+  plainPassword: string,
+  hashedPassword: string,
+): Promise<boolean> {
+  return bcrypt.compare(plainPassword, hashedPassword);
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 10;
+  return bcrypt.hash(password, saltRounds);
+}
+
+export async function requireAuth(
+  event: H3Event,
+): Promise<{ userId: number; payload: JWTPayload }> {
   const token = getCookie(event, "auth-token");
 
+  console.log("[requireAuth] 收到的token:", token);
+  console.log("[requireAuth] JWT_SECRET长度:", JWT_SECRET?.length);
+  console.log("[requireAuth] JWT_SECRET前5位:", JWT_SECRET?.substring(0, 5));
+
   if (!token) {
-    return {
-      code: 401,
-      message: "用户未登录",
-    };
-  }
-
-  try {
-    const userId = checkToken(token); // 调用现有函数检查 token 有效性
-
-    // 解析 exp 返回（可选，用于刷新 token 判断）
-    const [, exp] = token.split(".");
-
-    return {
-      code: 200,
-      message: "认证成功",
-      data: {
-        userId: userId as number,
-        token,
-        exp: Number(exp),
-      },
-    };
-  } catch (err: any) {
-    // 统一转换为 H3 createError
     throw createError({
-      statusCode: err.code || 401,
-      message: err.message || "登录状态无效",
+      statusCode: 401,
+      message: "用户未登录",
     });
   }
-}
 
-/**
- * 生成HMAC签名
- * @param info 要签名的信息
- * @param key 签名密钥
- * @returns HMAC签名结果
- */
-export function generateSignature(info: string, secretKey: string): string {
-  //1. 校验参数
-  if (!info || !secretKey) throw new Error("参数不能为空");
-  //2. 生成签名 首先使用 SHA-256 算法和密钥 SECRET 创建 HMAC 实例， 然后更新 HMAC 实例，添加 info 字符串，最后计算签名并转换为十六进制字符串
-  return crypto.createHmac("sha256", secretKey).update(info).digest("hex");
-}
+  const payload = verifyJWT(token);
+  console.log("[requireAuth] verifyJWT结果:", payload);
 
-/**
- * 验证HMAC签名
- * @param info 原始信息
- * @param key 签名密钥
- * @param providedSignature 提供的签名
- * @returns 签名是否有效
- */
-export function verifySignature(
-  info: string, // 信息
-  key: string, // 签名密钥
-  providedSignature: string, // 提供的签名
-): boolean {
-  // 1. 生成预期签名
-  const expectedSignature = generateSignature(info, key);
-  // 使用crypto.timingSafeEqual防止时序攻击
-  const expectedBuffer = Buffer.from(expectedSignature, "hex"); // 预期签名转换为Buffer
-  const providedBuffer = Buffer.from(providedSignature, "hex"); // 提供的签名转换为Buffer
-
-  // 2. 对比签名是否相等
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false;
+  if (!payload) {
+    throw createError({
+      statusCode: 401,
+      message: "Token无效或已过期",
+    });
   }
 
-  return crypto.timingSafeEqual(expectedBuffer, providedBuffer); // 对比签名是否相等
+  return {
+    userId: payload.userId,
+    payload,
+  };
 }
 
-/**
- * 生成登录令牌
- * @param uid 用户ID
- * @param exp 过期时间戳
- * @param secretKey 签名密钥
- * @returns 格式为 uid.exp.sig 的登录令牌
- */
+export function checkToken(
+  token: string,
+): number | { code: number; message: string } {
+  const payload = verifyJWT(token);
+  if (!payload) {
+    throw { code: 401, message: "Token无效或已过期" };
+  }
+  return payload.userId;
+}
+
 export function generateLoginToken(
   uid: number,
   exp: string,
   secretKey: string,
 ): string {
-  const sig = generateSignature(`${uid}.${exp}`, secretKey);
-  // 生成登录令牌: 用户ID.过期时间戳.签名
-  return `${uid}.${exp}.${sig}`;
+  return generateJWT({
+    userId: uid,
+    email: "",
+    username: "",
+  });
+}
+/**
+ * 生成签名
+ * @param info 要签名的信息
+ * @param secretKey 密钥
+ * @returns 生成的签名
+ */
+export function generateSignature(info: string, secretKey: string): string {
+  return crypto.createHmac("sha256", secretKey).update(info).digest("hex");
+}
+
+export function verifySignature(
+  info: string,
+  key: string,
+  providedSignature: string,
+): boolean {
+  const expectedSignature = generateSignature(info, key);
+  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+  const providedBuffer = Buffer.from(providedSignature, "hex");
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 }

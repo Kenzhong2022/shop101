@@ -13,9 +13,7 @@ const sql = getNeon();
  */
 export default defineEventHandler(async (event): Promise<ApiResponse<any>> => {
   console.log("🔍 更新地址API接口被调用");
-  // 构建数据库插入数据
-  const { code, message, data } = await requireAuth(event);
-  const userId = data?.userId;
+  const { userId } = event.context.user;
 
   // 1. 获取地址ID
   const addressId = getRouterParam(event, "id");

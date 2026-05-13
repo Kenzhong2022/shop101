@@ -101,8 +101,13 @@
                 size="small"
               >
                 <template #suffix>
-                  <el-button type="primary" @click="handleSendCode" class="p-0">
-                    获取验证码
+                  <el-button
+                    type="primary"
+                    @click="handleSendCode"
+                    class="p-0"
+                    :disabled="isCounting"
+                  >
+                    {{ isCounting ? `${countdown}秒后重新获取` : "获取验证码" }}
                   </el-button>
                 </template>
               </el-input>
@@ -150,9 +155,6 @@
         <div class="relative my-6px">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2px bg-white text-gray-500">或者</span>
           </div>
         </div>
 
@@ -289,6 +291,10 @@ const isLoading = ref(false);
 const showPassword = ref(false);
 const activeTab = ref<"login" | "register">("login");
 
+// 验证码倒计时
+const countdown = ref(0);
+const isCounting = ref(false);
+
 // 对话框状态
 const showTermsDialog = ref(false);
 const showPrivacyDialog = ref(false);
@@ -303,8 +309,8 @@ const onTabChange = (name: string) => {
 
 // 表单数据
 const form = reactive({
-  email: "user@shop101.com",
-  password: "Aa123456",
+  email: "",
+  password: "",
   confirmPassword: "",
   code: "",
   username: "",
@@ -398,7 +404,7 @@ const handleSubmit = async () => {
             const { updateUserState } = await import("~/composables/useUser");
             localStorage.setItem("token", res.data.token);
             useCookie("auth-token").value = res.data.token;
-            updateUserState(res.data.token);
+            updateUserState(res.data.token, res.data.user as SafeUser);
           }
 
           // 成功通知
@@ -422,11 +428,9 @@ const handleSubmit = async () => {
             );
             return;
           }
-          $message.success(
-            "登录成功！固定跳转到用户中心方便查看token的过期时间",
-          );
+          $message.success("登录成功！欢迎来到首页");
           // 登录成功，跳转到用户中心
-          navigateTo("/user/myUser");
+          navigateTo("/");
         }
       });
     } else {
@@ -492,11 +496,29 @@ const handleSendCode = async () => {
       );
       // 发送验证码成功处理
       console.log("发送验证码成功后端返回:", res);
+
+      // 启动倒计时
+      startCountdown();
     }
   });
 
-  ElMessage.success("验证码发送成功");
   console.log("🔑 验证码发送被点击");
+};
+
+// 启动倒计时
+const startCountdown = () => {
+  countdown.value = 60;
+  isCounting.value = true;
+
+  const timer = setInterval(() => {
+    countdown.value--;
+
+    if (countdown.value <= 0) {
+      clearInterval(timer);
+      isCounting.value = false;
+      countdown.value = 0;
+    }
+  }, 1000);
 };
 
 // 页面加载完成

@@ -23,8 +23,8 @@ export default defineEventHandler(
         });
       }
 
-      const token = getCookie(event, "auth-token");
-      const userId = token ? parseInt(token.split(".")[0]) : null;
+
+      const { userId } = event.context.user;
 
       if (!userId) {
         throw createError({

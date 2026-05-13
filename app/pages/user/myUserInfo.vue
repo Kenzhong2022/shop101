@@ -1,13 +1,7 @@
 <!-- 我的用户信息 -->
 <template>
-  <div>我的用户信息</div>
+  <!-- 信息表单 -->
+  <div class="w-full"></div>
 </template>
 
-<script setup lang="ts">
-const props = defineProps({
-  isLoading: {
-    type: Boolean,
-    required: true,
-  },
-});
-</script>
+<script setup lang="ts"></script>

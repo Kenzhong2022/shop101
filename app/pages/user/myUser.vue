@@ -8,7 +8,7 @@
           <!-- 个人头像 -->
           <div>
             <el-avatar
-              :src="userState.userInfo?.avatar"
+              :src="`https://res.cloudinary.com/dlji1nmdj/image/upload/c_fill,w_700,h_450,g_auto/f_auto/q_80/v1763887762/${userState?.avatar}?_a=BBDAAEAE0`"
               :size="100"
               class="my-avatar relative"
               @mouseenter="() => (isHovered = true)"
@@ -88,9 +88,9 @@ const MyAddress = markRaw(
   defineAsyncComponent(() => import("./myAddress.vue")),
 );
 // ========== 使用 shallowRef 存储当前组件 ==========
-const currentComponent = shallowRef<Component>(MyUserInfo);
+const currentComponent = shallowRef<Component>(MyOrder);
 // 当前选中的菜单
-const currentMenu = ref<string>("/user/myUserInfo");
+const currentMenu = ref<string>("/user/myOrder");
 // 路由参数
 const route = useRoute();
 const router = useRouter();
@@ -253,14 +253,6 @@ async function updateComponentByTab(tab: string) {
     }
   } else {
     console.warn(`未找到对应的组件配置: ${tab}`);
-    // 默认显示个人信息页
-    const defaultConfig = componentConfigMap["/user/myUserInfo"];
-    if (defaultConfig) {
-      currentMenu.value = "/user/myUserInfo";
-      currentRefreshFn.value = defaultConfig.fetchData;
-      await defaultConfig.fetchData();
-      currentComponent.value = defaultConfig.component;
-    }
   }
 }
 // 自动生成菜单项的工厂函数
@@ -313,7 +305,7 @@ const menuItems: MenuItem[] = [
 // 页面加载完成后的操作
 onMounted(() => {
   expTime.value = userState.value.expireTime;
-  updateComponentByTab(route.query.tab as string); // 默认个人信息
+  updateComponentByTab((route.query.tab as string) || "/user/myOrder"); // 默认订单记录
 });
 // 监听路由变化
 watch(

@@ -1,14 +1,12 @@
-/** * 商品列表组件 */
 <template>
   <div
-    :ref="(el) => setItemRef(el, index)"
     class="p-2 box-border goodsItem"
     v-for="(goodsItem, index) in data"
     :key="goodsItem.id"
     @click.stop="handleClick(goodsItem)"
   >
-    <!-- 商品图片区域 -->
-    <div class="overflow-hidden relative w-fit" ref="goodsItemsRef">
+    <!-- 商品图片区域（保留原有结构，移除无用 ref） -->
+    <div class="overflow-hidden relative w-fit">
       <el-image
         v-if="goodsItem.image.startsWith('http')"
         :src="goodsItem.image"
@@ -32,7 +30,6 @@
       >
         热卖
       </div>
-      <!-- 操作按钮 -->
       <el-checkbox
         v-if="showCheckbox"
         :model-value="goodsItem.isChecked"
@@ -44,7 +41,6 @@
     </div>
     <!-- 商品信息区域 -->
     <div class="w-[280px] box-border p-[8px]">
-      <!-- 商品名称：超过一行显示省略号 -->
       <div class="text-ellipsis whitespace-nowrap overflow-hidden">
         {{ goodsItem.goods_name }}
       </div>
@@ -57,15 +53,30 @@
       <div>{{ goodsItem.shop_name }}</div>
     </div>
   </div>
+
   <el-empty v-if="data.length === 0" description="暂无商品" class="w-full" />
-  <!-- 分割线 -->
-  <el-divider> {{ loading ? "加载中..." : "已到底部" }} </el-divider>
+
+  <!-- 哨兵 div：只有存在更多数据时才显示，用于触发加载更多 -->
+  <div
+    v-if="data.length > 0 && hasMore"
+    ref="sentinelRef"
+    class="load-sentinel"
+  ></div>
+
+  <el-divider v-if="!historyMode">
+    {{ loading ? "加载中..." : "已到底部" }}
+  </el-divider>
 </template>
 
 <script setup lang="ts">
 import { Loading } from "@element-plus/icons-vue";
 import type { Goods } from "~~/server/types/goods";
+
 const props = defineProps({
+  historyMode: {
+    type: Boolean,
+    default: false,
+  },
   isCollectedMode: {
     type: Boolean,
     default: false,
@@ -99,12 +110,14 @@ const props = defineProps({
     default: false,
   },
 });
+
 const emit = defineEmits([
   "update:isChecked",
-  "loadMore", // 加载更多商品列表事件
-  "click", // 点击商品事件
-  "checkChange", // 点击操作按钮事件
+  "loadMore",
+  "click",
+  "checkChange",
 ]);
+
 const showCheckbox = ref(false);
 watch(
   () => props.collectedMode,
@@ -113,118 +126,114 @@ watch(
   },
   { immediate: true },
 );
-// 点击处理函数
-function handleClick(goodsItem: Goods) {
-  // 可以在这里添加点击效果、埋点等
-  console.log("商品被点击:", goodsItem.id);
 
-  // 触发事件，把商品数据传给父组件
+// 哨兵元素的 ref
+const sentinelRef = ref<HTMLElement | null>(null);
+let observer: IntersectionObserver | null = null;
+
+// 内部请求锁，防止短时间内重复触发
+const isLoadingMore = ref(false);
+
+// 重置锁：当外部 loading 变为 false 时，允许下一次加载
+watch(
+  () => props.loading,
+  (newVal) => {
+    if (!newVal) {
+      isLoadingMore.value = false;
+    }
+  },
+);
+
+/**
+ * 创建 IntersectionObserver 实例
+ * threshold: 0.8 表示元素 80% 进入视口时触发
+ */
+function createObserver() {
+  if (observer) return;
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        // 只有元素进入视口比例 ≥ 0.8 时才触发加载
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.8) {
+          // 防止重复触发：外部正在加载 或 内部锁未释放 或 没有更多数据
+          if (props.loading || isLoadingMore.value || !props.hasMore) {
+            return;
+          }
+          isLoadingMore.value = true;
+          emit("loadMore");
+        }
+      });
+    },
+    {
+      threshold: 0.8, // 80% 可见时触发
+      rootMargin: "0px", // 无提前量，严格按照视口比例
+    },
+  );
+}
+
+/**
+ * 开始观察哨兵元素
+ */
+function startObserving() {
+  if (!observer || !sentinelRef.value) return;
+  // 先断开之前的观察（避免重复观察或观察旧元素）
+  observer.disconnect();
+  observer.observe(sentinelRef.value);
+}
+
+/**
+ * 停止观察（当 hasMore 为 false 或组件销毁时调用）
+ */
+function stopObserving() {
+  if (observer) {
+    observer.disconnect();
+  }
+}
+
+// 监听哨兵元素变化、数据长度或 hasMore 变化，动态开启/关闭观察
+watch(
+  () => [sentinelRef.value, props.data.length, props.hasMore],
+  () => {
+    nextTick(() => {
+      if (props.data.length > 0 && props.hasMore && sentinelRef.value) {
+        createObserver(); // 确保 observer 已创建
+        startObserving();
+      } else {
+        // 无更多数据或列表为空时停止观察
+        stopObserving();
+      }
+    });
+  },
+  { flush: "post" },
+);
+
+// 组件初始化时创建 observer
+onMounted(() => {
+  createObserver();
+  if (props.data.length > 0 && props.hasMore && sentinelRef.value) {
+    startObserving();
+  }
+});
+
+// 组件销毁时清理 observer
+onUnmounted(() => {
+  stopObserving();
+  observer = null;
+  isLoadingMore.value = false;
+});
+
+function handleClick(goodsItem: Goods) {
   emit("click", goodsItem);
 }
 
 function handleCheckChange(checked: boolean, item: Goods) {
-  // 通知父组件更新
   emit("checkChange", {
     id: item.id,
     checked,
     item,
   });
 }
-
-// ========== IntersectionObserver 逻辑 ==========
-
-const itemRefs = ref<HTMLElement[]>([]);
-let observer: IntersectionObserver | null = null;
-let curObservedEl: HTMLElement | null = null;
-
-// 收集 DOM 引用（关键修复）
-function setItemRef(el: any, index: number) {
-  if (el) {
-    itemRefs.value[index] = el;
-  }
-}
-
-/**
- * 创建 Observer 实例
- */
-function createObserver() {
-  if (observer) return;
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        // isIntersecting 为 true 时，触发加载更多事件
-        if (entry.isIntersecting) {
-          // 触发加载更多事件
-          emit("loadMore");
-          return;
-        }
-      });
-    },
-    {
-      threshold: 0.5, // 50% 可见即触发，比 1 更友好
-      rootMargin: "500px", // 提前 0px 触发，预加载
-    },
-  );
-}
-
-/**
- * 取消监听当前最后一个商品
- */
-function unobserveLast() {
-  if (curObservedEl && observer) {
-    observer.unobserve(curObservedEl);
-    curObservedEl = null;
-  }
-}
-
-/**
- * 监听当前最后一个商品
- */
-function observeLast() {
-  if (!props.data.length || !observer) return;
-
-  // 找到当前最后一个商品元素
-  const lastIndex = props.data.length - 1;
-  const lastEl = itemRefs.value[lastIndex];
-
-  if (lastEl) {
-    unobserveLast(); // 先取消旧的
-    curObservedEl = lastEl;
-    observer.observe(lastEl);
-    console.log("开始监听第", lastIndex + 1, "个商品");
-  }
-}
-
-// 监听数据变化，重新绑定监听
-watch(
-  () => [props.data.length, props.hasMore],
-  ([newLength, newHasMore]) => {
-    nextTick(() => {
-      if (newHasMore) {
-        // 首次加载更多商品时，创建 Observer
-        createObserver();
-        // 监听当前最后一个商品
-        observeLast();
-      } else {
-        unobserveLast();
-        console.log("取消监听当前最后一个商品");
-      }
-    });
-  },
-);
-
-// 初始化
-onMounted(() => {
-  createObserver();
-  observeLast();
-});
-
-// 清理
-onUnmounted(() => {
-  unobserveLast();
-  observer?.disconnect();
-  itemRefs.value = [];
-});
 
 defineExpose({});
 </script>
@@ -233,7 +242,7 @@ defineExpose({});
 .goodsItem {
   --w: 300px;
   width: var(--w);
-  cursor: pointer; /* 鼠标悬停样式 */
+  cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -242,6 +251,7 @@ defineExpose({});
 .el-card {
   margin-bottom: 20px;
 }
+
 :deep(.el-card__body) {
   display: flex;
   flex-direction: column;
@@ -257,5 +267,13 @@ defineExpose({});
     width: 20px;
     height: 20px;
   }
+}
+
+/* 哨兵 div 样式：透明、极小高度，不影响布局 */
+.load-sentinel {
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  pointer-events: none;
 }
 </style>

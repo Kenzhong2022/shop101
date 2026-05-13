@@ -16,7 +16,7 @@
           </span>
         </el-checkbox>
         <el-button size="large" type="primary" @click="deleteSelected"
-          >批量删除</el-button
+          >全部取消收藏</el-button
         >
       </div>
     </div>
